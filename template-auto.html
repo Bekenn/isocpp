@@ -1,0 +1,186 @@
+<html><head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Template Argument Type Deduction</title>
+</head>
+
+<body>
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="619">
+        <tr>
+            <td width="167" align="left" valign="top">Document number:</td>
+            <td width="452"><i>Nnnnn=yy-nnnn</i></td>
+        </tr>
+        <tr>
+            <td width="167" align="left" valign="top">Date:</td>
+            <td width="452">2015-01-08</td>
+        </tr>
+        <tr>
+            <td width="167" align="left" valign="top">Project:</td>
+            <td width="452">Programming Language C++, Evolution Working Group</td>
+        </tr>
+        <tr>
+            <td width="167" align="left" valign="top">Reply-to:</td>
+            <td width="452">James Touton &lt;bekenn@gmail.com&gt;</i></td>
+        </tr>
+    </table>
+
+    <h2><a id="TableOfContents">Table of Contents</a></h2>
+    <ol>
+        <li><a href="#TableOfContents">Table of Contents</a></li>
+        <li><a href="#Introduction">Introduction</a></li>
+        <li><a href="#MotivationAndScope">Motivation and Scope</a></li>
+        <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
+        <li><a href="#DesignDecisions">Design Decisions</a></li>
+        <li><a href="#TechnicalSpecifications">Technical Specifications</a></li>
+        <li><a href="#Acknowledgments">Acknowledgments</a></li>
+        <li><a href="#References">References</a></li>
+        <li><a href="#Appendix">Appendix</a></li>
+    </ol>
+
+    <h2><a id="Introduction">Introduction</a></h2>
+    <p>This paper proposes allowing the types of value arguments (constants) passed to templates
+    to be automatically deduced. Currently, the type of a value parameter must be explicitly
+    specified, which leads to unnecessary verboseness and reduced flexibility when writing a
+    template intended to take constant arguments of any type. The template parameter list syntax
+    can be extended in a simple and natural way using the <code><b>auto</b></code> keyword to indicate
+    that the type of a value parameter is deduced at the point of instantiation:</p>
+    <pre>
+    <b>template</b> &lt;<b>auto</b> x&gt; <b>constexpr</b> <b>auto</b> constant = x;
+
+    <b>auto</b> v1 = constant&lt;5&gt;;      // v1 == 5, decltype(v1) is int
+    <b>auto</b> v2 = constant&lt;<b>true</b>&gt;;   // v2 == true, decltype(v2) is bool
+    <b>auto</b> v3 = constant&lt;'a'&gt;;    // v3 == 'a', decltype(v3) is char
+    </pre>
+
+    <h2><a id="MotivationAndScope">Motivation and Scope</a></h2>
+    <h3>As individual template parameters</h3>
+    <p>Consider a generic function call logger for an application that provides callback function
+    pointers to a library. The logger should print the name of the function, the argument values,
+    and the result of a call to any callback. In order to avoid calling the logger from within a
+    callback function (and thus having to modify each function to support the logger), the logger
+    itself is passed to the library in place of the callback function, and the logger passes the
+    arguments along to the callback function. This implies that the logger for a callback function
+    must match the callback function's type, so that the library can call it directly.</p>
+    <p>It is desirable that the instantiation syntax for the logger be simple; the following seems
+    perfectly reasonable:</p>
+    <pre>
+    <b>template</b> &lt;<b>auto</b> f, <b>const</b> <b>char</b>* name&gt; <b>constexpr</b> <b>auto</b> logger = <i>see appendix</i>;
+
+    // can't specify string literals as template arguments, so provide a character array instead
+    <b>static</b> <b>constexpr</b> <b>char</b> cbname[] = "my_callback";
+    library::register_callback(logger&lt;my_callback, cbname&gt;);
+    </pre>
+    <p>Without deduced types for template arguments, the type of the function would have to be
+    specified:</p>
+    <pre>
+    <b>template</b> &lt;<b>class</b> F, F f, <b>const</b> <b>char</b>* name&gt; <b>constexpr</b> <b>auto</b> logger = <i>see appendix</i>;
+
+    // can't specify string literals as template arguments, so provide a character array instead
+    <b>static</b> <b>constexpr</b> <b>char</b> cbname[] = "my_callback";
+    library::register_callback(logger&lt;<b>decltype</b>(&amp;my_callback), my_callback, cbname&gt;);
+    </pre>
+    <h3>As variadic template parameters</h3>
+    <p>When <code><b>auto</b></code> appears as the type specifier for a parameter pack, it
+    signifies that the type for each corresponding argument should be independently deduced</p>
+    <pre>
+    // List of heterogeneous constant values
+    <b>template</b> &lt;auto... v&gt; <b>struct</b> value_list { }; // same as template &lt;auto v1, auto v2, auto v3, ...&gt;
+
+    // Retrieve the nth value in a list of values
+    <b>template</b> &lt;size_t n, <b>auto</b>... v&gt; <b>struct</b> nth_value;
+    <b>template</b> &lt;size_t n, <b>auto</b> v1, <b>auto</b>... vs&gt;
+    <b>struct</b> nth_value&lt;n, v1, vs...&gt;
+    {
+        <b>static</b> <b>constexpr</b> <b>auto</b> value = nth_value&lt;n - 1, vs...&gt;::value;
+    };
+    <b>template</b> &lt;<b>auto</b> v1, <b>auto</b>... vs&gt;
+    <b>struct</b> nth_value&lt;0, v1, vs...&gt;
+    {
+        <b>static</b> <b>constexpr</b> <b>auto</b> value = v1;
+    };
+    </pre>
+    <p>This mirrors the behavior of the <code><b>typename</b></code> and <code><b>class</b></code>
+    keywords in this context:</p>
+    <pre>
+    <b>template</b> &lt;<b>typename</b>... T&gt; <b>struct</b> type_list { };  // same as template &lt;typename T1, typename T2, typename T3, ...&gt;
+    </pre>
+    <p>Without this feature, value_list would have to be defined as a type_list where each type
+    encapsulates a single value.</p>
+
+    <h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
+    <p>This feature is a simple extension; it adds no keywords, breaks no existing code,
+    and does not conflict with existing features.</p>
+
+    <h2><a id="DesignDecisions">Design Decisions</a></h2>
+    <p>An alternative design would require that all values in a parameter pack have the same type.
+    This approach is comparatively inflexible, in that it does not allow variadic lists of
+    heterogeneous values. The language already allows specifying variadic lists of homogeneous
+    values:</p>
+    <pre>
+    <b>template</b> &lt;<b>typename</b> T, T... t&gt; <b>struct</b> typed_value_list { };
+    <b>template</b> &lt;<b>int</b>... n&gt; <b>using</b> integer_list = typed_value_list&lt;<b>int</b>, n...&gt;;
+    </pre>
+    <p>Limiting the types of values in an auto... parameter pack is thus undesirable.</p>
+
+    <h2><a id="TechnicalSpecifications">Technical Specifications</a></h2>
+    <ul>
+        <li>The <code><b>auto</b></code> keyword, when it appears in a template paraeter list,
+        signifies that the associated template parameter is a value and that the type of the
+        associated template parameter is to be deduced at the point of template instantiation.</li>
+        <li>The <code><b>auto</b></code> keyword, when it introduces a template parameter pack,
+        signifies that each element in the parameter pack is a value and that the types of the
+        elements of the parameter pack are to be independently deduced at the point of template
+        instantiation.</li>
+        <li>Type deduction for template parameters introduced with the <code><b>auto</b></code>
+        keyword follows the same rules as specified for function template argument type deduction.</li>
+    </ul>
+
+    <h2><a id="Acknowledgments">Acknowledgments</a></h2>
+
+    <h2><a id="References">References</a></h2>
+
+    <h2><a id="Appendix">Appendix: logger implementation</a></h2>
+    <p>The implementation of the logger template would look something like this:</p>
+    <pre>
+    <b>template</b> &lt;<b>auto</b> f, <b>const</b> <b>char</b>* name&gt; <b>struct</b> fn_logger;
+
+    <b>template</b> &lt;<b>auto</b> f, <b>const</b> <b>char</b>* name&gt;
+    <b>constexpr</b> <b>auto</b> logger = fn_logger&lt;f, <b>const</b> <b>char</b>* name&gt;::call;
+
+    <b>void</b> log_args() { }
+    <b>template</b> &lt;<b>class</b> Arg1, <b>class</b>... Args&gt; <b>void</b> log_args(Arg1 arg1, Args... args);
+
+    <b>template</b> &lt;<b>class</b> R, <b>class</b>... Args, <b>const</b> <b>char</b>* name&gt;
+    <b>struct</b> fn_logger&lt;R (* f)(Args...), name&gt;
+    {
+        <b>static</b> R call(Args... args)
+        {
+            cout &lt;&lt; name &lt;&lt; '(';
+            log_args(args...);
+            cout &lt;&lt; ')';
+            <b>auto</b> result = f(args...);
+            cout &lt;&lt; " -&gt; " &lt;&lt; result &lt;&lt; endl;
+            <b>return</b> result;
+        }
+    };
+
+    <b>void</b> log_more_args() { }
+    <b>template</b> &lt;</b>class</b> Arg1, <b>class</b>... Args&gt; <b>void</b> log_more_args(Arg1 arg1, Args... args);
+
+    <b>template</b> &lt;<b>class</b> Arg1, <b>class</b>... Args&gt;
+    <b>void</b> log_args(Arg1 arg1, Args... args)
+    {
+        cout &lt;&lt; arg1;
+        log_more_args(args...);
+    }
+
+    <b>template</b> &lt;<b>class</b> Arg1, <b>class</b>... Args&gt;
+    <b>void</b> log_more_args(Arg1 arg1, Args... args)
+    {
+        cout &lt;&lt; ", " &lt;&lt; arg1;
+        log_more_args(args...);
+    }
+    </pre>
+    <p>Extending fn_logger to support functions returning <code><b>void</b></code> is left as an exercise
+    for the reader.</p>
+</body></html>
