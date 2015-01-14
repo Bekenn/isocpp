@@ -31,6 +31,7 @@
         <li><a href="#MotivationAndScope">Motivation and Scope</a></li>
         <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
         <li><a href="#DesignDecisions">Design Decisions</a></li>
+        <li><a href="#ComparisonWithN3601">Comparison with N3601</a></li>
         <li><a href="#TechnicalSpecifications">Technical Specifications</a></li>
         <li><a href="#Acknowledgments">Acknowledgments</a></li>
         <li><a href="#References">References</a></li>
@@ -137,19 +138,6 @@
     </pre>
     <p>Limiting the types of values in an auto... parameter pack is thus undesirable.</p>
 
-    <h2><a id="TechnicalSpecifications">Technical Specifications</a></h2>
-    <ul>
-        <li>The <code><b>auto</b></code> keyword, when it appears in a template paraeter list,
-        signifies that the associated template parameter is a value parameter and that the type
-        of the value parameter is to be deduced at the point of template instantiation.</li>
-        <li>The <code><b>auto</b></code> keyword, when it introduces a template parameter pack,
-        signifies that each element in the parameter pack is a value parameter and that the types
-        of the value parameters are to be independently deduced at the point of template
-        instantiation.</li>
-        <li>Type deduction for template parameters introduced with the <code><b>auto</b></code>
-        keyword follows the same rules as specified for function template argument type deduction.</li>
-    </ul>
-
     <h2><a id="ComparisonWithN3601">Comparison with N3601</a></h2>
     <p><a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3601.html">N3601</a> proposes a feature called
     "implicit template parameters." The feature enables the same scenarios as does the proposal in this paper,
@@ -225,6 +213,19 @@
     whenever they don't need a name for the deduced type, while also using implicit template parameters when
     the type name is used elsewhere in the template definition. This combination maximizes both readability
     and flexibility.</p>
+
+    <h2><a id="TechnicalSpecifications">Technical Specifications</a></h2>
+    <ul>
+        <li>The <code><b>auto</b></code> keyword, when it appears in a template paraeter list,
+        signifies that the associated template parameter is a value parameter and that the type
+        of the value parameter is to be deduced at the point of template instantiation.</li>
+        <li>The <code><b>auto</b></code> keyword, when it introduces a template parameter pack,
+        signifies that each element in the parameter pack is a value parameter and that the types
+        of the value parameters are to be independently deduced at the point of template
+        instantiation.</li>
+        <li>Type deduction for template parameters introduced with the <code><b>auto</b></code>
+        keyword follows the same rules as specified for function template argument type deduction.</li>
+    </ul>
 
     <h2><a id="Acknowledgments">Acknowledgments</a></h2>
 
