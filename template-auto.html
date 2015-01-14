@@ -87,7 +87,7 @@
     </pre>
     <h3>As variadic template parameters</h3>
     <p>When <code><b>auto</b></code> appears as the type specifier for a parameter pack, it
-    signifies that the type for each corresponding argument should be independently deduced</p>
+    signifies that the type for each corresponding argument should be independently deduced:</p>
     <pre>
     // List of heterogeneous constant values
     <b>template</b> &lt;<b>auto</b>... v&gt; <b>struct</b> value_list { }; // same as template &lt;auto v1, auto v2, auto v3, ...&gt;
@@ -116,14 +116,23 @@
     <h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
     <p>This feature is a simple extension; it adds no keywords, breaks no existing code,
     and does not conflict with existing features.</p>
+    <h3>Opportunity cost</b></h3>
+    <p>There <i>is</i> an opportunity cost associated with adopting this particular meaning for the
+    <code><b>auto</b></code> keyword in this context. It has been suggested that <code><b>auto</b></code>
+    could be used to allow for template parameters accepting <i>any kind</i> of template argument, be it
+    a type, a value, a template, or any other construct that templates may accept at any point in the future.</p>
+    <p>Such a feature is desirable, but the use of the <code><b>auto</b></code> keyword for it is not. There is
+    no existing context in which <code><b>auto</b></code> acts as anything other than a stand-in for a type
+    name; consistency with the rest of the language dictates that <code><b>auto</b></code> behave as spelled out
+    in this paper.</p>
 
     <h2><a id="DesignDecisions">Design Decisions</a></h2>
-    <p>An alternative design would require that all values in a parameter pack have the same type.
-    This approach is comparatively inflexible, in that it does not allow variadic lists of
-    heterogeneous values. The language already allows specifying variadic lists of homogeneous
-    values:</p>
+    <p>An alternative design would require that all values in a parameter pack introduced by <code><b>auto</b></code>
+    have the same type. This approach is comparatively inflexible, in that it does not allow variadic lists of
+    heterogeneous values. As an alternative, <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3601.html">N3601</a>
+    proposes a compatible feature that would allow variadic lists of homogeneous values:</p>
     <pre>
-    <b>template</b> &lt;<b>typename</b> T, T... t&gt; <b>struct</b> typed_value_list { };
+    <b>template</b> &lt;<b>using</b> <b>typename</b> T, T... t&gt; <b>struct</b> typed_value_list { };
     <b>template</b> &lt;<b>int</b>... n&gt; <b>using</b> integer_list = typed_value_list&lt;<b>int</b>, n...&gt;;
     </pre>
     <p>Limiting the types of values in an auto... parameter pack is thus undesirable.</p>
@@ -131,15 +140,91 @@
     <h2><a id="TechnicalSpecifications">Technical Specifications</a></h2>
     <ul>
         <li>The <code><b>auto</b></code> keyword, when it appears in a template paraeter list,
-        signifies that the associated template parameter is a value and that the type of the
-        associated template parameter is to be deduced at the point of template instantiation.</li>
+        signifies that the associated template parameter is a value parameter and that the type
+        of the value parameter is to be deduced at the point of template instantiation.</li>
         <li>The <code><b>auto</b></code> keyword, when it introduces a template parameter pack,
-        signifies that each element in the parameter pack is a value and that the types of the
-        elements of the parameter pack are to be independently deduced at the point of template
+        signifies that each element in the parameter pack is a value parameter and that the types
+        of the value parameters are to be independently deduced at the point of template
         instantiation.</li>
         <li>Type deduction for template parameters introduced with the <code><b>auto</b></code>
         keyword follows the same rules as specified for function template argument type deduction.</li>
     </ul>
+
+    <h2><a id="ComparisonWithN3601">Comparison with N3601</a></h2>
+    <p><a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3601.html">N3601</a> proposes a feature called
+    "implicit template parameters." The feature enables the same scenarios as does the proposal in this paper,
+    albeit with more verbose syntax:</p>
+    <pre>
+    <b>template</b> &lt;<b>using</b> <b>typename</b> T, T x&gt; <b>constexpr</b> <b>auto</b> constant = x;
+    <b>template</b> &lt;<b>using</b> <b>typename</b>... Ts, Ts... v&gt; <b>struct</b> value_list { };
+    </pre>
+    <p>As mentioned above, the feature proposed in N3601 enables the additional scenario of variadic lists
+    of homogeneous values:</p>
+    <pre>
+    <b>template</b> &lt;<b>using</b> <b>typename</b> T, T... t&gt; <b>struct</b> typed_value_list { };
+    </pre>
+    <p>There is no use of <code><b>auto</b></code> as proposed in this paper that couldn't also be achieved
+    with implicit template parameters. This proposal is therefore technically redundant with N3601. However,
+    this proposal brings with it significant syntax advantages that should justify its adoption even in the
+    presence of N3601:</p>
+
+    <h3>Advantages of <code><b>auto</b></code></h3>
+    <h4>Shorter syntax</h4>
+    <p>The shorter syntax afforded by the <code><b>auto</b></code> keyword is an aid to readability.</p>
+
+    <h4>No need to name the deduced type</h4>
+    <p>Implicit template parameters require the programmer to provide a name for the deduced type, which is
+    then often used only within the template declaration. This mirrors the existing <code><b>template</b>
+    &lt;<b>typename</b> T, T t&gt;</code> pattern, except in allowing the instantiation site to omit the
+    implied type argument. The <code><b>auto</b></code> keyword, on the other hand, allows the type parameter
+    to be omitted entirely.</p>
+
+    <h4>Positional consistency</h4>
+    <p>Implicit template parameters occupy space within the angle brackets of a template declaration. At a
+    casual glance, they look like ordinary template parameters. This leads to an inconsistency between the
+    positions of parameters in the template parameter list and the positions of corresponding arguments
+    at the instantiation site:</p>
+    <pre>
+    <b>template</b> &lt;<b>using</b> <b>typename</b> T, T x&gt; <b>constexpr</b> <b>auto</b> constant = x;
+    constant&lt;42&gt; ltue;  // 42 is the first argument, but supplies a value for the second parameter
+    </pre>
+    <p>This gets worse as more implicit parameters are added:</p>
+    <pre>
+    // declaration
+    <b>template</b> &lt;<b>using</b> <b>typename</b> T1, T1 x1, <b>using</b> <b>typename</b> T2, T2 x2&gt; <b>struct</b> value_pair;
+    // instantiation
+    value_pair&lt;'a', 1&gt; values;
+    </pre>
+    <p>The syntax for implicit template parameters can be modified to bring the implicit parameters out of
+    the parameter list:</p>
+    <pre>
+    <b>template</b> <b>using</b> <b>typename</b> T1, <b>typename</b> T2 &lt;T1 x1, T2 x2&gt; <b>struct</b> value_pair;
+    </pre>
+    <p>In addition to fixing the positional consistency problem, this syntax also has the advantage of
+    being shorter than the syntax proposed in N3601, but it still doesn't match the simplicity of
+    <code><b>auto</b></code>:</p>
+    <pre>
+    <b>template</b> &lt;<b>auto</b> x1, <b>auto</b> x2&gt; <b>struct</b> value_pair;
+    </pre>
+
+    <h4>Leverages existing meaning of <code><b>auto</b></code></h4>
+    <p>The <code><b>auto</b></code> keyword already has a well-understood meaning in variable and parameter
+    declaration contexts; this proposal simply imports that meaning into template parameter declarations.
+    This implies that a programmer generally familiar with C++ but unfamiliar with this specific feature
+    should have no trouble understanding it at first sight.</p>
+    
+    <h3>Advantages of N3601</h3>
+    <p>The <code><b>auto</b></code> keyword is <i>not</i> a replacement for N3601. Implicit template parameters as
+    described in N3601 offer greater flexibility by allowing the programmer to specify a name for the deduced
+    type. This enables at least one scenario (variadic lists of homogeneous values) that <code><b>auto</b></code>
+    cannot deliver, and also simplifies more complex template definitions by allowing the programmer to use
+    the deduced type name in the template definition.</p>
+
+    <h3>Why not both?</h3>
+    <p>Thankfully, the two features can coexist; programmers can (and should) use <code><b>auto</b></code>
+    whenever they don't need a name for the deduced type, while also using implicit template parameters when
+    the type name is used elsewhere in the template definition. This combination maximizes both readability
+    and flexibility.</p>
 
     <h2><a id="Acknowledgments">Acknowledgments</a></h2>
 
