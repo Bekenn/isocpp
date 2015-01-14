@@ -12,7 +12,7 @@
         </tr>
         <tr>
             <td width="167" align="left" valign="top">Date:</td>
-            <td width="452">2015-01-08</td>
+            <td width="452">2015-01-13</td>
         </tr>
         <tr>
             <td width="167" align="left" valign="top">Project:</td>
@@ -64,27 +64,33 @@
     <p>It is desirable that the instantiation syntax for the logger be simple; the following seems
     perfectly reasonable:</p>
     <pre>
-    <b>template</b> &lt;<b>auto</b> f, <b>const</b> <b>char</b>* name&gt; <b>constexpr</b> <b>auto</b> logger = <i>see appendix</i>;
+    <b>template</b> &lt;<b>auto</b> f, <b>const</b> <b>char</b>* name&gt; <b>constexpr</b> <b>auto</b> logger = <a href="#Appendix">fn_logger&lt;f, name&gt;::call</a>;
 
     // can't specify string literals as template arguments, so provide a character array instead
     <b>static</b> <b>constexpr</b> <b>char</b> cbname[] = "my_callback";
-    library::register_callback(logger&lt;my_callback, cbname&gt;);
+    <b>void</b> initialize()
+    {
+        library::register_callback(logger&lt;my_callback, cbname&gt;);
+    }
     </pre>
     <p>Without deduced types for template arguments, the type of the function would have to be
     specified:</p>
     <pre>
-    <b>template</b> &lt;<b>class</b> F, F f, <b>const</b> <b>char</b>* name&gt; <b>constexpr</b> <b>auto</b> logger = <i>see appendix</i>;
+    <b>template</b> &lt;<b>class</b> F, F f, <b>const</b> <b>char</b>* name&gt; <b>constexpr</b> <b>auto</b> logger = <a href="#Appendix">fn_logger&lt;F, f, name&gt;::call</a>;
 
     // can't specify string literals as template arguments, so provide a character array instead
     <b>static</b> <b>constexpr</b> <b>char</b> cbname[] = "my_callback";
-    library::register_callback(logger&lt;<b>decltype</b>(&amp;my_callback), my_callback, cbname&gt;);
+    <b>void</b> initialize()
+    {
+        library::register_callback(logger&lt;<b>decltype</b>(&amp;my_callback), my_callback, cbname&gt;);
+    }
     </pre>
     <h3>As variadic template parameters</h3>
     <p>When <code><b>auto</b></code> appears as the type specifier for a parameter pack, it
     signifies that the type for each corresponding argument should be independently deduced</p>
     <pre>
     // List of heterogeneous constant values
-    <b>template</b> &lt;auto... v&gt; <b>struct</b> value_list { }; // same as template &lt;auto v1, auto v2, auto v3, ...&gt;
+    <b>template</b> &lt;<b>auto</b>... v&gt; <b>struct</b> value_list { }; // same as template &lt;auto v1, auto v2, auto v3, ...&gt;
 
     // Retrieve the nth value in a list of values
     <b>template</b> &lt;size_t n, <b>auto</b>... v&gt; <b>struct</b> nth_value;
@@ -144,14 +150,11 @@
     <pre>
     <b>template</b> &lt;<b>auto</b> f, <b>const</b> <b>char</b>* name&gt; <b>struct</b> fn_logger;
 
-    <b>template</b> &lt;<b>auto</b> f, <b>const</b> <b>char</b>* name&gt;
-    <b>constexpr</b> <b>auto</b> logger = fn_logger&lt;f, <b>const</b> <b>char</b>* name&gt;::call;
-
     <b>void</b> log_args() { }
     <b>template</b> &lt;<b>class</b> Arg1, <b>class</b>... Args&gt; <b>void</b> log_args(Arg1 arg1, Args... args);
 
-    <b>template</b> &lt;<b>class</b> R, <b>class</b>... Args, <b>const</b> <b>char</b>* name&gt;
-    <b>struct</b> fn_logger&lt;R (* f)(Args...), name&gt;
+    <b>template</b> &lt;<b>class</b> R, <b>class</b>... Args, R (* f)(Args...), <b>const</b> <b>char</b>* name&gt;
+    <b>struct</b> fn_logger&lt;f, name&gt;
     {
         <b>static</b> R call(Args... args)
         {
@@ -165,7 +168,7 @@
     };
 
     <b>void</b> log_more_args() { }
-    <b>template</b> &lt;</b>class</b> Arg1, <b>class</b>... Args&gt; <b>void</b> log_more_args(Arg1 arg1, Args... args);
+    <b>template</b> &lt;<b>class</b> Arg1, <b>class</b>... Args&gt; <b>void</b> log_more_args(Arg1 arg1, Args... args);
 
     <b>template</b> &lt;<b>class</b> Arg1, <b>class</b>... Args&gt;
     <b>void</b> log_args(Arg1 arg1, Args... args)
