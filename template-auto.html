@@ -134,7 +134,7 @@
     proposes a compatible feature that would allow variadic lists of homogeneous values:</p>
     <pre>
     <b>template</b> &lt;<b>using</b> <b>typename</b> T, T... t&gt; <b>struct</b> typed_value_list { };
-    <b>template</b> &lt;<b>int</b>... n&gt; <b>using</b> integer_list = typed_value_list&lt;<b>int</b>, n...&gt;;
+    <b>template</b> &lt;<b>int</b>... n&gt; <b>using</b> integer_list = typed_value_list&lt;n...&gt;;
     </pre>
     <p>Limiting the types of values in an auto... parameter pack is thus undesirable.</p>
 
