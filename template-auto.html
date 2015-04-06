@@ -53,45 +53,42 @@ table.frontmatter { border: 0;  margin: 0; }
 <body>
 <h1>Template Argument Type Deduction</h1>
 <table class="frontmatter" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="619">
-	<tr>
-		<td width="167" align="left" valign="top">Document number:</td>
-		<td width="452"><i>Nnnnn=yy-nnnn</i></td>
-	</tr>
-	<tr>
-		<td width="167" align="left" valign="top">Date:</td>
-		<td width="452">2015-04-04</td>
-	</tr>
-	<tr>
-		<td width="167" align="left" valign="top">Project:</td>
-		<td width="452">Programming Language C++, Evolution Working Group</td>
-	</tr>
-	<tr>
-		<td width="167" align="left" valign="top">Reply-to:</td>
+    <tr>
+        <td width="167" align="left" valign="top">Document number:</td>
+        <td width="452"><i>Nnnnn=yy-nnnn</i></td>
+    </tr>
+    <tr>
+        <td width="167" align="left" valign="top">Date:</td>
+        <td width="452">2015-04-04</td>
+    </tr>
+    <tr>
+        <td width="167" align="left" valign="top">Project:</td>
+        <td width="452">Programming Language C++, Evolution Working Group</td>
+    </tr>
+    <tr>
+        <td width="167" align="left" valign="top">Reply-to:</td>
         <td width="452">James Touton &lt;bekenn@gmail.com&gt;</i></td>
-	</tr>
+    </tr>
 </table>
 
 <h2><a id="TableOfContents">Table of Contents</a></h2>
 <ol>
-	<li><a href="#TableOfContents">Table of Contents</a></li>
-	<li><a href="#Introduction">Introduction</a></li>
-	<li><a href="#MotivationAndScope">Motivation and Scope</a></li>
-	<li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
-	<li><a href="#DesignDecisions">Design Decisions</a></li>
-	<li><a href="#ComparisonWithN3601">Comparison with N3601</a></li>
-	<li><a href="#TechnicalSpecifications">Technical Specifications</a></li>
-	<li><a href="#Acknowledgments">Acknowledgments</a></li>
-	<li><a href="#References">References</a></li>
-	<li><a href="#Appendix">Appendix</a></li>
+    <li><a href="#TableOfContents">Table of Contents</a></li>
+    <li><a href="#Introduction">Introduction</a></li>
+    <li><a href="#MotivationAndScope">Motivation and Scope</a></li>
+    <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
+    <li><a href="#DesignDecisions">Design Decisions</a></li>
+    <li><a href="#ComparisonWithN3601">Comparison with N3601</a></li>
+    <li><a href="#TechnicalSpecifications">Technical Specifications</a></li>
+    <li><a href="#Acknowledgments">Acknowledgments</a></li>
+    <li><a href="#References">References</a></li>
+    <li><a href="#Appendix">Appendix</a></li>
 </ol>
 
 <h2><a id="Introduction">Introduction</a></h2>
-<p>This paper proposes allowing the types of value arguments (constants) passed to templates
-to be automatically deduced. Currently, the type of a value parameter must be explicitly
-specified, which leads to unnecessary verboseness and reduced flexibility when writing a
-template intended to take constant arguments of any type. The template parameter list syntax
-can be extended in a simple and natural way using the <code class="prettyprint">auto</code> keyword to indicate
-that the type of a value parameter is deduced at the point of instantiation:</p>
+<p>This paper proposes allowing the types of value arguments (constants) passed to templates to be automatically deduced.
+Currently, the type of a value parameter must be explicitly specified, which leads to unnecessary verboseness and reduced flexibility when writing a template intended to take constant arguments of any type.
+The template parameter list syntax can be extended in a simple and natural way using the <code class="prettyprint">auto</code> keyword to indicate that the type of a value parameter is deduced at the point of instantiation:</p>
 <pre class="example">
 <code class="prettyprint">template &lt;auto x&gt; constexpr auto constant = x;
 
@@ -102,15 +99,12 @@ auto v3 = constant&lt;'a'&gt;;    // <em>v3 == 'a', decltype(v3) is char</em></c
 
 <h2><a id="MotivationAndScope">Motivation and Scope</a></h2>
 <h3>As individual template parameters</h3>
-<p>Consider a generic function call logger for an application that provides callback function
-pointers to a library. The logger should print the name of the function, the argument values,
-and the result of a call to any callback. In order to avoid calling the logger from within a
-callback function (and thus having to modify each function to support the logger), the logger
-itself is passed to the library in place of the callback function, and the logger passes the
-arguments along to the callback function. This implies that the logger for a callback function
-must match the callback function's type, so that the library can call it directly.</p>
-<p>It is desirable that the instantiation syntax for the logger be simple; the following seems
-perfectly reasonable:</p>
+<p>Consider a generic function call logger for an application that provides callback function pointers to a library.
+The logger should print the name of the function, the argument values, and the result of a call to any callback.
+In order to avoid calling the logger from within a callback function (and thus having to modify each function to support the logger), the logger itself is passed to the library in place of the callback function, and the logger passes the arguments along to the callback function.
+This implies that the logger for a callback function must match the callback function's type, so that the library can call it directly.</p>
+
+<p>It is desirable that the instantiation syntax for the logger be simple; the following seems perfectly reasonable:</p>
 <pre class="example">
 <code class="prettyprint">template &lt;auto f, const char* name&gt; constexpr auto logger = <a href="#Appendix">fn_logger&lt;f, name&gt;::call</a>;
 
@@ -118,11 +112,11 @@ perfectly reasonable:</p>
 static constexpr char cbname[] = "my_callback";
 void initialize()
 {
-	library::register_callback(logger&lt;my_callback, cbname&gt;);
+    library::register_callback(logger&lt;my_callback, cbname&gt;);
 }</code>
 </pre>
-<p>Without deduced types for template arguments, the type of the function would have to be
-specified:</p>
+
+<p>Without deduced types for template arguments, the type of the function would have to be specified:</p>
 <pre class="example">
 <code class="prettyprint">template &lt;class F, F f, const char* name&gt; constexpr auto logger = <a href="#Appendix">fn_logger&lt;F, f, name&gt;::call</a>;
 
@@ -130,12 +124,12 @@ specified:</p>
 static constexpr char cbname[] = "my_callback";
 void initialize()
 {
-	library::register_callback(logger&lt;decltype(&amp;my_callback), my_callback, cbname&gt;);
+    library::register_callback(logger&lt;decltype(&amp;my_callback), my_callback, cbname&gt;);
 }</code>
 </pre>
+
 <h3>As variadic template parameters</h3>
-<p>When <code class="prettyprint">auto</code> appears as the type specifier for a parameter pack, it
-signifies that the type for each corresponding argument should be independently deduced:</p>
+<p>When <code class="prettyprint">auto</code> appears as the type specifier for a parameter pack, it signifies that the type for each corresponding argument should be independently deduced:</p>
 <pre class="example">
 <code class="prettyprint">// <em>List of heterogeneous constant values</em>
 // <em>same as template &lt;auto v1, auto v2, auto v3, ...&gt;</em>
@@ -146,86 +140,80 @@ template &lt;size_t n, auto... v&gt; struct nth_value;
 template &lt;size_t n, auto v1, auto... vs&gt;
 struct nth_value&lt;n, v1, vs...&gt;
 {
-	static constexpr auto value = nth_value&lt;n - 1, vs...&gt;::value;
+    static constexpr auto value = nth_value&lt;n - 1, vs...&gt;::value;
 };
 template &lt;auto v1, auto... vs&gt;
 struct nth_value&lt;0, v1, vs...&gt;
 {
-	static constexpr auto value = v1;
+    static constexpr auto value = v1;
 };</code>
 </pre>
-<p>This mirrors the behavior of the <code class="prettyprint">typename</code> and <code class="prettyprint">class</code>
-keywords in this context:</p>
+
+<p>This mirrors the behavior of the <code class="prettyprint">typename</code> and <code class="prettyprint">class</code> keywords in this context:</p>
 <pre class="example">
 <code class="prettyprint">// <em>same as template &lt;typename T1, typename T2, typename T3, ...&gt;</em>
 template &lt;typename... T&gt; struct type_list { };</code>
 </pre>
-<p>Without this feature, value_list would have to be defined as a type_list where each type
-encapsulates a single value.</p>
+
+<p>Without this feature, value_list would have to be defined as a type_list where each type encapsulates a single value.</p>
 
 <h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
-<p>This feature is a simple extension; it adds no keywords, breaks no existing code,
-and does not conflict with existing features.</p>
+<p>This feature is a simple extension; it adds no keywords, breaks no existing code, and does not conflict with existing features.</p>
+
 <h3>Opportunity cost</h3>
-<p>There <em>is</em> an opportunity cost associated with adopting this particular meaning for the
-<code class="prettyprint">auto</code> keyword in this context. It has been suggested that <code class="prettyprint">auto</code>
-could be used to allow for template parameters accepting <em>any kind</em> of template argument, be it
-a type, a value, a template, or any other construct that templates may accept at any point in the future.</p>
-<p>Such a feature is desirable, but the use of the <code class="prettyprint">auto</code> keyword for it is not. There is
-no existing context in which <code class="prettyprint">auto</code> acts as anything other than a stand-in for a type
-name; consistency with the rest of the language dictates that <code class="prettyprint">auto</code> behave as spelled out
-in this paper.</p>
+<p>There <em>is</em> an opportunity cost associated with adopting this particular meaning for the <code class="prettyprint">auto</code> keyword in this context.
+It has been suggested that <code class="prettyprint">auto</code> could be used to allow for template parameters accepting <em>any kind</em> of template argument, be it a type, a value, a template, or any other construct that templates may accept at any point in the future.</p>
+
+<p>Such a feature is desirable, but the use of the <code class="prettyprint">auto</code> keyword for it is not.
+There is no existing context in which <code class="prettyprint">auto</code> acts as anything other than a stand-in for a type name; consistency with the rest of the language dictates that <code class="prettyprint">auto</code> behave as spelled out in this paper.</p>
 
 <h2><a id="DesignDecisions">Design Decisions</a></h2>
-<p>An alternative design would require that all values in a parameter pack introduced by <code class="prettyprint">auto</code>
-have the same type. This approach is comparatively inflexible, in that it does not allow variadic lists of
-heterogeneous values. As an alternative, <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3601.html">N3601</a>
-proposes a compatible feature that would allow variadic lists of homogeneous values:</p>
+<p>An alternative design would require that all values in a parameter pack introduced by <code class="prettyprint">auto</code> have the same type.
+This approach is comparatively inflexible, in that it does not allow variadic lists of heterogeneous values.
+As an alternative, <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3601.html">N3601</a> proposes a compatible feature that would allow variadic lists of homogeneous values:</p>
 <pre class="example">
 <code class="prettyprint">template &lt;using typename T, T... t&gt; struct typed_value_list { };
 template &lt;int... n&gt; using integer_list = typed_value_list&lt;n...&gt;;</code>
 </pre>
+
 <p>Limiting the types of values in an auto... parameter pack is thus undesirable.</p>
 
 <h2><a id="ComparisonWithN3601">Comparison with N3601</a></h2>
-<p><a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3601.html">N3601</a> proposes a feature called
-"implicit template parameters." The feature enables the same scenarios as does the proposal in this paper,
-albeit with more verbose syntax:</p>
+<p><a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3601.html">N3601</a> proposes a feature called "implicit template parameters."
+The feature enables the same scenarios as does the proposal in this paper, albeit with more verbose syntax:</p>
 <pre class="example">
 <code class="prettyprint">template &lt;using typename T, T x&gt; constexpr auto constant = x;
 template &lt;using typename... Ts, Ts... v&gt; struct value_list { };</code>
 </pre>
-<p>As mentioned above, the feature proposed in N3601 enables the additional scenario of variadic lists
-of homogeneous values:</p>
+
+<p>As mentioned above, the feature proposed in N3601 enables the additional scenario of variadic lists of homogeneous values:</p>
 <pre class="example">
 <code class="prettyprint">template &lt;using typename T, T... t&gt; struct typed_value_list { };</code>
 </pre>
-<p>There is no use of <code class="prettyprint">auto</code> as proposed in this paper that couldn't also be achieved
-with implicit template parameters. This proposal is therefore technically redundant with N3601. However,
-this proposal brings with it significant syntax advantages that should justify its adoption even in the
-presence of N3601:</p>
+
+<p>There is no use of <code class="prettyprint">auto</code> as proposed in this paper that couldn't also be achieved with implicit template parameters.
+This proposal is therefore technically redundant with N3601.
+However, this proposal brings with it significant syntax advantages that should justify its adoption even in the presence of N3601:</p>
 
 <h3>Advantages of <code class="prettyprint">auto</code></h3>
 <h4>Shorter syntax</h4>
 <p>The shorter syntax afforded by the <code class="prettyprint">auto</code> keyword is an aid to readability.</p>
 
 <h4>No need to name the deduced type</h4>
-<p>Implicit template parameters require the programmer to provide a name for the deduced type, which is
-then often used only within the template declaration. This mirrors the existing <code class="prettyprint">template
-&lt;typename T, T t&gt;</code> pattern, except in allowing the instantiation site to omit the
-implied type argument. The <code class="prettyprint">auto</code> keyword, on the other hand, allows the type parameter
-to be omitted entirely.</p>
+<p>Implicit template parameters require the programmer to provide a name for the deduced type, which is then often used only within the template declaration.
+This mirrors the existing <code class="prettyprint">template &lt;typename T, T t&gt;</code> pattern, except in allowing the instantiation site to omit the implied type argument.
+The <code class="prettyprint">auto</code> keyword, on the other hand, allows the type parameter to be omitted entirely.</p>
 
 <h4>Positional consistency</h4>
-<p>Implicit template parameters occupy space within the angle brackets of a template declaration. At a
-casual glance, they look like ordinary template parameters. This leads to an inconsistency between the
-positions of parameters in the template parameter list and the positions of corresponding arguments
-at the instantiation site:</p>
+<p>Implicit template parameters occupy space within the angle brackets of a template declaration.
+At a casual glance, they look like ordinary template parameters.
+This leads to an inconsistency between the positions of parameters in the template parameter list and the positions of corresponding arguments at the instantiation site:</p>
 <pre class="example">
 <code class="prettyprint">template &lt;using typename T, T x&gt; constexpr auto constant = x;
 constant&lt;42&gt; ltue;  // <em>42 is the first argument, but supplies</em>
                     // <em>a value for the second parameter</em></code>
 </pre>
+
 <p>This gets worse as more implicit parameters are added:</p>
 <pre class="example">
 <code class="prettyprint">// <em>declaration</em>
@@ -235,49 +223,36 @@ struct value_pair;
 // <em>instantiation</em>
 value_pair&lt;'a', 1&gt; values;</code>
 </pre>
-<p>The syntax for implicit template parameters can be modified to bring the implicit parameters out of
-the parameter list:</p>
+
+<p>The syntax for implicit template parameters can be modified to bring the implicit parameters out of the parameter list:</p>
 <pre class="example">
 <code class="prettyprint">template using typename T1, typename T2 &lt;T1 x1, T2 x2&gt;
 struct value_pair;</code>
 </pre>
-<p>In addition to fixing the positional consistency problem, this syntax also has the advantage of
-being shorter than the syntax proposed in N3601, but it still doesn't match the simplicity of
-<code class="prettyprint">auto</code>:</p>
+
+<p>In addition to fixing the positional consistency problem, this syntax also has the advantage of being shorter than the syntax proposed in N3601, but it still doesn't match the simplicity of <code class="prettyprint">auto</code>:</p>
 <pre class="example">
 <code class="prettyprint">template &lt;auto x1, auto x2&gt; struct value_pair;</code>
 </pre>
 
 <h4>Leverages existing meaning of <code class="prettyprint">auto</code></h4>
-<p>The <code class="prettyprint">auto</code> keyword already has a well-understood meaning in variable and parameter
-declaration contexts; this proposal simply imports that meaning into template parameter declarations.
-This implies that a programmer generally familiar with C++ but unfamiliar with this specific feature
-should have no trouble understanding it at first sight.</p>
+<p>The <code class="prettyprint">auto</code> keyword already has a well-understood meaning in variable and parameter declaration contexts; this proposal simply imports that meaning into template parameter declarations.
+This implies that a programmer generally familiar with C++ but unfamiliar with this specific feature should have no trouble understanding it at first sight.</p>
 
 <h3>Advantages of N3601</h3>
-<p>The <code class="prettyprint">auto</code> keyword is <em>not</em> a replacement for N3601. Implicit template parameters as
-described in N3601 offer greater flexibility by allowing the programmer to specify a name for the deduced
-type. This enables at least one scenario (variadic lists of homogeneous values) that <code class="prettyprint">auto</code>
-cannot deliver, and also simplifies more complex template definitions by allowing the programmer to use
-the deduced type name in the template definition.</p>
+<p>The <code class="prettyprint">auto</code> keyword is <em>not</em> a replacement for N3601.
+Implicit template parameters as described in N3601 offer greater flexibility by allowing the programmer to specify a name for the deduced type.
+This enables at least one scenario (variadic lists of homogeneous values) that <code class="prettyprint">auto</code> cannot deliver, and also simplifies more complex template definitions by allowing the programmer to use the deduced type name in the template definition.</p>
 
 <h3>Why not both?</h3>
-<p>Thankfully, the two features can coexist; programmers can (and should) use <code class="prettyprint">auto</code>
-whenever they don't need a name for the deduced type, while also using implicit template parameters when
-the type name is used elsewhere in the template definition. This combination maximizes both readability
-and flexibility.</p>
+<p>Thankfully, the two features can coexist; programmers can (and should) use <code class="prettyprint">auto</code> whenever they don't need a name for the deduced type, while also using implicit template parameters when the type name is used elsewhere in the template definition.
+This combination maximizes both readability and flexibility.</p>
 
 <h2><a id="TechnicalSpecifications">Technical Specifications</a></h2>
 <ul>
-	<li>The <code class="prettyprint">auto</code> keyword, when it appears in a template paraeter list,
-	signifies that the associated template parameter is a value parameter and that the type
-	of the value parameter is to be deduced at the point of template instantiation.</li>
-	<li>The <code class="prettyprint">auto</code> keyword, when it introduces a template parameter pack,
-	signifies that each element in the parameter pack is a value parameter and that the types
-	of the value parameters are to be independently deduced at the point of template
-	instantiation.</li>
-	<li>Type deduction for template parameters introduced with the <code class="prettyprint">auto</code>
-	keyword follows the same rules as specified for function template argument type deduction.</li>
+    <li>The <code class="prettyprint">auto</code> keyword, when it appears in a template parameter list, signifies that the associated template parameter is a value parameter and that the type of the value parameter is to be deduced at the point of template instantiation.</li>
+    <li>The <code class="prettyprint">auto</code> keyword, when it introduces a template parameter pack, signifies that each element in the parameter pack is a value parameter and that the types of the value parameters are to be independently deduced at the point of template instantiation.</li>
+    <li>Type deduction for template parameters introduced with the <code class="prettyprint">auto</code> keyword follows the same rules as specified for function template argument type deduction.</li>
 </ul>
 
 <h2><a id="Acknowledgments">Acknowledgments</a></h2>
@@ -295,15 +270,15 @@ template &lt;class Arg1, class... Args&gt; void log_args(Arg1 arg1, Args... args
 template &lt;class R, class... Args, R (* f)(Args...), const char* name&gt;
 struct fn_logger&lt;f, name&gt;
 {
-	static R call(Args... args)
-	{
-		cout &lt;&lt; name &lt;&lt; '(';
-		log_args(args...);
-		cout &lt;&lt; ')';
-		auto result = f(args...);
-		cout &lt;&lt; " -&gt; " &lt;&lt; result &lt;&lt; endl;
-		return result;
-	}
+    static R call(Args... args)
+    {
+        cout &lt;&lt; name &lt;&lt; '(';
+        log_args(args...);
+        cout &lt;&lt; ')';
+        auto result = f(args...);
+        cout &lt;&lt; " -&gt; " &lt;&lt; result &lt;&lt; endl;
+        return result;
+    }
 };
 
 void log_more_args() { }
@@ -312,17 +287,16 @@ template &lt;class Arg1, class... Args&gt; void log_more_args(Arg1 arg1, Args...
 template &lt;class Arg1, class... Args&gt;
 void log_args(Arg1 arg1, Args... args)
 {
-	cout &lt;&lt; arg1;
-	log_more_args(args...);
+    cout &lt;&lt; arg1;
+    log_more_args(args...);
 }
 
 template &lt;class Arg1, class... Args&gt;
 void log_more_args(Arg1 arg1, Args... args)
 {
-	cout &lt;&lt; ", " &lt;&lt; arg1;
-	log_more_args(args...);
+    cout &lt;&lt; ", " &lt;&lt; arg1;
+    log_more_args(args...);
 }</code>
 </pre>
-<p>Extending fn_logger to support functions returning <code class="prettyprint">void</code> is left as an exercise
-for the reader.</p>
+<p>Extending fn_logger to support functions returning <code class="prettyprint">void</code> is left as an exercise for the reader.</p>
 </body></html>
