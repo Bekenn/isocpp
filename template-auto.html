@@ -71,9 +71,9 @@ table.frontmatter { border: 0;  margin: 0; }
     </tr>
     <tr>
         <td align="left" valign="top">Reply-to:</td>
-        <td>Mike Spertus, Symantec &lt;<a href="mailto:mike_spertus@symantec.com">mike_spertus@symantec.com</a>&gt;<br>
-        Daveed Vandevoorde, Edison Design Group &lt;<a href="mailto:daveed@edg.com">daveed@edg.com</a>&gt;<br>
-        James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;<br>
+        Mike Spertus, Symantec &lt;<a href="mailto:mike_spertus@symantec.com">mike_spertus@symantec.com</a>&gt;</br>
+        Daveed Vandevoorde, Edison Design Group &lt;<a href="mailto:daveed@edg.com">daveed@edg.com</a>&gt;</td>
     </tr>
 </table>
 
@@ -141,6 +141,58 @@ void initialize()
 }</code>
 </pre>
 
+<p>In order for this to work, <code>logger</code> must be a template that takes a function pointer and a character pointer as arguments.
+If the type of the function is fixed, this is no problem:</p>
+<pre class="example">
+<code class="prettyprint">// <em>log any function with the signature int(int)</em>
+template &lt;int (* f)(int), const char* name&gt;
+int logger(int arg)
+{
+    cout &lt;&lt; name &lt;&lt; '(' &lt;&lt; arg &lt;&lt; ')';
+    int result = f(arg);
+    cout &lt;&lt; " -&gt; " &lt;&lt; result &lt;&lt; endl;
+    return result;
+}</code>
+</pre>
+
+<p>If the type of the function is not fixed, things get more complicated:</p>
+<pre class="example">
+<code class="prettyprint">// <em>log each argument in a comma-separated list</em>
+template &lt;class... Args&gt; void log_args(Args... args);
+
+// <em>struct template that accepts a function pointer and a name</em>
+template &lt;class F, F f, const char* name&gt; struct fn_logger;
+
+// <em>use partial specialization to constrain f</em>
+// <em>note that a second specialization would be needed to support functions returning void</em>
+template &lt;class R, class... Args, R (* f)(Args...), const char* name&gt;
+struct fn_logger&lt;f, name&gt;
+{
+    // call f, logging arguments and result
+    static R call(Args... args)
+    {
+        cout &lt;&lt; name &lt;&lt; '(';
+        log_args(args...);
+        cout &lt;&lt; ')';
+        auto result = f(args...);
+        cout &lt;&lt; " -&gt; " &lt;&lt; result &lt;&lt; endl;
+        return result;
+    }
+};
+
+// variable template to simplify use of fn_logger
+template &lt;class F, F f, const char* name&gt; constexpr auto logger = fn_logger&lt;F, f, name&gt;::call;</code>
+</pre>
+
+<p>The instantiation syntax also gets more complicated, because the type of the function must be passed as an additional argument:</p>
+<pre class="example">
+<code class="prettyprint">// <em>can't specify string literals as template arguments, so provide a character array instead</em>
+static constexpr char cbname[] = "my_callback";
+void initialize()
+{
+    library::register_callback(decltype(&amp;my_callback), logger&lt;my_callback, cbname&gt;);
+}</code>
+</pre>
 <h3>Using <code class="prettyprint">auto</code></h3>
 <p>The template parameter list syntax can be extended in a simple and natural way using the <code class="prettyprint">auto</code> keyword to indicate that the type of a value parameter is deduced at the point of instantiation:</p>
 <pre class="example">
@@ -153,8 +205,8 @@ auto v3 = constant&lt;'a'&gt;;    // <em>v3 == 'a', decltype(v3) is char</em></c
 
 <p>The usual type modifiers may be used to constrain the type of the value parameter without the use of partial specialization:</p>
 <pre class="example">
-<code class="prettyprint">// <em>p must be a pointer</em>
-template &lt;auto* p&gt; struct S;</code>
+<code class="prettyprint">// <em>p must be a pointer to const something</em>
+template &lt;const auto* p&gt; struct S;</code>
 </pre>
 
 <p>Partial specialization may be used to switch on the type of a value parameter:</p>
@@ -176,6 +228,7 @@ template &lt;class... Args&gt; void log_args(Args... args);
 template &lt;auto f, const char* name&gt; struct fn_logger;
 
 // <em>use partial specialization to constrain f</em>
+// <em>note that a second specialization would be needed to support functions returning void</em>
 template &lt;class R, class... Args, R (* f)(Args...), const char* name&gt;
 struct fn_logger&lt;f, name&gt;
 {
@@ -195,6 +248,11 @@ struct fn_logger&lt;f, name&gt;
 template &lt;auto f, const char* name&gt; constexpr auto logger = fn_logger&lt;f, name&gt;::call;</code>
 </pre>
 
+<p>The function type no longer needs to be explicitly specified, which means the instantiation can go back to the desired form:</p>
+<pre class="example">
+<code class="prettyprint">library::register_callback(logger&lt;my_callback, cbname&gt;);</code>
+</pre>
+
 <h3>Using implicit template parameters</h3>
 <p>The logger definition can be simplified through the use of implicit template parameters.
 Because such parameters have names, the types can be referenced throughout the template definition without the aid of <code class="prettyprint">decltype</code>.
@@ -205,6 +263,7 @@ Using implicit template parameters, the logger code becomes considerably shorter
 template &lt;class... Args&gt; void log_args(Args... args);
 
 // <em>primary template -- no need for partial specialization or the variable template</em>
+// <em>a second version would be needed to support functions returning void</em>
 template &lt;using class R, using class... Args, R (* f)(Args...), const char* name&gt;
 R logger(Args... args)
 {
