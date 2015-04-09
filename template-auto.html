@@ -67,13 +67,12 @@ table.frontmatter { border: 0;  margin: 0; }
     </tr>
     <tr>
         <td align="left" valign="top">Revises:</td>
-        <td>N3601</td>
+        <td><a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a></td>
     </tr>
     <tr>
         <td align="left" valign="top">Reply-to:</td>
         <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;<br>
-        Mike Spertus, Symantec &lt;<a href="mailto:mike_spertus@symantec.com">mike_spertus@symantec.com</a>&gt;</br>
-        Daveed Vandevoorde, Edison Design Group &lt;<a href="mailto:daveed@edg.com">daveed@edg.com</a>&gt;</td>
+        Mike Spertus, Symantec &lt;<a href="mailto:mike_spertus@symantec.com">mike_spertus@symantec.com</a>&gt;</td>
     </tr>
 </table>
 
@@ -369,7 +368,7 @@ value_pair&lt;'a', 1&gt; values;</code>
 struct value_pair;</code>
 </pre>
 
-<p>In addition to fixing the positional consistency problem, this syntax has the advantage of being shorter than the syntax originally proposed in N3601 because the keyword <code class="prettyprint">using</code> doesn't need to be repeated for each parameter.
+<p>In addition to fixing the positional consistency problem, this syntax has the advantage of being shorter than the syntax originally proposed in <a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a> because the keyword <code class="prettyprint">using</code> doesn't need to be repeated for each parameter.
 If this syntax is adopted, a better name for the feature might be "template meta-parameters" (instead of "implicit template parameters").</p>
 
 <h3><code class="prettyprint">auto</code></h3>
@@ -412,13 +411,32 @@ This combination maximizes both readability and flexibility.</p>
 
 <h2><a id="TechnicalSpecifications">Technical Specifications</a></h2>
 <ul>
-    <li>The <code class="prettyprint">auto</code> keyword, when it appears in a template parameter list, signifies that the associated template parameter is a value parameter and that the type of the value parameter is to be deduced at the point of template instantiation.</li>
-    <li>The <code class="prettyprint">auto</code> keyword, when it introduces a template parameter pack, signifies that each element in the parameter pack is a value parameter and that the types of the value parameters are to be independently deduced at the point of template instantiation.</li>
-    <li>Type deduction for template parameters introduced with the <code class="prettyprint">auto</code> keyword follows the same rules as specified for function template argument type deduction.</li>
+    <li><code class="prettyprint">auto</code>
+    <ul>
+        <li>The <code class="prettyprint">auto</code> keyword, when it appears in a template parameter list, signifies that the associated template parameter is a value parameter and that the type of the value parameter is to be deduced at the point of template instantiation.</li>
+        <li>The <code class="prettyprint">auto</code> keyword, when it introduces a template parameter pack, signifies that each element in the parameter pack is a value parameter and that the types of the value parameters are to be independently deduced at the point of template instantiation.</li>
+        <li>Type deduction for template parameters introduced with the <code class="prettyprint">auto</code> keyword follows the same rules as specified for function template argument type deduction.</li>
+    </ul></li>
+    <li>Implicit template parameters
+    <ul>
+        <li>Option 1:
+        <ul>
+            <li>The <code class="prettyprint">using</code> keyword, when it appears in a template parameter list, signifies that the value of the associated template parameter shall be inferred at the point of template instantiation based on the parameter's use elsewhere in the template declaration.</li>
+            <li>The value of a template parameter introduced by the <code class="prettyprint">using</code> keyword shall not be directly specified by the code instantiating the template.</li>
+            <li>The value of a template parameter introduced by the <code class="prettyprint">using</code> keyword shall be inferred using the same rules as for function template argument deduction (&sect;14.8.2 [temp.deduct]).</li>
+        </ul></li>
+        <li>Option 2:
+        <ul>
+            <li>A template declaration may have an optional template metaparameter clause, which appears between the keyword <code class="prettyprint">template</code> and the opening angle bracket (<code>&lt;</code>).</li>
+            <li>A template metaparameter clause consists of the keyword <code class="prettyprint">using</code> followed by a <var>template-parameter-list</var>, the elements of which are referred to as template metaparameters.</li>
+            <li>Template metaparameters specified for a given template declaration must appear in that declaration's template parameter list.</li>
+            <li>The values associated with template metaparameters are inferred at the point of instantiation from the template arguments using the same rules as for function template argument deduction (&sect;14.8.2 [temp.deduct]).</li>
+        </ul></li>
+    </ul></li>
 </ul>
 
 <h2><a id="Acknowledgments">Acknowledgments</a></h2>
-
-<h2><a id="References">References</a></h2>
+<p>Mike Spertus and Daveed Vandevoorde developed the implicit template parameter concept and initial syntax (Option 1 above) in <a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a>.</p>
+<p>Numerous people gave constructive feedback regarding the use of <code class="prettyprint">auto</code> in template parameter lists in an <a href="http://isocpp.org/">isocpp.org</a> discussion <a href="https://groups.google.com/a/isocpp.org/forum/?fromgroups#!topic/std-proposals/cqaS7PcU5Qc">thread</a>.</p>
 
 </body></html>
