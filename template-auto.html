@@ -87,8 +87,8 @@ ul.nobullet { list-style-type: none; }
     <li><a href="#DesignDecisions">Design Decisions</a></li>
     <li><a href="#Comparison">Compare and contrast: <code class="prettyprint">auto</code> vs implicit template parameters</a></li>
     <li><a href="#TechnicalSpecifications">Technical Specifications</a></li>
+    <li><a href="#Wording">Wording</a></li>
     <li><a href="#Acknowledgments">Acknowledgments</a></li>
-    <li><a href="#References">References</a></li>
 </ol>
 
 <h2><a id="Introduction">Introduction</a></h2>
@@ -507,6 +507,115 @@ B&lt;'a'&gt; b2; // <em>OK: template parameter type is char</em>
 B&lt;2.5&gt; b3; // <em>error: template parameter type cannot be double</em></ins></code>
 </pre>
 <p>&mdash;<i>end example</i> ]</p>
+</blockquote>
+
+<h3>Implicit template parameters</h3>
+<h4>Option 1: <a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a> syntax</h4>
+<p>Modify &sect;14 [temp] paragraph 1:
+<blockquote class="std">
+<p>A <var>template</var> defines a family of classes or functions or an alias for a family of types.</p>
+<dl>
+<dt><dfn>template-declaration</dfn>:<dt>
+<dd><var>template</var> <code>&lt;</code> <var>template-parameter-list</var> <code>&gt;</code> <var>declaration</var></dd>
+<dt><dfn>template-parameter-list</dfn>:</dt>
+<dd><ins><code>using</code><sub><var>opt</var></sub></ins> <var>template-parameter</var></dd>
+<dd><var>template-parameter-list</var> <code>,</code> <var>template-parameter</var>
+</dl>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;14.1 [temp.param] paragraph 1:</p>
+<blockquote class="std">
+<p><ins>A <var>template-parameter</var> that begins with the <code>using</code> keyword is an <dfn>implicit template parameter</dfn>.
+A <var>template-parameter</var> that is not an implicit template parameter is a <dfn>normal template parameter</dfn>.
+The value of an implicit template parameter cannot be specified explicitly; it is always deduced at the point of template instantiation.</ins></p>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;14.1 [temp.param] paragraph 14:</p>
+<blockquote class="std">
+<p><ins>The program is ill-formed if the <var>template-parameter-list</var> of a template <var>template-parameter</var> contains an implicit template parameter.</ins></p>
+</blockquote>
+
+<p>Modify &sect;14.3 [temp.arg] paragraph 1:</p>
+<blockquote class="std">
+<p>There are three forms of <var>template-argument</var>, corresponding to the three forms of <var>template-parameter</var>: type, non-type and template.
+The type and form of each <var>template-argument</var> specified in a <var>template-id</var> shall match the type and form specified for the corresponding <ins>normal template </ins>parameter declared by the template in its <var>template-parameter-list</var><ins>, after deducing the values of any implicit template parameters.</ins>.
+When the parameter declared by the template is a template parameter pack (14.5.3), it will correspond to zero or more <var>template-argument</var>s.</p>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;14.3 [temp.arg] paragraph 1:</p>
+<blockquote class="std">
+<p><ins>If the definition of a normal template parameter depends on the value of an implicit template parameter, then the value of the implicit template parameter is deduced from the corresponding <var>template-argument</var> using the rules for template argument deduction from a function call (14.8.2.1).
+If the deduced type of a non-type <var>template-parameter</var> is not permitted for a <var>template-parameter</var> declaration (14.1), the program is ill-formed.
+If, during template instantiation, the value of any implicit template parameter is not deduced, the program is ill-formed.</ins></p>
+</blockquote>
+
+<p>Modify &sect;14.3.3 [temp.arg.template] paragraph 3:</p>
+<blockquote class="std">
+<p>A <var>template-argument</var> matches a template <var>template-parameter</var> P when each of the <ins>normal </ins>template parameters in the <var>template-parameter-list</var> of the <var>template-argument</var>'s corresponding class template or alias template A matches the corresponding template parameter in the <var>template-parameter-list</var> of P.
+Two template parameters match if<ins>, after deducing the values of any implicit template parameters,</ins> they are of the same kind (type, non-type, template)<del>,</del><ins>;</ins> for non-type <var>template-parameters</var>, their types are equivalent (14.5.6.1)<del>,</del><ins>;</ins> and for template <var>template-parameters</var>, each of their corresponding <del><var>template-parameters</var></del><ins>normal template parameters</ins> matches, recursively.
+When P's <var>template-parameter-list</var> contains a template parameter pack (14.5.3), the template parameter pack will match zero or more template parameters or template parameter packs in the <del><var>template-parameter-list</var></del><ins>normal template parameters</ins> of A with the same type and form as the template parameter pack in P (ignoring whether those template parameters are template parameter packs).</p>
+</blockquote>
+
+<h4>Option 2: Template metaparameter syntax</h4>
+<p>Modify &sect;14 [temp] paragraph 1:
+<blockquote class="std">
+<p>A <var>template</var> defines a family of classes or functions or an alias for a family of types.</p>
+<dl>
+<dt><dfn>template-declaration</dfn>:<dt>
+<dd><var>template</var> <ins><var>template-metaparameter-clause<sub>opt</sub></var></ins> <code>&lt;</code> <var>template-parameter-list</var> <code>&gt;</code> <var>declaration</var></dd>
+<dt><ins><dfn>template-metaparameter-clause</dfn>:</ins></dt>
+<dd><ins><code>using</code> <var>template-parameter-list</var></ins></dd>
+<dt><dfn>template-parameter-list</dfn>:</dt>
+<dd><var>template-parameter</var></dd>
+<dd><var>template-parameter-list</var> <code>,</code> <var>template-parameter</var>
+</dl>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;14.1 [temp.param] paragraph 1:</p>
+<blockquote class="std">
+<p><ins>A <var>template-parameter</var> that appears in a <var>template-metaparameter-clause</var> is a <dfn>template metaparameter</dfn>.
+A <var>template-parameter</var> that is not a template metaparameter is a <dfn>normal template parameter</dfn>.
+The value of a template metaparameter cannot be specified explicitly; it is always deduced at the point of template instantiation.</ins></p>
+</blockquote>
+
+<p>Modify &sect;14.3 [temp.arg] paragraph 1:</p>
+<blockquote class="std">
+<p>There are three forms of <var>template-argument</var>, corresponding to the three forms of <var>template-parameter</var>: type, non-type and template.
+The type and form of each <var>template-argument</var> specified in a <var>template-id</var> shall match the type and form specified for the corresponding <ins>normal template </ins>parameter declared by the template in its <var>template-parameter-list</var><ins>, after deducing the values of any template metaparameters.</ins>.
+When the parameter declared by the template is a template parameter pack (14.5.3), it will correspond to zero or more <var>template-argument</var>s.</p>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;14.3 [temp.arg] paragraph 1:</p>
+<blockquote class="std">
+<p><ins>If the definition of a normal template parameter depends on the value of a template metaparameter, then the value of the template metaparameter is deduced from the corresponding <var>template-argument</var> using the rules for template argument deduction from a function call (14.8.2.1).
+If the deduced type of a non-type <var>template-parameter</var> is not permitted for a <var>template-parameter</var> declaration (14.1), the program is ill-formed.
+If, during template instantiation, the value of any template metaparameter is not deduced, the program is ill-formed.</ins></p>
+</blockquote>
+
+<p>Modify &sect;14.3.3 [temp.arg.template] paragraph 3:</p>
+<blockquote class="std">
+<p>A <var>template-argument</var> matches a template <var>template-parameter</var> P when each of the template parameters in the <var>template-parameter-list</var> of the <var>template-argument</var>'s corresponding class template or alias template A matches the corresponding template parameter in the <var>template-parameter-list</var> of P.
+Two template parameters match if<ins>, after deducing the values of any template metaparameters,</ins> they are of the same kind (type, non-type, template)<del>,</del><ins>;</ins> for non-type <var>template-parameters</var>, their types are equivalent (14.5.6.1)<del>,</del><ins>;</ins> and for template <var>template-parameters</var>, each of their corresponding <del><var>template-parameters</var></del><ins>normal template parameters</ins> matches, recursively.
+When P's <var>template-parameter-list</var> contains a template parameter pack (14.5.3), the template parameter pack will match zero or more template parameters or template parameter packs in the <var>template-parameter-list</var> of A with the same type and form as the template parameter pack in P (ignoring whether those template parameters are template parameter packs).</p>
+</blockquote>
+
+<h4>Both options 1 and 2</h4>
+<p>Modify &sect;14.1 [temp.param] paragraph 11:</p>
+<blockquote class="std">
+<p>If a <del><var>template-parameter</var></del><ins>normal template parameter</ins> of a class template or alias template has a default <var>template-argument</var>, each subsequent <del><var>template-parameter</var></del><ins>normal template parameter</ins> shall either have a default <var>template-argument</var> supplied or be a template parameter pack.
+If a <del><var>template-parameter</var></del><ins>normal template parameter</ins> of a primary class template or alias template is a template parameter pack, it shall be the last <del><var>template-parameter</var></del><ins>normal template parameter</ins>.
+A <ins>normal template parameter that is a </ins>template parameter pack of a function template shall not be followed by another <ins>normal </ins>template parameter unless that template parameter can be deduced from the <var>parameter-type-list</var> of the function template or has a default argument (14.8.2).</p>
+</blockquote>
+
+<p>Modify &sect;14.1 [temp.param] paragraph 13:</p>
+<blockquote class="std">
+<p>When parsing a default <var>template-argument</var> for a non-type <del><var>template-parameter</var></del><ins>normal template parameter</ins>, the first non-nested <code>&gt;</code> is taken as the end of the <var>template-parameter-list</var> rather than a greater-than operator.</p>
+</blockquote>
+
+<p>Modify &sect;14.3 [temp.arg] paragraph 7:</p>
+<blockquote class="std">
+<p>When the template in a <var>template-id</var> is an overloaded function template, both non-template functions in the overload set and function templates in the overload set for which the <var>template-arguments</var> do not match the <del><var>template-parameters</var></del><ins>normal template parameters</ins> are ignored.
+If none of the function templates have matching <del><var>template-parameters</var></del><ins>normal template parameters</ins>, the program is ill-formed.</p>
 </blockquote>
 
 <h2><a id="Acknowledgments">Acknowledgments</a></h2>
