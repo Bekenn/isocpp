@@ -45,6 +45,8 @@ td { text-align: left; vertical-align: top;
 
 table.frontmatter { border: 0;  margin: 0; }
 
+ul.nobullet { list-style-type: none; }
+
 </style>
 
 <script type="text/javascript" src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
@@ -322,8 +324,7 @@ template &lt;using typename... Ts, Ts... vs&gt; struct value_list { };
 template &lt;using typename T, T... vs&gt; struct typed_value_list { };</code>
 </pre>
 
-<p>Note that the homogeneous list cannot be empty because a type must be deduced for T.
-Creating an empty list would require that the rules for default values in parameter lists be relaxed to allow parameters preceding a parameter pack to have default values:</p>
+<p>Note that the homogeneous list can be empty only if a default type is provided for T:</p>
 <pre class="example">
 <code class="prettyprint">// <em>possibly empty</em>
 template &lt;using typename T = void, T... vs&gt; struct typed_value_list { };</code>
@@ -434,6 +435,32 @@ This combination maximizes both readability and flexibility.</p>
         </ul></li>
     </ul></li>
 </ul>
+
+<h2><a id="Wording">Wording</a></h2>
+<p>All modifications are presented relative to N4296.</p>
+
+<h3>auto</h3>
+<p>Modify &sect;7.1.6.4 [dcl.spec.auto] paragraph 5:</p>
+<blockquote class="std">
+<p>A placeholder type can also be used in declaring a variable in the <var>condition</var> of a selection statement (6.4) or an iteration statement (6.5),
+in the <var>type-specifier-seq</var> in the <var>new-type-id</var> or <var>type-id</var> of a <var>new-expression</var> (5.3.4),
+in a <var>for-range-declaration</var>,
+<del>and </del>in declaring a static data member with a brace-or-equal-initializer that appears within the member-specification of a class definition (9.4.2)<ins>,
+and in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var> of a <var>template-parameter</var> (14.1)</ins>.</p>
+</blockquote>
+
+<p>Modify &sect;14.1 [temp.param] paragraph 4:</p>
+<blockquote class="std">
+<p>A non-type <var>template-parameter</var> shall have one of the following (optionally <var>cv-qualified</var>) types:
+<ul class="nobullet">
+<li>&mdash; integral or enumeration type,</li>
+<li>&mdash; pointer to object or pointer to function,</li>
+<li>&mdash; lvalue reference to object or lvalue reference to function,</li>
+<li>&mdash; pointer to member,</li>
+<li>&mdash; std::nullptr_t<del>.</del><ins>,</ins></li>
+<li><ins>&mdash; placeholder type designated by <code>auto</code>.</ins></li>
+</ul></p>
+</blockquote>
 
 <h2><a id="Acknowledgments">Acknowledgments</a></h2>
 <p>Mike Spertus and Daveed Vandevoorde developed the implicit template parameter concept and initial syntax (Option 1 above) in <a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a>.</p>
