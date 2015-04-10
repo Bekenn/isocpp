@@ -462,6 +462,53 @@ and in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var>
 </ul></p>
 </blockquote>
 
+<p>Modify &sect;14.3.2 [temp.arg.nontype] paragraph 1:</p>
+<blockquote class="std">
+<p>A <var>template-argument</var> for a non-type <var>template-parameter</var> shall be a converted constant expression (5.20) of the type of the <var>template-parameter</var>.
+<ins>If the type of the <var>template-parameter</var> is declared using a placeholder type (7.1.6.4, 14.1), the deduced parameter type is determined from the type of the <var>template-argument</var> using the rules for template argument deduction from a function call (14.8.2.1).
+If a deduced parameter type is not permitted for a <var>template-parameter</var> declaration (14.1), the program is ill-formed.</ins>
+For a non-type <var>template-parameter</var> of reference or pointer type, the value of the constant expression shall not refer to (or for a pointer type, shall not be the address of):
+<ul class="nobullet">
+<li>&mdash; a subobject (1.8),</li>
+<li>&mdash; a temporary object (12.2),</li>
+<li>&mdash; a string literal (2.13.5),</li>
+<li>&mdash; the result of a <code>typeid</code> expression (5.2.8), or</li>
+<li>&mdash; a predefined <code>__func__</code> variable (8.4.1).</li>
+</ul>
+[ <i>Note:</i> If the <var>template-argument</var> represents a set of overloaded functions (or a pointer or member pointer to such), the matching function is selected from the set (13.4). &mdash;<i>end note</i> ]</p>
+</blockquote>
+
+<p>Modify &sect;14.3.2 [temp.arg.nontype] paragraph 2:</p>
+<blockquote class="std">
+<p>[ <i>Example:</i>
+<pre class="example">
+<code>template&lt;const int* pci&gt; struct X { /* <em>...</em> */ };
+int ai[10];
+X&lt;ai&gt; xi; // <em>array to pointer and qualification conversions</em>
+
+struct Y { /* <em>...</em> */ };
+template&lt;const Y&amp; b&gt; struct Z { /* <em>...</em> */ };
+Y y;
+Z&lt;y&gt; z; // <em>no conversion, but note extra cv-qualification</em>
+
+template&lt;int (&amp;pa)[5]&gt; struct W { /* <em>...</em> */ };
+int b[5];
+W&lt;b&gt; w; // <em>no conversion</em>
+
+void f(char);
+void f(int);
+
+template&lt;void (*pf)(int)&gt; struct A { /* <em>...</em> */ };
+A&lt;&amp;f&gt; a; // <em>selects f(int)</em>
+<ins>
+template&lt;auto n&gt; struct B { /* <em>...</em> */ };
+B&lt;5&gt; b1;   // <em>OK: template parameter type is int</em>
+B&lt;'a'&gt; b2; // <em>OK: template parameter type is char</em>
+B&lt;2.5&gt; b3; // <em>error: template parameter type cannot be double</em></ins></code>
+</pre>
+&mdash;<i>end example</i> ]</p>
+</blockquote>
+
 <h2><a id="Acknowledgments">Acknowledgments</a></h2>
 <p>Mike Spertus and Daveed Vandevoorde developed the implicit template parameter concept and initial syntax (Option 1 above) in <a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a>.</p>
 <p>Numerous people gave constructive feedback regarding the use of <code class="prettyprint">auto</code> in template parameter lists in an <a href="http://isocpp.org/">isocpp.org</a> discussion <a href="https://groups.google.com/a/isocpp.org/forum/?fromgroups#!topic/std-proposals/cqaS7PcU5Qc">thread</a>.</p>
