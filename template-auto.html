@@ -599,7 +599,7 @@ Two template parameters match if<ins>, after deducing the values of any template
 When P's <var>template-parameter-list</var> contains a template parameter pack (14.5.3), the template parameter pack will match zero or more template parameters or template parameter packs in the <var>template-parameter-list</var> of A with the same type and form as the template parameter pack in P (ignoring whether those template parameters are template parameter packs).</p>
 </blockquote>
 
-<h4>Both options 1 and 2</h4>
+<h4>Wording common to both options 1 and 2</h4>
 <p>Modify &sect;14.1 [temp.param] paragraph 11:</p>
 <blockquote class="std">
 <p>If a <del><var>template-parameter</var></del><ins>normal template parameter</ins> of a class template or alias template has a default <var>template-argument</var>, each subsequent <del><var>template-parameter</var></del><ins>normal template parameter</ins> shall either have a default <var>template-argument</var> supplied or be a template parameter pack.
