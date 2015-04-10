@@ -451,7 +451,7 @@ and in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var>
 
 <p>Modify &sect;14.1 [temp.param] paragraph 4:</p>
 <blockquote class="std">
-<p>A non-type <var>template-parameter</var> shall have one of the following (optionally <var>cv-qualified</var>) types:
+<p>A non-type <var>template-parameter</var> shall have one of the following (optionally <var>cv-qualified</var>) types:</p>
 <ul class="nobullet">
 <li>&mdash; integral or enumeration type,</li>
 <li>&mdash; pointer to object or pointer to function,</li>
@@ -459,7 +459,7 @@ and in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var>
 <li>&mdash; pointer to member,</li>
 <li>&mdash; std::nullptr_t<del>.</del><ins>,</ins></li>
 <li><ins>&mdash; placeholder type designated by <code>auto</code>.</ins></li>
-</ul></p>
+</ul>
 </blockquote>
 
 <p>Modify &sect;14.3.2 [temp.arg.nontype] paragraph 1:</p>
@@ -467,7 +467,7 @@ and in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var>
 <p>A <var>template-argument</var> for a non-type <var>template-parameter</var> shall be a converted constant expression (5.20) of the type of the <var>template-parameter</var>.
 <ins>If the type of the <var>template-parameter</var> is declared using a placeholder type (7.1.6.4, 14.1), the deduced parameter type is determined from the type of the <var>template-argument</var> using the rules for template argument deduction from a function call (14.8.2.1).
 If a deduced parameter type is not permitted for a <var>template-parameter</var> declaration (14.1), the program is ill-formed.</ins>
-For a non-type <var>template-parameter</var> of reference or pointer type, the value of the constant expression shall not refer to (or for a pointer type, shall not be the address of):
+For a non-type <var>template-parameter</var> of reference or pointer type, the value of the constant expression shall not refer to (or for a pointer type, shall not be the address of):</p>
 <ul class="nobullet">
 <li>&mdash; a subobject (1.8),</li>
 <li>&mdash; a temporary object (12.2),</li>
@@ -475,12 +475,12 @@ For a non-type <var>template-parameter</var> of reference or pointer type, the v
 <li>&mdash; the result of a <code>typeid</code> expression (5.2.8), or</li>
 <li>&mdash; a predefined <code>__func__</code> variable (8.4.1).</li>
 </ul>
-[ <i>Note:</i> If the <var>template-argument</var> represents a set of overloaded functions (or a pointer or member pointer to such), the matching function is selected from the set (13.4). &mdash;<i>end note</i> ]</p>
+<p>[ <i>Note:</i> If the <var>template-argument</var> represents a set of overloaded functions (or a pointer or member pointer to such), the matching function is selected from the set (13.4). &mdash;<i>end note</i> ]</p>
 </blockquote>
 
 <p>Modify &sect;14.3.2 [temp.arg.nontype] paragraph 2:</p>
 <blockquote class="std">
-<p>[ <i>Example:</i>
+<p>[ <i>Example:</i></p>
 <pre class="example">
 <code>template&lt;const int* pci&gt; struct X { /* <em>...</em> */ };
 int ai[10];
@@ -506,7 +506,7 @@ B&lt;5&gt; b1;   // <em>OK: template parameter type is int</em>
 B&lt;'a'&gt; b2; // <em>OK: template parameter type is char</em>
 B&lt;2.5&gt; b3; // <em>error: template parameter type cannot be double</em></ins></code>
 </pre>
-&mdash;<i>end example</i> ]</p>
+<p>&mdash;<i>end example</i> ]</p>
 </blockquote>
 
 <h2><a id="Acknowledgments">Acknowledgments</a></h2>
