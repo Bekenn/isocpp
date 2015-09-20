@@ -2,7 +2,7 @@
 <html><head>
 <meta http-equiv="Content-Language" content="en-us">
 <meta http-equiv="Content-Type" content="text/html;charset=US-ASCII">
-<title>Template Argument Type Deduction</title>
+<title>Template Argument Type Deduction (ver. 2)</title>
 
 <style type="text/css">
 
@@ -57,7 +57,7 @@ ul.nobullet { list-style-type: none; }
 <table class="frontmatter" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="619">
     <tr>
         <td align="left" valign="top">Document number:</td>
-        <td><i>Nnnnn=yy-nnnn</i></td>
+        <td>Nnnnn=yy-nnnn</td>
     </tr>
     <tr>
         <td align="left" valign="top">Date:</td>
@@ -69,12 +69,11 @@ ul.nobullet { list-style-type: none; }
     </tr>
     <tr>
         <td align="left" valign="top">Revises:</td>
-        <td><a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a></td>
+        <td><a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4469.html">N4469</a></td>
     </tr>
     <tr>
         <td align="left" valign="top">Reply-to:</td>
-        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;<br>
-        Mike Spertus, Symantec &lt;<a href="mailto:mike_spertus@symantec.com">mike_spertus@symantec.com</a>&gt;</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
     </tr>
 </table>
 
@@ -85,15 +84,14 @@ ul.nobullet { list-style-type: none; }
     <li><a href="#MotivationAndScope">Motivation and Scope</a></li>
     <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
     <li><a href="#DesignDecisions">Design Decisions</a></li>
-    <li><a href="#Comparison">Compare and contrast: <code class="prettyprint">auto</code> vs implicit template parameters</a></li>
     <li><a href="#TechnicalSpecifications">Technical Specifications</a></li>
     <li><a href="#Wording">Wording</a></li>
     <li><a href="#Acknowledgments">Acknowledgments</a></li>
 </ol>
 
 <h2><a id="Introduction">Introduction</a></h2>
-<p>This paper proposes allowing the types of value arguments (constants) passed to templates to be automatically deduced.
-Currently, the type of a value parameter must be explicitly specified, which leads to unnecessary verboseness and reduced flexibility when writing a template intended to take constant arguments of any type.
+<p>This paper proposes allowing the types of non-type template arguments (constants) to be automatically deduced.
+Currently, the type of a non-type template parameter must be explicitly specified, which leads to unnecessary verboseness and reduced flexibility when writing a template intended to take constant arguments of any type.
 Example:</p>
 <pre class="example">
 <code class="prettyprint">template &lt;typename T, T v&gt; struct S;    // <em>declaration</em>
@@ -107,24 +105,10 @@ The goal is to be able to modify the declaration of <code>S</code> such that the
 <code class="prettyprint">S&lt;x&gt; s; // <em>desired instantiation</em></code>
 </pre>
 
-<p>Two different approaches are presented here:</p>
-<ul>
-    <li>Implicit template parameters
-        <pre class="example">
-<code class="prettyprint">template &lt;using typename T, T v&gt; struct S;  // <em>T is inferred</em>
-template using typename T &lt;T v&gt; struct S;   // <em>alternative syntax</em></code>
-</pre>
-    </li>
-    <li>Allow <code class="prettyprint">auto</code> in template parameter lists
-        <pre class="example">
+<p>This can be achieved by allowing use of the <code class="prettyprint">auto</code> keyword in template parameter lists.</p>
+<pre class="example">
 <code class="prettyprint">template &lt;auto v&gt; struct S;                 // <em>type of v is deduced</em></code>
 </pre>
-    </li>
-</ul>
-
-<p>Which approach is more appropriate depends on the definition of the template.
-Implicit template parameters provide names for the deduced types; if such a name is needed, then implicit template parameters are appropriate.
-If only the constant value is used, then <code class="prettyprint">auto</code> provides a simpler and more straightforward syntax.</p>
 
 <h2><a id="MotivationAndScope">Motivation and Scope</a></h2>
 <p>Consider a generic function call logger for an application that provides callback function pointers to a library.
@@ -254,40 +238,6 @@ template &lt;auto f, const char* name&gt; constexpr auto logger = fn_logger&lt;f
 <code class="prettyprint">library::register_callback(logger&lt;my_callback, cbname&gt;);</code>
 </pre>
 
-<h3>Using implicit template parameters</h3>
-<p>The logger definition can be simplified through the use of implicit template parameters.
-Because such parameters have names, the types can be referenced throughout the template definition without the aid of <code class="prettyprint">decltype</code>.
-Further, since implicit parameters are inferred and never specified at the point of instantiation, they can be used to obviate the need for partial specialization.
-Using implicit template parameters, the logger code becomes considerably shorter:</p>
-<pre class="example">
-<code class="prettyprint">// <em>as before</em>
-template &lt;class... Args&gt; void log_args(Args... args);
-
-// <em>primary template -- no need for partial specialization or the variable template</em>
-// <em>a second version would be needed to support functions returning void</em>
-template &lt;using class R, using class... Args, R (* f)(Args...), const char* name&gt;
-R logger(Args... args)
-{
-    cout &lt;&lt; name &lt;&lt; '(';
-    log_args(args...);
-    cout &lt;&lt; ')';
-    auto result = f(args...);
-    cout &lt;&lt; " -&gt; " &lt;&lt; result &lt;&lt; endl;
-    return result;
-}
-</code>
-</pre>
-
-<p>Just as with <code class="prettyprint">auto</code>, partial specialization may be used to switch on the type of a value parameter:</p>
-<pre class="example">
-<code class="prettyprint">template &lt;using typename T, T x&gt; struct S;
-template &lt;int n&gt;
-struct S&lt;n&gt;
-{
-    const char* type_name = "int";
-};</code>
-</pre>
-
 <h3>As variadic template parameters</h3>
 <p>When <code class="prettyprint">auto</code> appears as the type specifier for a parameter pack, it signifies that the type for each corresponding argument should be independently deduced:</p>
 <pre class="example">
@@ -315,23 +265,8 @@ struct nth_value&lt;0, v1, vs...&gt;
 template &lt;auto v1, decltype(v1)... vs&gt; struct typed_value_list { };</code>
 </pre>
 
-<p>Implicit template parameters can also be used to generate either kind of list:</p>
-<pre class="example">
-<code class="prettyprint">// <em>List of heterogeneous constant values</em>
-template &lt;using typename... Ts, Ts... vs&gt; struct value_list { };
-
-// <em>List of homogeneous constant values</em>
-template &lt;using typename T, T... vs&gt; struct typed_value_list { };</code>
-</pre>
-
-<p>Note that the homogeneous list can be empty only if a default type is provided for T:</p>
-<pre class="example">
-<code class="prettyprint">// <em>possibly empty</em>
-template &lt;using typename T = void, T... vs&gt; struct typed_value_list { };</code>
-</pre>
-
 <h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
-<p>The proposed features add no keywords and do not change the meaning of any existing code.</p>
+<p>The proposed feature adds no keywords and does not change the meaning of any existing code.</p>
 
 <h3>Opportunity cost</h3>
 <p>There is an opportunity cost associated with adopting this particular meaning for the <code class="prettyprint">auto</code> keyword in this context.
@@ -341,38 +276,6 @@ It has been suggested that <code class="prettyprint">auto</code> could be used t
 There is no existing context in which <code class="prettyprint">auto</code> acts as anything other than a stand-in for a type name; consistency with the rest of the language dictates that <code class="prettyprint">auto</code> behave as spelled out in this paper.</p>
 
 <h2><a id="DesignDecisions">Design Decisions</a></h2>
-<h3>Implicit template parameters</h3>
-<p>The syntax used in the examples for implicit template parameters has an issue with positional consistency.
-Implicit template parameters occupy space within the angle brackets of a template declaration.
-At a casual glance, they look like ordinary template parameters.
-This leads to an inconsistency between the positions of parameters in the template parameter list and the positions of corresponding arguments at the instantiation site:</p>
-<pre class="example">
-<code class="prettyprint">template &lt;using typename T, T x&gt; constexpr auto constant = x;
-constant&lt;42&gt; ltue;  // <em>42 is the first argument, but supplies</em>
-                    // <em>a value for the second parameter</em></code>
-</pre>
-
-<p>This gets worse as more implicit parameters are added:</p>
-<pre class="example">
-<code class="prettyprint">// <em>declaration</em>
-template &lt;using typename T1, T1 x1,
-          using typename T2, T2 x2&gt;
-struct value_pair;
-
-// <em>instantiation</em>
-value_pair&lt;'a', 1&gt; values;</code>
-</pre>
-
-<p>To address this issue, an alternative syntax is presented here that brings the implicit parameters out of the parameter list:</p>
-<pre class="example">
-<code class="prettyprint">template using typename T1, typename T2 &lt;T1 x1, T2 x2&gt;
-struct value_pair;</code>
-</pre>
-
-<p>In addition to fixing the positional consistency problem, this syntax has the advantage of being shorter than the syntax originally proposed in <a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a> because the keyword <code class="prettyprint">using</code> doesn't need to be repeated for each parameter.
-If this syntax is adopted, a better name for the feature might be "template meta-parameters" (instead of "implicit template parameters").</p>
-
-<h3><code class="prettyprint">auto</code></h3>
 <p>A few people have suggested that all values in a parameter pack introduced by <code class="prettyprint">auto</code> should have the same type.
 The rationale seems to be that because <code class="prettyprint">auto</code> can be replaced by a single type name in a multiple variable definition, the same should be true here:</p>
 <pre class="example">
@@ -390,56 +293,16 @@ template &lt;typename... Ts&gt; struct type_list { };
 template &lt;auto... vs&gt; struct value_list { };</code>
 </pre>
 
-<h2><a id="Comparison">Compare and contrast: <code class="prettyprint">auto</code> vs implicit template parameters</a></h2>
-<p>There is no use of <code class="prettyprint">auto</code> as proposed in this paper that couldn't also be achieved with implicit template parameters.
-However, <code class="prettyprint">auto</code> brings with it significant syntax advantages that should justify its adoption even in the presence of implicit template parameters:</p>
-
-<h3>Advantages of <code class="prettyprint">auto</code></h3>
-<h4>Shorter syntax</h4>
-<p>The shorter syntax afforded by the <code class="prettyprint">auto</code> keyword is an aid to readability.</p>
-
-<h4>Leverages existing meaning of <code class="prettyprint">auto</code></h4>
-<p>The <code class="prettyprint">auto</code> keyword already has a well-understood meaning in variable and parameter declaration contexts; this proposal simply imports that meaning into template parameter declarations.
-This implies that a programmer generally familiar with C++ but unfamiliar with this specific feature should have no trouble understanding it at first sight.</p>
-
-<h3>Advantages of implicit template parameters</h3>
-<p>Implicit template parameters offer greater flexibility by allowing the programmer to specify a name for the deduced type.
-This simplifies more complex template definitions by allowing the programmer to use the deduced type name in the template definition.</p>
-
-<h3>Why not both?</h3>
-<p>Thankfully, the two features can coexist; programmers can (and should) use <code class="prettyprint">auto</code> whenever they don't need a name for the deduced type, while also using implicit template parameters when the type name is used elsewhere in the template definition.
-This combination maximizes both readability and flexibility.</p>
-
 <h2><a id="TechnicalSpecifications">Technical Specifications</a></h2>
 <ul>
-    <li><code class="prettyprint">auto</code>
-    <ul>
-        <li>The <code class="prettyprint">auto</code> keyword, when it appears in a template parameter list, signifies that the associated template parameter is a value parameter and that the type of the value parameter is to be deduced at the point of template instantiation.</li>
-        <li>The <code class="prettyprint">auto</code> keyword, when it introduces a template parameter pack, signifies that each element in the parameter pack is a value parameter and that the types of the value parameters are to be independently deduced at the point of template instantiation.</li>
-        <li>Type deduction for template parameters introduced with the <code class="prettyprint">auto</code> keyword follows the same rules as specified for function template argument type deduction.</li>
-    </ul></li>
-    <li>Implicit template parameters
-    <ul>
-        <li>Option 1:
-        <ul>
-            <li>The <code class="prettyprint">using</code> keyword, when it appears in a template parameter list, signifies that the value of the associated template parameter shall be inferred at the point of template instantiation based on the parameter's use elsewhere in the template declaration.</li>
-            <li>The value of a template parameter introduced by the <code class="prettyprint">using</code> keyword shall not be directly specified by the code instantiating the template.</li>
-            <li>The value of a template parameter introduced by the <code class="prettyprint">using</code> keyword shall be inferred using the same rules as for function template argument deduction (&sect;14.8.2 [temp.deduct]).</li>
-        </ul></li>
-        <li>Option 2:
-        <ul>
-            <li>A template declaration may have an optional template metaparameter clause, which appears between the keyword <code class="prettyprint">template</code> and the opening angle bracket (<code>&lt;</code>).</li>
-            <li>A template metaparameter clause consists of the keyword <code class="prettyprint">using</code> followed by a <var>template-parameter-list</var>, the elements of which are referred to as template metaparameters.</li>
-            <li>Template metaparameters specified for a given template declaration must appear in that declaration's template parameter list.</li>
-            <li>The values associated with template metaparameters are inferred at the point of instantiation from the template arguments using the same rules as for function template argument deduction (&sect;14.8.2 [temp.deduct]).</li>
-        </ul></li>
-    </ul></li>
-</ul>
+    <li>The <code class="prettyprint">auto</code> keyword, when it appears in a template parameter list, signifies that the associated template parameter is a value parameter and that the type of the value parameter is to be deduced at the point of template instantiation.</li>
+    <li>The <code class="prettyprint">auto</code> keyword, when it introduces a template parameter pack, signifies that each element in the parameter pack is a value parameter and that the types of the value parameters are to be independently deduced at the point of template instantiation.</li>
+    <li>Type deduction for template parameters introduced with the <code class="prettyprint">auto</code> keyword follows the same rules as specified for function template argument type deduction.</li>
+</ul></li>
 
 <h2><a id="Wording">Wording</a></h2>
 <p>All modifications are presented relative to N4296.</p>
 
-<h3>auto</h3>
 <p>Modify &sect;7.1.6.4 [dcl.spec.auto] paragraph 5:</p>
 <blockquote class="std">
 <p>A placeholder type can also be used in declaring a variable in the <var>condition</var> of a selection statement (6.4) or an iteration statement (6.5),
@@ -457,15 +320,15 @@ and in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var>
 <li>&mdash; pointer to object or pointer to function,</li>
 <li>&mdash; lvalue reference to object or lvalue reference to function,</li>
 <li>&mdash; pointer to member,</li>
-<li>&mdash; std::nullptr_t<del>.</del><ins>,</ins></li>
-<li><ins>&mdash; placeholder type designated by <code>auto</code>.</ins></li>
+<li>&mdash; <code>std::nullptr_t</code><del>.</del><ins>,</ins></li>
+<li><ins>&mdash; a type that contains a placeholder type designated by <code>auto</code> (7.1.6.4).</ins></li>
 </ul>
 </blockquote>
 
 <p>Modify &sect;14.3.2 [temp.arg.nontype] paragraph 1:</p>
 <blockquote class="std">
 <p>A <var>template-argument</var> for a non-type <var>template-parameter</var> shall be a converted constant expression (5.20) of the type of the <var>template-parameter</var>.
-<ins>If the type of the <var>template-parameter</var> is declared using a placeholder type (7.1.6.4, 14.1), the deduced parameter type is determined from the type of the <var>template-argument</var> using the rules for template argument deduction from a function call (14.8.2.1).
+<ins>If the type of the <var>template-parameter</var> contains a placeholder type (7.1.6.4, 14.1), the deduced parameter type is determined from the type of the <var>template-argument</var> using the rules for template argument deduction from a function call (14.8.2.1).
 If a deduced parameter type is not permitted for a <var>template-parameter</var> declaration (14.1), the program is ill-formed.</ins>
 For a non-type <var>template-parameter</var> of reference or pointer type, the value of the constant expression shall not refer to (or for a pointer type, shall not be the address of):</p>
 <ul class="nobullet">
@@ -509,122 +372,36 @@ B&lt;2.5&gt; b3; // <em>error: template parameter type cannot be double</em></in
 <p>&mdash;<i>end example</i> ]</p>
 </blockquote>
 
-<h3>Implicit template parameters</h3>
-<h4>Option 1: <a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a> syntax</h4>
-<p>Modify &sect;14 [temp] paragraph 1:
+<p>Modify &sect;14.6.2.2 [temp.dep.expr] paragraph 3:</p>
 <blockquote class="std">
-<p>A <var>template</var> defines a family of classes or functions or an alias for a family of types.</p>
+<p>An <var>id-expression</var> is type-dependent if it contains
+<ul class="nobullet">
+<li>&mdash; an <var>identifier</var> associated by name lookup with one or more declarations declared with a dependent type,</li>
+<li><ins>&mdash; an <var>identifier</var> associated by name lookup with a non-type <var>template-parameter</var> declared with a type that contains a placeholder type (7.1.6.4),</ins></li>
+<li>&mdash; an <var>identifier</var> associated by name lookup with one or more declarations of member functions of the current instantiation declared with a return type that contains a placeholder type<del> (7.1.6.4)</del>,</li>
+<li>&mdash; the <var>identifier</var> <code>__func__</code> (8.4.1), where any enclosing function is a template, a member of a class template, or a generic lambda,</li>
+<li>&mdash; a <var>template-id</var> that is dependent,</li>
+<li>&mdash; a <var>conversion-function-id</var> that specifies a dependent type, or</li>
+<li>&mdash; a <var>nested-name-specifier</var> or a <var>qualified-id</var> that names a member of an unknown specialization;</li>
+</ul>
+or if it names a dependent member of the current instantiation that is a static data member of type &ldquo;array of unknown bound of T&rdquo; for some T (14.5.1.3).
+Expressions of the following forms are type-dependent only if the type specified by the <var>type-id</var>, <var>simple-type-specifier</var> or <var>new-type-id</var> is dependent, even if any subexpression is type-dependent:
 <dl>
-<dt><dfn>template-declaration</dfn>:<dt>
-<dd><var>template</var> <code>&lt;</code> <var>template-parameter-list</var> <code>&gt;</code> <var>declaration</var></dd>
-<dt><dfn>template-parameter-list</dfn>:</dt>
-<dd><ins><code>using</code><sub><var>opt</var></sub></ins> <var>template-parameter</var></dd>
-<dd><var>template-parameter-list</var> <code>,</code> <var>template-parameter</var>
+<dd><var>simple-type-specifier</var> <code>(</code> <var>expression-list<sub>opt</sub></var> <code>)</code></dd>
+<dd><code>::</code><var><sub>opt</sub></var> <code>new</code> <var>new-placement<sub>opt</sub></var> <var>new-type-id</var> <var>new-initializer<sub>opt</sub></var></dd>
+<dd><code>::</code><var><sub>opt</sub></var> <code>new</code> <var>new-placement<sub>opt</sub></var> <code>(</code> <var>type-id</var> <code>)</code> <var>new-initializer<sub>opt</sub></var></dd>
+<dd><code>dynamic_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
+<dd><code>static_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
+<dd><code>const_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
+<dd><code>reinterpret_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
+<dd><code>(</code> <var>type-id</var> <code>)</code> <var>cast-expression</var></dd>
 </dl>
-</blockquote>
-
-<p>Insert a new paragraph after &sect;14.1 [temp.param] paragraph 1:</p>
-<blockquote class="std">
-<p><ins>A <var>template-parameter</var> that begins with the <code>using</code> keyword is an <dfn>implicit template parameter</dfn>.
-A <var>template-parameter</var> that is not an implicit template parameter is a <dfn>normal template parameter</dfn>.
-The value of an implicit template parameter cannot be specified explicitly; it is always deduced at the point of template instantiation.</ins></p>
-</blockquote>
-
-<p>Insert a new paragraph after &sect;14.1 [temp.param] paragraph 14:</p>
-<blockquote class="std">
-<p><ins>The program is ill-formed if the <var>template-parameter-list</var> of a template <var>template-parameter</var> contains an implicit template parameter.</ins></p>
-</blockquote>
-
-<p>Modify &sect;14.3 [temp.arg] paragraph 1:</p>
-<blockquote class="std">
-<p>There are three forms of <var>template-argument</var>, corresponding to the three forms of <var>template-parameter</var>: type, non-type and template.
-The type and form of each <var>template-argument</var> specified in a <var>template-id</var> shall match the type and form specified for the corresponding <ins>normal template </ins>parameter declared by the template in its <var>template-parameter-list</var><ins>, after deducing the values of any implicit template parameters.</ins>.
-When the parameter declared by the template is a template parameter pack (14.5.3), it will correspond to zero or more <var>template-argument</var>s.</p>
-</blockquote>
-
-<p>Insert a new paragraph after &sect;14.3 [temp.arg] paragraph 1:</p>
-<blockquote class="std">
-<p><ins>If the definition of a normal template parameter depends on the value of an implicit template parameter, then the value of the implicit template parameter is deduced from the corresponding <var>template-argument</var> using the rules for template argument deduction from a function call (14.8.2.1).
-If the deduced type of a non-type <var>template-parameter</var> is not permitted for a <var>template-parameter</var> declaration (14.1), the program is ill-formed.
-If, during template instantiation, the value of any implicit template parameter is not deduced, the program is ill-formed.</ins></p>
-</blockquote>
-
-<p>Modify &sect;14.3.3 [temp.arg.template] paragraph 3:</p>
-<blockquote class="std">
-<p>A <var>template-argument</var> matches a template <var>template-parameter</var> P when each of the <ins>normal </ins>template parameters in the <var>template-parameter-list</var> of the <var>template-argument</var>'s corresponding class template or alias template A matches the corresponding template parameter in the <var>template-parameter-list</var> of P.
-Two template parameters match if<ins>, after deducing the values of any implicit template parameters,</ins> they are of the same kind (type, non-type, template)<del>,</del><ins>;</ins> for non-type <var>template-parameters</var>, their types are equivalent (14.5.6.1)<del>,</del><ins>;</ins> and for template <var>template-parameters</var>, each of their corresponding <del><var>template-parameters</var></del><ins>normal template parameters</ins> matches, recursively.
-When P's <var>template-parameter-list</var> contains a template parameter pack (14.5.3), the template parameter pack will match zero or more template parameters or template parameter packs in the <del><var>template-parameter-list</var></del><ins>normal template parameters</ins> of A with the same type and form as the template parameter pack in P (ignoring whether those template parameters are template parameter packs).</p>
-</blockquote>
-
-<h4>Option 2: Template metaparameter syntax</h4>
-<p>Modify &sect;14 [temp] paragraph 1:
-<blockquote class="std">
-<p>A <var>template</var> defines a family of classes or functions or an alias for a family of types.</p>
-<dl>
-<dt><dfn>template-declaration</dfn>:<dt>
-<dd><var>template</var> <ins><var>template-metaparameter-clause<sub>opt</sub></var></ins> <code>&lt;</code> <var>template-parameter-list</var> <code>&gt;</code> <var>declaration</var></dd>
-<dt><ins><dfn>template-metaparameter-clause</dfn>:</ins></dt>
-<dd><ins><code>using</code> <var>template-parameter-list</var></ins></dd>
-<dt><dfn>template-parameter-list</dfn>:</dt>
-<dd><var>template-parameter</var></dd>
-<dd><var>template-parameter-list</var> <code>,</code> <var>template-parameter</var>
-</dl>
-</blockquote>
-
-<p>Insert a new paragraph after &sect;14.1 [temp.param] paragraph 1:</p>
-<blockquote class="std">
-<p><ins>A <var>template-parameter</var> that appears in a <var>template-metaparameter-clause</var> is a <dfn>template metaparameter</dfn>.
-A <var>template-parameter</var> that is not a template metaparameter is a <dfn>normal template parameter</dfn>.
-The value of a template metaparameter cannot be specified explicitly; it is always deduced at the point of template instantiation.</ins></p>
-</blockquote>
-
-<p>Insert a new paragraph after &sect;14.1 [temp.param] paragraph 13:</p>
-<blockquote class="std">
-<p><ins>When parsing a default <var>template-argument</var> for a non-type template metaparameter, the first non-nested <code>&lt;</code> is taken as the end of the <var>template-parameter-list</var> rather than a less-than operator.</ins></p>
-</blockquote>
-
-<p>Modify &sect;14.3 [temp.arg] paragraph 1:</p>
-<blockquote class="std">
-<p>There are three forms of <var>template-argument</var>, corresponding to the three forms of <var>template-parameter</var>: type, non-type and template.
-The type and form of each <var>template-argument</var> specified in a <var>template-id</var> shall match the type and form specified for the corresponding <ins>normal template </ins>parameter declared by the template in its <var>template-parameter-list</var><ins>, after deducing the values of any template metaparameters.</ins>.
-When the parameter declared by the template is a template parameter pack (14.5.3), it will correspond to zero or more <var>template-argument</var>s.</p>
-</blockquote>
-
-<p>Insert a new paragraph after &sect;14.3 [temp.arg] paragraph 1:</p>
-<blockquote class="std">
-<p><ins>If the definition of a normal template parameter depends on the value of a template metaparameter, then the value of the template metaparameter is deduced from the corresponding <var>template-argument</var> using the rules for template argument deduction from a function call (14.8.2.1).
-If the deduced type of a non-type <var>template-parameter</var> is not permitted for a <var>template-parameter</var> declaration (14.1), the program is ill-formed.
-If, during template instantiation, the value of any template metaparameter is not deduced, the program is ill-formed.</ins></p>
-</blockquote>
-
-<p>Modify &sect;14.3.3 [temp.arg.template] paragraph 3:</p>
-<blockquote class="std">
-<p>A <var>template-argument</var> matches a template <var>template-parameter</var> P when each of the template parameters in the <var>template-parameter-list</var> of the <var>template-argument</var>'s corresponding class template or alias template A matches the corresponding template parameter in the <var>template-parameter-list</var> of P.
-Two template parameters match if<ins>, after deducing the values of any template metaparameters,</ins> they are of the same kind (type, non-type, template)<del>,</del><ins>;</ins> for non-type <var>template-parameters</var>, their types are equivalent (14.5.6.1)<del>,</del><ins>;</ins> and for template <var>template-parameters</var>, each of their corresponding <del><var>template-parameters</var></del><ins>normal template parameters</ins> matches, recursively.
-When P's <var>template-parameter-list</var> contains a template parameter pack (14.5.3), the template parameter pack will match zero or more template parameters or template parameter packs in the <var>template-parameter-list</var> of A with the same type and form as the template parameter pack in P (ignoring whether those template parameters are template parameter packs).</p>
-</blockquote>
-
-<h4>Wording common to both options 1 and 2</h4>
-<p>Modify &sect;14.1 [temp.param] paragraph 11:</p>
-<blockquote class="std">
-<p>If a <del><var>template-parameter</var></del><ins>normal template parameter</ins> of a class template or alias template has a default <var>template-argument</var>, each subsequent <del><var>template-parameter</var></del><ins>normal template parameter</ins> shall either have a default <var>template-argument</var> supplied or be a template parameter pack.
-If a <del><var>template-parameter</var></del><ins>normal template parameter</ins> of a primary class template or alias template is a template parameter pack, it shall be the last <del><var>template-parameter</var></del><ins>normal template parameter</ins>.
-A <ins>normal template parameter that is a </ins>template parameter pack of a function template shall not be followed by another <ins>normal </ins>template parameter unless that template parameter can be deduced from the <var>parameter-type-list</var> of the function template or has a default argument (14.8.2).</p>
-</blockquote>
-
-<p>Modify &sect;14.1 [temp.param] paragraph 13:</p>
-<blockquote class="std">
-<p>When parsing a default <var>template-argument</var> for a non-type <del><var>template-parameter</var></del><ins>normal template parameter</ins>, the first non-nested <code>&gt;</code> is taken as the end of the <var>template-parameter-list</var> rather than a greater-than operator.</p>
-</blockquote>
-
-<p>Modify &sect;14.3 [temp.arg] paragraph 7:</p>
-<blockquote class="std">
-<p>When the template in a <var>template-id</var> is an overloaded function template, both non-template functions in the overload set and function templates in the overload set for which the <var>template-arguments</var> do not match the <del><var>template-parameters</var></del><ins>normal template parameters</ins> are ignored.
-If none of the function templates have matching <del><var>template-parameters</var></del><ins>normal template parameters</ins>, the program is ill-formed.</p>
+</p>
 </blockquote>
 
 <h2><a id="Acknowledgments">Acknowledgments</a></h2>
-<p>Mike Spertus and Daveed Vandevoorde developed the implicit template parameter concept and initial syntax (Option 1 above) in <a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3601.html">N3601</a>.</p>
 <p>Numerous people gave constructive feedback regarding the use of <code class="prettyprint">auto</code> in template parameter lists in an <a href="http://isocpp.org/">isocpp.org</a> discussion <a href="https://groups.google.com/a/isocpp.org/forum/?fromgroups#!topic/std-proposals/cqaS7PcU5Qc">thread</a>.</p>
+
+<p>Special thanks to Mike Spertus and Gabriel dos Reis for their invaluable analysis and assistance.</p>
 
 </body></html>
