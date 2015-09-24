@@ -374,7 +374,7 @@ B&lt;2.5&gt; b3; // <em>error: template parameter type cannot be double</em></in
 
 <p>Modify &sect;14.5.5 [temp.class.spec] paragraph 8 list item 8.2:</p>
 <blockquote class="std">
-<p>The type of a template parameter corresponding to a specialized non-type argument shall not be dependent on a parameter of the specialization<ins> unless the type of the template parameter contains a placeholder type and the parameter of the specialization can be deduced from the deduced type of the non-type argument</ins>. [ <i>Example:</i></p>
+<p>The type of a template parameter corresponding to a specialized non-type argument shall not be dependent on a parameter of the specialization<ins> that appears as an argument in the argument list of the specialization</ins>. [ <i>Example:</i></p>
 <pre class="example">
 <code>template &lt;class T, T t&gt; struct C {};
 template &lt;class T&gt; struct C&lt;T, 1&gt;;                  // error
