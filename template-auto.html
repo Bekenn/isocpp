@@ -382,7 +382,7 @@ template&lt; int X, int (*array_ptr)[X] &gt; class A {};
 int array[5];
 template&lt; int X &gt; class A&lt;X,&amp;array&gt; { };            // error
 <ins>template &lt;auto f&gt; class B {};
-template &lt;class R, class... Args&gt; class B&lt;R (* f)(Args...)&gt; // ok</code>
+template &lt;class R, class... Args, R (* f)(Args...)&gt; class B&lt;f&gt; {} // ok</code>
 </pre>
 <p>&mdash;<i>end example</i> ]</p>
 </blockquote>
