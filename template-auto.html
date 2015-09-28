@@ -2,7 +2,7 @@
 <html><head>
 <meta http-equiv="Content-Language" content="en-us">
 <meta http-equiv="Content-Type" content="text/html;charset=US-ASCII">
-<title>Template Argument Type Deduction (ver. 2)</title>
+<title>Declaring non-type template arguments with auto</title>
 
 <style type="text/css">
 
@@ -54,7 +54,7 @@ ul.dash li:before { content: '\2014'; margin-left: -1em }
 </head>
 
 <body>
-<h1>Template Argument Type Deduction (ver. 2)</h1>
+<h1>Declaring non-type template arguments with <code class="prettyprint">auto</code></h1>
 <table class="frontmatter" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="619">
     <tr>
         <td align="left" valign="top">Document number:</td>
@@ -301,7 +301,7 @@ template &lt;auto... vs&gt; struct value_list { };</code>
     <li>The <code class="prettyprint">auto</code> keyword, when it appears in a template parameter list, signifies that the associated template parameter is a value parameter and that the type of the value parameter is to be deduced at the point of template instantiation.</li>
     <li>The <code class="prettyprint">auto</code> keyword, when it introduces a template parameter pack, signifies that each element in the parameter pack is a value parameter and that the types of the value parameters are to be independently deduced at the point of template instantiation.</li>
     <li>Type deduction for template parameters introduced with the <code class="prettyprint">auto</code> keyword follows the same rules as specified for function template argument type deduction.</li>
-</ul></li>
+</ul>
 
 <h2><a id="Wording">Wording</a></h2>
 <p>All modifications are presented relative to N4296.</p>
@@ -324,7 +324,7 @@ and in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var>
 <li>lvalue reference to object or lvalue reference to function,</li>
 <li>pointer to member,</li>
 <li><code>std::nullptr_t</code><del>.</del><ins>,</ins></li>
-<ins><li>a type that contains a placeholder type designated by <code>auto</code> (7.1.6.4).</li></ins>
+<li><ins>a type that contains a placeholder type designated by <code>auto</code> (7.1.6.4).</ins></li>
 </ul>
 </blockquote>
 
@@ -387,25 +387,25 @@ template&lt; int X, int (*array_ptr)[X] &gt; class A {};
 int array[5];
 template&lt; int X &gt; class A&lt;X,&amp;array&gt; { };            // <em>error</em>
 <ins>template &lt;auto f&gt; class B {};
-template &lt;class R, class... Args, R (* f)(Args...)&gt; class B&lt;f&gt; {} // <em>ok</em></code>
+template &lt;class R, class... Args, R (* f)(Args...)&gt; class B&lt;f&gt; {} // <em>ok</em></ins></code>
 </pre>
 <p>&mdash;<i>end example</i>&nbsp;]</p>
 </blockquote>
 
 <p>Modify &sect;14.6.2.2 [temp.dep.expr] paragraph 3:</p>
 <blockquote class="std">
-<p>An <var>id-expression</var> is type-dependent if it contains
+<p>An <var>id-expression</var> is type-dependent if it contains</p>
 <ul class="dash">
 <li>an <var>identifier</var> associated by name lookup with one or more declarations declared with a dependent type,</li>
-<ins><li>an <var>identifier</var> associated by name lookup with a non-type <var>template-parameter</var> declared with a type that contains a placeholder type (7.1.6.4),</li></ins>
+<li><ins>an <var>identifier</var> associated by name lookup with a non-type <var>template-parameter</var> declared with a type that contains a placeholder type (7.1.6.4),</ins></li>
 <li>an <var>identifier</var> associated by name lookup with one or more declarations of member functions of the current instantiation declared with a return type that contains a placeholder type<del> (7.1.6.4)</del>,</li>
 <li>the <var>identifier</var> <code>__func__</code> (8.4.1), where any enclosing function is a template, a member of a class template, or a generic lambda,</li>
 <li>a <var>template-id</var> that is dependent,</li>
 <li>a <var>conversion-function-id</var> that specifies a dependent type, or</li>
 <li>a <var>nested-name-specifier</var> or a <var>qualified-id</var> that names a member of an unknown specialization;</li>
 </ul>
-or if it names a dependent member of the current instantiation that is a static data member of type &ldquo;array of unknown bound of T&rdquo; for some T (14.5.1.3).
-Expressions of the following forms are type-dependent only if the type specified by the <var>type-id</var>, <var>simple-type-specifier</var> or <var>new-type-id</var> is dependent, even if any subexpression is type-dependent:
+<p>or if it names a dependent member of the current instantiation that is a static data member of type &ldquo;array of unknown bound of T&rdquo; for some T (14.5.1.3).
+Expressions of the following forms are type-dependent only if the type specified by the <var>type-id</var>, <var>simple-type-specifier</var> or <var>new-type-id</var> is dependent, even if any subexpression is type-dependent:</p>
 <dl>
 <dd><var>simple-type-specifier</var> <code>(</code> <var>expression-list<sub>opt</sub></var> <code>)</code></dd>
 <dd><code>::</code><var><sub>opt</sub></var> <code>new</code> <var>new-placement<sub>opt</sub></var> <var>new-type-id</var> <var>new-initializer<sub>opt</sub></var></dd>
@@ -415,12 +415,12 @@ Expressions of the following forms are type-dependent only if the type specified
 <dd><code>const_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
 <dd><code>reinterpret_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
 <dd><code>(</code> <var>type-id</var> <code>)</code> <var>cast-expression</var></dd>
-</dl></p>
+</dl>
 </blockquote>
 
 <p>Modify &sect;14.8.2.5 [temp.deduct.type] paragraph 3:</p>
 <blockquote class="std">
-<p>The non-deduced contexts are:
+<p>The non-deduced contexts are:</p>
 <ul class="dash">
 <li>The <var>nested-name-specifier</var> of a type that was specified using a <var>qualified-id</var>.</li>
 <li>The <var>expression</var> of a <var>decltype-specifier</var>.</li>
@@ -436,12 +436,12 @@ Expressions of the following forms are type-dependent only if the type specified
 <li>A function parameter for which the associated argument is an initializer list (8.5.4) but the parameter does not have a type for which deduction from an initializer list is specified (14.8.2.1).
 [&nbsp;<i>Example:</i>
 <pre class="example">
-<code>template<class T> void g(T);
+<code>template&lt;class T&gt; void g(T);
 g({1,2,3}); // <em>error: no argument deduced for T</em></code>
 </pre>
 &mdash;<i>end example</i>&nbsp;]</li>
 <li>A function parameter pack that does not occur at the end of the <var>parameter-declaration-list</var>.</li>
-</ul></p>
+</ul>
 </blockquote>
 
 <h2><a id="Acknowledgments">Acknowledgments</a></h2>
