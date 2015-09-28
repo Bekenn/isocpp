@@ -91,11 +91,11 @@ ul.dash li:before { content: '\2014'; margin-left: -1em }
 </ol>
 
 <h2><a id="Introduction">Introduction</a></h2>
-<p>This paper proposes allowing the types of non-type template arguments (constants) to be automatically deduced.
-Currently, the type of a non-type template parameter must be explicitly specified, which leads to unnecessary verboseness and reduced flexibility when writing a template intended to take constant arguments of any type.
+<p>This paper proposes allowing non-type template parameter to be declared with the <code>auto</code> placeholder type specifier.  The desired effect is that the type of the corresponding non-type template argument be automatically deduced, similar to the way similar feature works for polymotphic lambdas.  This more focused proposal follows EWG's recommendations from the Spring 2015 Lenexa meeting.
+The existing workaround is that the type of a non-type template parameter must be explicitly specified, which leads to unnecessary verbosity and reduced flexibility when writing a template intended to take constant arguments of any type.
 Example:</p>
 <pre class="example">
-<code class="prettyprint">template &lt;typename T, T v&gt; struct S;    // <em>declaration</em>
+<code class="prettyprint">template &lt;typename T, T v&gt; struct S { };    // <em>definition</em>
 S&lt;decltype(x), x&gt; s;                    // <em>instantiation</em></code>
 </pre>
 
