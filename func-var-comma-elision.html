@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html;charset=US-ASCII">
+<title>Remove comma elision in variadic function declarations</title>
+
+<style type="text/css">
+
+body { color: #000000; background-color: #FFFFFF; }
+del { text-decoration: line-through; color: #8B0040; }
+ins { text-decoration: underline; color: #005100; }
+
+p.example { margin-left: 2em; }
+pre.example { margin-left: 2em; }
+div.example { margin-left: 2em; }
+
+code.extract { background-color: #F5F6A2; }
+pre.extract { margin-left: 2em; background-color: #F5F6A2;
+  border: 1px solid #E1E28E; }
+
+p.function { }
+.attribute { margin-left: 2em; }
+.attribute dt { float: left; font-style: italic;
+  padding-right: 1ex; }
+.attribute dd { margin-left: 0em; }
+
+blockquote.std { color: #000000; background-color: #F1F1F1;
+  border: 1px solid #D1D1D1;
+  padding-left: 0.5em; padding-right: 0.5em; }
+blockquote.std del { text-decoration: line-through;
+  color: #000000; background-color: #FFEBFF;
+  border: 1px solid #ECD7EC; }
+blockquote.std ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8;
+  border: 1px solid #B3EBB3; }
+
+table { border: 1px solid black; border-spacing: 0px;
+  margin-left: auto; margin-right: auto; }
+th { text-align: left; vertical-align: top;
+  padding-left: 0.8em; border: none; }
+td { text-align: left; vertical-align: top;
+  padding-left: 0.8em; border: none; }
+
+table.frontmatter { border: 0;  margin: 0; }
+
+ul.dash { list-style-type: none; }
+ul.dash li:before { content: '\2014'; margin-left: -1em }
+
+</style>
+
+<script type="text/javascript" src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+</head>
+
+<body>
+<h1>Remove comma elision in variadic function declarations</h1>
+<table class="frontmatter" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="619">
+    <tr>
+        <td align="left" valign="top">Document number:</td>
+        <td>PnnnnR0</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Date:</td>
+        <td>2016-01-23</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Project:</td>
+        <td>Programming Language C++, Evolution Working Group</td>
+    </tr>
+    <!--tr>
+        <td align="left" valign="top">Revises:</td>
+        <td><a href=""></a></td>
+    </tr-->
+    <tr>
+        <td align="left" valign="top">Reply-to:</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
+    </tr>
+</table>
+
+<h2><a id="TableOfContents">Table of Contents</a></h2>
+<ol>
+    <li><a href="#TableOfContents">Table of Contents</a></li>
+    <li><a href="#Introduction">Introduction</a></li>
+    <li><a href="#MotivationAndScope">Motivation and Scope</a></li>
+    <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
+    <li><a href="#Wording">Wording</a></li>
+</ol>
+
+<h2><a id="Introduction">Introduction</a></h2>
+<p>C++ currently allows variadic functions to be declared without requiring a comma before the ellipsis marking the variadic arguments to the function.
+This rarely-used feature leads to confusing constructs, is an impediment to future language design, and provides no value.
+It should be removed from the language.</p>
+
+<p>The following declarations are all legal C++:</p>
+<pre class="example">
+<code class="prettyprint">int f(...);                 // <em>1. function taking only variadic arguments</em>
+int g(int i, ...);          // <em>2. function taking explicit and variadic arguments, with comma</em>
+int h(int i ...);           // <em>3. function taking explicit and variadic arguments, without comma</em></code>
+</pre>
+
+<p>The first declaration provides no portable way to get at the function arguments and is mainly useful for metaprogramming.
+The second declaration is by far the most common form of variadic function declaration in use.
+The third declaration is similar to the second, but omits the comma separating the last explicit parameter declaration from the ellipsis.</p>
+
+<p>This proposal aims to make the third declaration illegal.</p>
+
+<h2><a id="MotivationAndScope">Motivation and Scope</a></h2>
+<h3>Ambiguity</h3>
+<p>Comma elision gives rise to an ambiguity called out in the standard (&sect;8.3.5 [decl.fct] paragraph 17):<p>
+
+<blockquote class="std">
+<p>There is a syntactic ambiguity when an ellipsis occurs at the end of a <var>parameter-declaration-clause</var> without a preceding comma.
+In this case, the ellipsis is parsed as part of the abstract-declarator if the type of the parameter either names a template parameter pack that has not been expanded or contains <code>auto</code>;
+otherwise, it is parsed as part of the <var>parameter-declaration-clause</var>.</p>
+</blockquote>
+
+<p>The following declarations are both legal:</p>
+<pre class="example">
+<code class="prettyprint">template &lt;class... T&gt; void f(T...); // <em>declares a function template with a parameter pack</em>
+template &lt;class T&gt; void f(T...);    // <em>declares a template for a variadic function</em></code>
+</pre>
+
+<p>The meaning of the ellipsis in the function parameter list is different in these two declarations:</p>
+<ul>
+<li>In the first declaration, the ellipsis establishes a function parameter pack that takes its type arguments from the corresponding template parameter pack <code>T</code>;
+the resulting function can take any number of arguments, all of which must be convertible to <code>T</code>.
+In the function body (defined elsewhere), the parameter pack may be expanded with the pack expansion operator, its size queried using the <code class="prettyprint">sizeof...</code> operator, and can participate in fold expressions.</li>
+<li>In the second declaration, the ellipsis establishes that the function <code>f</code> takes a variable number of arguments of any type, following the first argument, which must be convertible to <code>T</code>.
+The resulting arguments are promoted before being passed to the function, and type information is lost;
+the function must make assumptions about the argument types and can only access the arguments using the machinery from the <code>&lt;cstdarg&gt;</code> header.</li>
+</ul>
+
+<h3>Future language design</h3>
+<p>The following function template is currently not legal C++:</p>
+<pre class="exmaple">
+<code class="prettyprint">template &lt;&gt;
+bool multi_and(bool... args)
+{
+    return true &amp;&amp; ... &amp;&amp; args;
+}</code>
+</pre>
+
+<p>This code is currently invalid, but illustrates a reasonable future extension to C++.
+In this hypothetical extension, <code>args</code> is a function parameter pack with no corresponding template parameter pack.
+(<code>multi_and</code> is still a template, because information about the size of <code>args</code> is required at compile time and is different for each instantiation.)
+The declaration of <code>args</code> is not a pack expansion; the size of the parameter pack is deduced from the number of arguments passed to the function.</p>
+
+<p>The corresponding forward declaration with an abstract parameter declarator runs into the same ambiguity mentioned earlier:</p>
+<pre class="example">
+<code class="prettyprint">template &lt;&gt; bool multi_and(bool...);    // <em>parameter pack or varargs?</em></code>
+</pre>
+
+<p>This declaration is also currently invalid due to the empty template parameter list, so it may seem obvious and sufficient to disambiguate in favor of a parameter pack;
+however, incorporating abbreviated templates from Concepts, it becomes possible to drop the template parameter list entirely while still declaring a template:</p>
+<pre class="example">
+<code class="prettyprint">bool multi_and(bool... args);   // <em>ok; template declaration with parameter pack</em>
+bool multi_and(bool...);        // <em>ambiguous; template, or variadic function?</em></code>
+</pre>
+
+<p>With abbreviated template declarations, the form with the abstract parameter declarator matches existing syntax for declaring a variadic function.
+The extension thus either introduces a subtle inconsistency for Scott Meyers to write about, or it silently changes the meaning of currently valid code.
+Comma elision is thus a barrier to entry for this extension.</p>
+
+<h3>Compatibility</h3>
+<p>Variadic function declarations using comma elision cannot appear in a header file that is to be used by a C program.
+No version of the C standard going back at least as far as ISO/IEC 9899:1990 has included support for comma elision.</p>
+
+<p>This is the production for <var>parameter-type-list</var> from the most recent C standard, ISO/IEC 9899:2011 &sect;6.7.6:</p>
+<blockquote class="std">
+<dl>
+<dt><var>parameter-type-list</var>:</dt>
+<dd><var>parameter-list</var></dd>
+<dd><var>parameter-list</var> <code>,</code> <code>...</code></dd>
+</dl>
+</blockquote>
+
+<p>The C language requires at least one fixed parameter to be declared preceding an ellipsis in a variadic function declaration, and further requires a separating comma.
+C language compatibility is therefore not adversely affected by the removal of comma elision in C++ (and is in fact slightly enhanced).</p>
+
+<h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
+<p>This proposal removes an existing feature and breaks existing code.</p>
+
+<p>It is the author's belief that this change would hardly be noticed throughout the industry.
+C++ provides a number of compelling alternatives to C-style variadic functions, including function overloading, initializer lists, and variadic function templates;
+the use of C-style variadic functions is discouraged due to the lack of information available to the function regarding the number and types of arguments.
+In C++, C-style variadic functions are rarely used except when interoperating with C code.
+In order to be compatible with C code, the declaration of a C-style variadic function must conform to the stricter C language requirements that forbid the use of comma elision.</p>
+
+<p>Existing code that makes use of comma elision can easily and trivially be updated to conform to stricter rules by inserting a comma before the ellipsis.
+Existing tools and compilers that already recognize comma elision (as all currently conforming implementations must) can be updated to provide "fix-it" hints or even automatic transformations of existing code.</p>
+
+<p>Although this is a breaking change, it is not out of line with earlier changes to the C++ standard.
+When user-defined literals were adopted, formerly-valid lexical sequences became invalid: An identifier that immediately follows a string literal with no intervening white space could no longer be interpreted as a macro name.<p>
+
+<pre class="example">
+<code class="prettyprint">#define SUFFIX "cadabra"
+const char* magic_word = "abra"SUFFIX;  // <em>ok in C++98, error in C++11</em></code>
+</pre>
+
+<p>The fix for this change was to add separating white space between the string literal and the macro name.
+This was not a significant burden for developers.</p>
+
+<h2><a id="Wording">Wording</a></h2>
+<p>All modifications are presented relative to N4567.</p>
+
+<p>Modify &sect;8.3.5 [dcl.fct] paragraph 3:</p>
+<blockquote class="std">
+<p>A type of either form is a <var>function type</var>.</p>
+<dl>
+<dt><var>parameter-declaration-clause</var>:</dt>
+<dd><var>parameter-declaration-list</var><sub>opt</sub><del><code>...</code><sub>opt</sub></del></dd>
+<dd><ins><code>...</code></ins></dd>
+<dd><var>parameter-declaration-list</var> <code>,</code> <code>...</code></dd>
+<dt><var>parameter-declaration-list</var>:</dt>
+<dd><var>parameter-declaration</var></dd>
+<dd><var>parameter-declaration-list</var> <code>,</code> <var>parameter-declaration</var></dd>
+<dt><var>parameter-declaration</var>:</dt>
+<dd><var>attribute-specifier-seq</var><sub>opt</sub> <var>decl-specifier-seq</var> <var>declarator</var></dd>
+<dd><var>attribute-specifier-seq</var><sub>opt</sub> <var>decl-specifier-seq</var> <var>declarator</var> <code>=</code> <var>initializer-clause</var></dd>
+<dd><var>attribute-specifier-seq</var><sub>opt</sub> <var>decl-specifier-seq</var> <var>abstract-declarator</var><sub>opt</sub></dd>
+<dd><var>attribute-specifier-seq</var><sub>opt</sub> <var>decl-specifier-seq</var> <var>abstract-declarator</var><sub>opt</sub> <code>=</code> <var>initializer-clause</var></dd>
+</dl>
+<p>The optional <var>attribute-specifier-seq</var> in a <var>parameter-declaration</var> appertains to the parameter.</p>
+</blockquote>
+
+<p>Modify &sect;8.3.5 [dcl.fct] paragraph 4:</p>
+<blockquote class="std">
+<p>The <var>parameter-declaration-clause</var> determines the arguments that can be specified, and their processing, when the function is called.
+[&nbsp;<i>Note:</i> the <var>parameter-declaration-clause</var> is used to convert the arguments specified on the function call; see 5.2.2. &mdash;<i>end note</i>&nbsp;]
+If the <var>parameter-declaration-clause</var> is empty, the function takes no arguments.
+A parameter list consisting of a single unnamed parameter of non-dependent type <code>void</code> is equivalent to an empty parameter list.
+Except for this special case, a parameter shall not have type <var>cv</var> <code>void</code>.
+If the <var>parameter-declaration-clause</var> terminates with an ellipsis or a function parameter pack (14.5.3), the number of arguments shall be equal to or greater than the number of parameters that do not have a default argument and are not function parameter packs.
+<del>Where syntactically correct and where &ldquo;<code>...</code>&rdquo; is not part of an <var>abstract-declarator</var>, &ldquo;<code>, ...</code>&rdquo; is synonymous with &ldquo;<code>...</code>&rdquo;.</del>
+[&nbsp;<i>Example:</i> the declaration</p>
+<pre class="example">
+<code>int printf(const char*, ...);</code>
+</pre>
+<p>declares a function that can be called with varying numbers and types of arguments.</p>
+<pre class="example">
+<code>printf("hello world");
+printf("a=%d b=%d", a, b);</code>
+</pre>
+<p>However, the first argument must be of a type that can be converted to a <code>const char*</code> &mdash;<i>end example</i>&nbsp;]
+[&nbsp;<i>Note:</i> The standard header <code>&lt;cstdarg&gt;</code> contains a mechanism for accessing arguments passed using the ellipsis (see 5.2.2 and 18.10). &mdash;<i>end note</i>&nbsp;]</p>
+</blockquote>
+
+<p>Delete &sect;8.3.5 [dcl.fct] paragraph 17:</p>
+<blockquote class="std">
+<p><del>There is a syntactic ambiguity when an ellipsis occurs at the end of a <var>parameter-declaration-clause</var> without a preceding comma.
+In this case, the ellipsis is parsed as part of the <var>abstract-declarator</var> if the type of the parameter either names a template parameter pack that has not been expanded or contains <code>auto</code>;
+otherwise, it is parsed as part of the <var>parameter-declaration-clause</var>.</del></p>
+</blockquote>
+
+</body></html>
