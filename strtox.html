@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html;charset=US-ASCII">
+<title>Const-preserving overloads for the strtox family of functions</title>
+
+<style type="text/css">
+
+body { color: #000000; background-color: #FFFFFF; }
+del { text-decoration: line-through; color: #8B0040; }
+ins { text-decoration: underline; color: #005100; }
+
+p.example { margin-left: 2em; }
+pre.example { margin-left: 2em; }
+div.example { margin-left: 2em; }
+
+code.extract { background-color: #F5F6A2; }
+pre.extract { margin-left: 2em; background-color: #F5F6A2;
+  border: 1px solid #E1E28E; }
+
+p.function { }
+.attribute { margin-left: 2em; }
+.attribute dt { float: left; font-style: italic;
+  padding-right: 1ex; }
+.attribute dd { margin-left: 0em; }
+
+blockquote.std { color: #000000; background-color: #F1F1F1;
+  border: 1px solid #D1D1D1;
+  padding-left: 0.5em; padding-right: 0.5em; }
+blockquote.std del { text-decoration: line-through;
+  color: #000000; background-color: #FFEBFF;
+  border: 1px solid #ECD7EC; }
+blockquote.std ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8; }
+
+table { border: 1px solid black; border-spacing: 0px;
+  margin-left: auto; margin-right: auto; }
+th { text-align: left; vertical-align: top;
+  padding-left: 0.8em; border: none; }
+td { text-align: left; vertical-align: top;
+  padding-left: 0.8em; border: none; }
+
+table.frontmatter { border: 0;  margin: 0; }
+
+ul.dash { list-style-type: none; }
+ul.dash li:before { content: '\2014'; margin-left: -1em }
+
+</style>
+
+<script type="text/javascript" src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+</head>
+
+<body>
+<h1>Const-preserving overloads for the <code>strto<i>x</i></code> family of functions</h1>
+<table class="frontmatter" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="619">
+    <tr>
+        <td align="left" valign="top">Document number:</td>
+        <td>PnnnnR0</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Date:</td>
+        <td>2016-02-07</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Project:</td>
+        <td>Programming Language C++, Library Evolution Working Group</td>
+    </tr>
+    <!--tr>
+        <td align="left" valign="top">Revises:</td>
+        <td><a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2016/pnnnnrr.html">PnnnnRr</a></td>
+    </tr-->
+    <tr>
+        <td align="left" valign="top">Reply-to:</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
+    </tr>
+</table>
+
+<h2><a id="TableOfContents">Table of Contents</a></h2>
+<ol>
+    <li><a href="#TableOfContents">Table of Contents</a></li>
+    <li><a href="#Overview">Overview</a></li>
+    <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
+    <li><a href="#Wording">Wording</a></li>
+</ol>
+
+<h2><a id="Overview">Overview</a></h2>
+<p>The C++ standard library adds const-preserving overloads for specific functions from the C library dealing with null-terminated strings.
+As defined in the C standard, these functions accept <code class="prettyprint">const char*</code> parameters and return <code class="prettyprint">char*</code> values derived from those parameters.
+Calling these functions would effectively result in silent casts from <code class="prettyprint">const char*</code> to <code class="prettyprint">char*</code>.
+To prevent this, C++ replaces these C functions with const-preserving overloads;
+for each such C library function, the C++ library provides a version accepting <code class="prettyprint">const char*</code> parameters and a version accepting <code class="prettyprint">char*</code> parameters.
+These functions have the same behavior as the C library version, but the return value preserves the type of the argument (<code class="prettyprint">const char*</code> or <code class="prettyprint">char*</code>).</p>
+
+<p>This proposal adds the <code>strto<i>x</i></code> family of functions to the set of C library functions with const-preserving overloads.</p>
+
+<p>The <code>strto<i>x</i></code> functions convert the initial portion of a string to a numeric value and fill a user-provided "out" parameter with a pointer to the next character in the string.
+Although the "in" pointer has the type <code class="prettyprint">const char*</code>, the "out" parameter has the type <code class="prettyprint">char**</code>, throwing away the const qualifier.
+This is pretty much asking for undefined behavior:</p>
+
+<p>Example (current usage, generates no warnings):</p>
+<pre class="example">
+<code class="prettyprint">const char* PI_STR = "3.14159 or so";
+char* endptr;   // <em>can't use const char*, would fail to compile on the next line</em>
+float pi = strtof(PI_STR, &amp;endptr); // <em>bad: silent cast to char*</em>
+*endptr = 'x';  // <em>universe explodes</em></code>
+</pre>
+
+<h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
+<p>The proposal adds a few new overloads covering the C library <code>strto<i>x</i></code> family of functions.
+The wording is essentially identical to wording for other overloads already present.</p>
+
+<h2><a id="Wording">Wording</a></h2>
+<p>All modifications are presented relative to N4567.</p>
+
+<p>Insert the following new paragraphs after &sect;21.8 [c.strings] paragraph 13:</p>
+<blockquote class="std">
+<p><ins>The function signature <code>strtod(const char*, char**)</code> shall be replaced by the two declarations:</ins></p>
+<pre>
+<ins><code>double strtod(const char* nptr, const char** endptr);
+double strtod(      char* nptr,       char** endptr);</code></ins>
+</pre>
+<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+</blockquote>
+
+<blockquote class="std">
+<p><ins>The function signature <code>strtof(const char*, char**)</code> shall be replaced by the two declarations:</ins></p>
+<pre>
+<ins><code>float strtof(const char* nptr, const char** endptr);
+float strtof(      char* nptr,       char** endptr);</code></ins>
+</pre>
+<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+</blockquote>
+
+<blockquote class="std">
+<p><ins>The function signature <code>strtold(const char*, char**)</code> shall be replaced by the two declarations:</ins></p>
+<pre>
+<ins><code>long double strtold(const char* nptr, const char** endptr);
+long double strtold(      char* nptr,       char** endptr);</code></ins>
+</pre>
+<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+</blockquote>
+
+<blockquote class="std">
+<p><ins>The function signature <code>strtol(const char*, char**, int)</code> shall be replaced by the two declarations:</ins></p>
+<pre>
+<ins><code>long int strtol(const char* nptr, const char** endptr, int base);
+long int strtol(      char* nptr,       char** endptr, int base);</code></ins>
+</pre>
+<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+</blockquote>
+
+<blockquote class="std">
+<p><ins>The function signature <code>strtoll(const char*, char**, int)</code> shall be replaced by the two declarations:</ins></p>
+<pre>
+<ins><code>long long int strtoll(const char* nptr, const char** endptr, int base);
+long long int strtoll(      char* nptr,       char** endptr, int base);</code></ins>
+</pre>
+<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+</blockquote>
+
+<blockquote class="std">
+<p><ins>The function signature <code>strtoul(const char*, char**, int)</code> shall be replaced by the two declarations:</ins></p>
+<pre>
+<ins><code>unsigned long int strtoul(const char* nptr, const char** endptr, int base);
+unsigned long int strtoul(      char* nptr,       char** endptr, int base);</code></ins>
+</pre>
+<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+</blockquote>
+
+<blockquote class="std">
+<p><ins>The function signature <code>strtoull(const char*, char**, int)</code> shall be replaced by the two declarations:</ins></p>
+<pre>
+<ins><code>unsigned long long int strtoull(const char* nptr, const char** endptr, int base);
+unsigned long long int strtoull(      char* nptr,       char** endptr, int base);</code></ins>
+</pre>
+<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+</blockquote>
+
+</body></html>
