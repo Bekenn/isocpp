@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html;charset=US-ASCII">
+<title>Initialize unspecified aggregate members with direct list initialization</title>
+
+<style type="text/css">
+
+body { color: #000000; background-color: #FFFFFF; }
+del { text-decoration: line-through; color: #8B0040; }
+ins { text-decoration: underline; color: #005100; }
+
+p.example { margin-left: 2em; }
+pre.example { margin-left: 2em; }
+div.example { margin-left: 2em; }
+
+code.extract { background-color: #F5F6A2; }
+pre.extract { margin-left: 2em; background-color: #F5F6A2;
+  border: 1px solid #E1E28E; }
+
+p.function { }
+.attribute { margin-left: 2em; }
+.attribute dt { float: left; font-style: italic;
+  padding-right: 1ex; }
+.attribute dd { margin-left: 0em; }
+
+blockquote.std { color: #000000; background-color: #F1F1F1;
+  border: 1px solid #D1D1D1;
+  padding-left: 0.5em; padding-right: 0.5em; }
+blockquote.std del { text-decoration: line-through;
+  color: #000000; background-color: #FFEBFF;
+  border: 1px solid #ECD7EC; }
+blockquote.std ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8; }
+
+table { border: 1px solid black; border-spacing: 0px;
+  margin-left: auto; margin-right: auto; }
+th { text-align: left; vertical-align: top;
+  padding-left: 0.8em; border: none; }
+td { text-align: left; vertical-align: top;
+  padding-left: 0.8em; border: none; }
+
+table.frontmatter { border: 0;  margin: 0; }
+
+ul.dash { list-style-type: none; }
+ul.dash li:before { content: '\2014'; margin-left: -1em }
+
+</style>
+
+<script type="text/javascript" src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+</head>
+
+<body>
+<h1>Initialize unspecified aggregate members with direct list initialization</h1>
+<table class="frontmatter" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="619">
+    <tr>
+        <td align="left" valign="top">Document number:</td>
+        <td>PnnnnR0</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Date:</td>
+        <td>2015-09-25</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Project:</td>
+        <td>Programming Language C++, Evolution Working Group</td>
+    </tr>
+    <!--tr>
+        <td align="left" valign="top">Revises:</td>
+        <td><a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4469.html">N4469</a></td>
+    </tr-->
+    <tr>
+        <td align="left" valign="top">Reply-to:</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
+    </tr>
+</table>
+
+<h2><a id="TableOfContents">Table of Contents</a></h2>
+<ol>
+    <li><a href="#TableOfContents">Table of Contents</a></li>
+    <li><a href="#Overview">Overview</a></li>
+    <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
+    <li><a href="#TechnicalSpecifications">Technical Specifications</a></li>
+    <li><a href="#Wording">Wording</a></li>
+</ol>
+
+<h2><a id="Overview">Overview</a></h2>
+<p>The following program is ill-formed:</p>
+<pre class="example">
+<code class="prettyprint">struct S
+{
+    explicit S(int a = 0) : _a{a} { }
+    int _a;
+};
+
+int main()
+{
+    S arr[2] = { S{} };    // <em>error : chosen constructor is explicit in copy-initialization</em>
+}</code>
+</pre>
+
+<p>The error occurs when attempting to match a constructor for the second array element of <code>arr</code>.
+This is because aggregate initialization uses copy initialization for unspecified aggregate members (in this case, the second array element).
+Even though S's constructor is a default constuctor (thanks to the default argument), it is unavailable to copy initialization because it is marked <code class="prettyprint">explicit</code>.
+This was most likely an unintended consequence of the wording for aggregate initialization.
+This paper proposes using direct initialization for unspecified aggregate members in this situation.</p>
+
+<h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
+<p>This change fixes an obscure corner case, causing previously invalid code to become valid.
+It has no effect on currently valid code.</p>
+
+<h2><a id="TechnicalSpecifications">Technical Specifications</a></h2>
+<p>When an aggregate is initalized by an initializer list, and the initializer list contains fewer items than there are assignable members of the aggregate, the remaining unspecified members are initialized using direct list initialization from an empty list.</p>
+
+<h2><a id="Wording">Wording</a></h2>
+<p>All modifications are presented relative to N4567.</p>
+
+<p>Modify &sect;8.5.1 [dcl.init.aggr] paragraph 7:</p>
+<blockquote class="std">
+<p>If there are fewer <var>initializer-clause</var>s in the list than there are members in the aggregate, then each member not explicitly initialized shall be initialized from its default member initializer (9.2) or, if there is no default member initializer, from an empty initializer list<ins> using direct-list-initialization</ins> (8.5.4).</p>
+</blockquote>
+
+</body></html>
