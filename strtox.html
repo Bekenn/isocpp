@@ -106,15 +106,15 @@ float pi = strtof(PI_STR, &amp;endptr); // <em>bad: silent cast to char*</em>
 </pre>
 
 <h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
-<p>The proposal adds a few new overloads covering the C library <code>strto<i>x</i></code> family of functions.
-The wording is essentially identical to wording for other overloads already present.</p>
+<p>The proposal adds a few new overloads covering the C library <code>strto<i>x</i></code> family of functions and deprecates the existing versions.
+Apart from the deprecations, the wording is essentially identical to wording for other overloads already present.</p>
 
 <h2><a id="Wording">Wording</a></h2>
 <p>All modifications are presented relative to N4567.</p>
 
-<p>Insert the following new paragraphs after &sect;21.8 [c.strings] paragraph 13:</p>
+<p>Insert the following new paragraphs in &sect;21.8 [c.strings] after paragraph 13:</p>
 <blockquote class="std">
-<p><ins>The function signature <code>strtod(const char*, char**)</code> shall be replaced by the two declarations:</ins></p>
+<p><ins>The function signature <code>strtod(const char*, char**)</code> shall be supplemented with the two declarations:</ins></p>
 <pre>
 <ins><code>double strtod(const char* nptr, const char** endptr);
 double strtod(      char* nptr,       char** endptr);</code></ins>
@@ -123,7 +123,7 @@ double strtod(      char* nptr,       char** endptr);</code></ins>
 </blockquote>
 
 <blockquote class="std">
-<p><ins>The function signature <code>strtof(const char*, char**)</code> shall be replaced by the two declarations:</ins></p>
+<p><ins>The function signature <code>strtof(const char*, char**)</code> shall be supplemented with the two declarations:</ins></p>
 <pre>
 <ins><code>float strtof(const char* nptr, const char** endptr);
 float strtof(      char* nptr,       char** endptr);</code></ins>
@@ -132,7 +132,7 @@ float strtof(      char* nptr,       char** endptr);</code></ins>
 </blockquote>
 
 <blockquote class="std">
-<p><ins>The function signature <code>strtold(const char*, char**)</code> shall be replaced by the two declarations:</ins></p>
+<p><ins>The function signature <code>strtold(const char*, char**)</code> shall be supplemented with the two declarations:</ins></p>
 <pre>
 <ins><code>long double strtold(const char* nptr, const char** endptr);
 long double strtold(      char* nptr,       char** endptr);</code></ins>
@@ -141,7 +141,7 @@ long double strtold(      char* nptr,       char** endptr);</code></ins>
 </blockquote>
 
 <blockquote class="std">
-<p><ins>The function signature <code>strtol(const char*, char**, int)</code> shall be replaced by the two declarations:</ins></p>
+<p><ins>The function signature <code>strtol(const char*, char**, int)</code> shall be supplemented with the two declarations:</ins></p>
 <pre>
 <ins><code>long int strtol(const char* nptr, const char** endptr, int base);
 long int strtol(      char* nptr,       char** endptr, int base);</code></ins>
@@ -150,7 +150,7 @@ long int strtol(      char* nptr,       char** endptr, int base);</code></ins>
 </blockquote>
 
 <blockquote class="std">
-<p><ins>The function signature <code>strtoll(const char*, char**, int)</code> shall be replaced by the two declarations:</ins></p>
+<p><ins>The function signature <code>strtoll(const char*, char**, int)</code> shall be supplemented with the two declarations:</ins></p>
 <pre>
 <ins><code>long long int strtoll(const char* nptr, const char** endptr, int base);
 long long int strtoll(      char* nptr,       char** endptr, int base);</code></ins>
@@ -159,7 +159,7 @@ long long int strtoll(      char* nptr,       char** endptr, int base);</code></
 </blockquote>
 
 <blockquote class="std">
-<p><ins>The function signature <code>strtoul(const char*, char**, int)</code> shall be replaced by the two declarations:</ins></p>
+<p><ins>The function signature <code>strtoul(const char*, char**, int)</code> shall be supplemented with the two declarations:</ins></p>
 <pre>
 <ins><code>unsigned long int strtoul(const char* nptr, const char** endptr, int base);
 unsigned long int strtoul(      char* nptr,       char** endptr, int base);</code></ins>
@@ -168,12 +168,23 @@ unsigned long int strtoul(      char* nptr,       char** endptr, int base);</cod
 </blockquote>
 
 <blockquote class="std">
-<p><ins>The function signature <code>strtoull(const char*, char**, int)</code> shall be replaced by the two declarations:</ins></p>
+<p><ins>The function signature <code>strtoull(const char*, char**, int)</code> shall be supplemented with the two declarations:</ins></p>
 <pre>
 <ins><code>unsigned long long int strtoull(const char* nptr, const char** endptr, int base);
 unsigned long long int strtoull(      char* nptr,       char** endptr, int base);</code></ins>
 </pre>
 <p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+</blockquote>
+
+<p>Add the following new section to Annex D [depr]:</p>
+<blockquote class="std">
+<h3><ins>D.7 Null-terminated sequence utilities [depr.c.strings]</ins></h3>
+<p><ins>The functions from the C standard library shown in Table 160 are deprecated.
+[&nbsp;<i>Note:</i> The corresponding overloads defined in 21.8 are not deprecated. &mdash;<i>end note</i>&nbsp;]</ins></p>
+<table>
+<caption><ins>Table 160 &mdash; C string conversion utilities</ins></caption>
+<tr><td><ins>strtod</ins></td><td><ins>strtof</ins></td><td><ins>strtold</ins></td><td><ins>strtol</ins></td><td><ins>strtoll</ins></td><td><ins>strtoul</ins></td><td><ins>strtoull</ins></td></tr>
+</table>
 </blockquote>
 
 </body></html>
