@@ -109,7 +109,7 @@ The third declaration is similar to the second, but omits the comma separating t
 
 <blockquote class="std">
 <p>There is a syntactic ambiguity when an ellipsis occurs at the end of a <var>parameter-declaration-clause</var> without a preceding comma.
-In this case, the ellipsis is parsed as part of the abstract-declarator if the type of the parameter either names a template parameter pack that has not been expanded or contains <code>auto</code>;
+In this case, the ellipsis is parsed as part of the <var>abstract-declarator</var> if the type of the parameter either names a template parameter pack that has not been expanded or contains <code>auto</code>;
 otherwise, it is parsed as part of the <var>parameter-declaration-clause</var>.</p>
 </blockquote>
 
@@ -122,7 +122,7 @@ template &lt;class T&gt; void f(T...);    // <em>declares a template for a varia
 <p>The meaning of the ellipsis in the function parameter list is different in these two declarations:</p>
 <ul>
 <li>In the first declaration, the ellipsis establishes a function parameter pack that takes its type arguments from the corresponding template parameter pack <code>T</code>;
-the resulting function can take any number of arguments, all of which must be convertible to <code>T</code>.
+the resulting function can take any number of arguments, all of which must be convertible to a corresponding member of <code>T</code>.
 In the function body (defined elsewhere), the parameter pack may be expanded with the pack expansion operator, its size queried using the <code class="prettyprint">sizeof...</code> operator, and can participate in fold expressions.</li>
 <li>In the second declaration, the ellipsis establishes that the function <code>f</code> takes a variable number of arguments of any type, following the first argument, which must be convertible to <code>T</code>.
 The resulting arguments are promoted before being passed to the function, and type information is lost;
