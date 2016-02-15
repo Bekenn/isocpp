@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html;charset=US-ASCII">
+<title>Unqualified enumerators in case labels</title>
+
+<style type="text/css">
+
+body { color: #000000; background-color: #FFFFFF; }
+del { text-decoration: line-through; color: #8B0040; }
+ins { text-decoration: underline; color: #005100; }
+
+p.example { margin-left: 2em; }
+pre.example { margin-left: 2em; }
+div.example { margin-left: 2em; }
+
+code.extract { background-color: #F5F6A2; }
+pre.extract { margin-left: 2em; background-color: #F5F6A2;
+  border: 1px solid #E1E28E; }
+
+p.function { }
+.attribute { margin-left: 2em; }
+.attribute dt { float: left; font-style: italic;
+  padding-right: 1ex; }
+.attribute dd { margin-left: 0em; }
+
+blockquote.std { color: #000000; background-color: #F1F1F1;
+  border: 1px solid #D1D1D1;
+  padding-left: 0.5em; padding-right: 0.5em; }
+blockquote.std del { text-decoration: line-through;
+  color: #000000; background-color: #FFEBFF;
+  border: 1px solid #ECD7EC; }
+blockquote.std ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8; }
+
+table { border: 1px solid black; border-spacing: 0px;
+  margin-left: auto; margin-right: auto; }
+th { text-align: left; vertical-align: top;
+  padding-left: 0.8em; border: none; }
+td { text-align: left; vertical-align: top;
+  padding-left: 0.8em; border: none; }
+
+table.frontmatter { border: 0;  margin: 0; }
+
+ul.dash { list-style-type: none; }
+ul.dash li:before { content: '\2014'; margin-left: -1em }
+
+span.highlight { background-color: #FFFF00; }
+
+</style>
+
+<script type="text/javascript" src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+</head>
+
+<body>
+<h1>Unqualified enumerators in case labels</h1>
+<table class="frontmatter" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="619">
+    <tr>
+        <td align="left" valign="top">Document number:</td>
+        <td>PnnnnR0</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Date:</td>
+        <td>2016-02-14</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Project:</td>
+        <td>Programming Language C++, Evolution Working Group</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Reply-to:</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
+    </tr>
+</table>
+
+<h2><a id="TableOfContents">Table of Contents</a></h2>
+<ol>
+    <li><a href="#TableOfContents">Table of Contents</a></li>
+    <li><a href="#Introduction">Introduction</a></li>
+    <li><a href="#MotivationAndScope">Motivation and Scope</a></li>
+    <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
+    <li><a href="#DesignDecisions">Design Decisions</a></li>
+    <li><a href="#TechnicalSpecifications">Technical Specifications</a></li>
+    <li><a href="#Wording">Wording</a></li>
+</ol>
+
+<h2><a id="Introduction">Introduction</a></h2>
+<p>This paper proposes allowing unqualified name lookup to find (scoped or unscoped) enumerators when the type of the condition of the enclosing switch statement is an enumeration.
+Example:</p>
+<pre class="example">
+<code class="prettyprint">enum class Foo
+{
+    Bar,
+    Baz
+};
+
+namespace N
+{
+    enum Alehouse
+    {
+        Pub,
+        Bar,
+        Tavern
+    }
+}
+
+int f(Foo foo, N::Alehouse h)
+{
+    switch (foo)
+    {
+    case Bar:       // <em>ok: finds Foo::Bar</em>
+        return 1;
+    }
+
+    switch (h)
+    {
+    case Bar:       // <em>ok: finds N::Alehouse::Bar</em>
+        return 2;
+    }
+    
+    return -1;
+}</code>
+</pre>
+
+<h2><a id="MotivationAndScope">Motivation and Scope</a></h2>
+<p>This proposal aims to reduce unnecessary verbosity.
+Switch statements and enumerations are very frequently used together.
+A case label's constant expression must be convertible to the (adjusted) type of the switch statement's condition;
+when the condition is an enumeration, each case label's constant expression must be convertible to that enumeration.
+When an enumerator belonging to that enumeration appears in a case label, it therefore seems unnecessarily pedantic to require the programmer to explicitly qualify the enumerator name when the enumerator is not presently visible in the enclosing scope.</p>
+<pre class="example">
+<code class="prettyprint">enum class Color
+{
+    Black, Blue, Green, Cyan, Red, Magenta, Yellow, White
+};
+
+int color_code(Color color)
+{
+    // <em>Under current rules, every enumerator here must</em>
+    // <em>be prefixed with the enumeration name even though</em>
+    // <em>no other values are possible without explicit</em>
+    // <em>conversions.</em>
+    switch (color)
+    {
+    case <span class="highlight">Color</span>::Black:
+        return 0x000000;
+    case <span class="highlight">Color</span>::Blue:
+        return 0x0000FF;
+    case <span class="highlight">Color</span>::Green:
+        return 0x00FF00;
+    case <span class="highlight">Color</span>::Cyan:
+        return 0x00FFFF;
+    case <span class="highlight">Color</span>::Red:
+        return 0xFF0000;
+    case <span class="highlight">Color</span>::Magenta:
+        return 0xFF00FF;
+    case <span class="highlight">Color</span>::Yellow:
+        return 0xFFFF00;
+    case <span class="highlight">Color</span>::White:
+        return 0xFFFFFF;
+    }
+}</code>
+</pre>
+
+<h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
+<p>This proposal extends the visibility of enumerators to cover case labels when the condition of the associated switch statement is of the type of the enumeration.</p>
+
+<p>Some pathological examples of existing code could change in meaning.
+In order for this to happen, an existing case label would need to reference a named constant in an enclosing namespace (outside of the function definition) that has the same name as an enumerator and a value distinct from that enumerator.
+This should be extremely rare, and may actually be indicative of a bug in existing code.</p>
+
+<h2><a id="DesignDecisions">Design Decisions</a></h2>
+<h3>Name hiding</h3>
+<p>This proposal extends the potential scope of enumerators to cover case labels in switch statements where the codition of the switch statement has the same type as the enumeration.
+This carries with it new potential for name collisions when the name of an enumerator already carries different meaning in the scope of the case label.
+This paper takes the position that an enumerator name appearing in a case label is more likely to refer to the enumerator than to another entity, but gives deference to function-local entities that can't be referenced any other way.
+An enumerator name is therefore allowed to hide entities at class and namespace scope, but is itself hidden by entities at function and block scope.</p>
+
+<p>Example:</p>
+<pre class="example">
+<code class="prettyprint">enum class Color
+{
+    Black, Blue, Green, Cyan, Red, Magenta, Yellow, White
+};
+
+constexpr int Yellow = 42;
+
+int color_code(Color color)
+{
+    int Black = 27;
+
+    switch (color)
+    {
+    case Black:             // <em>error: function-local Black, not Color::Black</em>
+        return 0x000000;
+    case Yellow:            // <em>ok: Color::Yellow</em>
+        return 0xFFFF00;
+    // <em>...</em>
+    }
+
+    return -1;
+}</code>
+</pre>
+
+<h2><a id="TechnicalSpecifications">Technical Specifications</a></h2>
+<ul>
+    <li>When a case label appears in a switch statement and the adjusted type of the switch statement's condition is an enumeration, the enumerators belonging to that enumeration are visible in case label's <var>constant-expression</var>.</li>
+    <li>Enumerators made visible in a case label hide competing names at class scope and namespace scope.</li>
+</ul>
+
+<h2><a id="Wording">Wording</a></h2>
+<p>All modifications are presented relative to N4567.</p>
+
+<p>Add the following paragraph to &sect;3.3.1 [basic.scope.declarative]:</p>
+<blockquote class="std">
+<p><ins>The potential scope of an enumerator additionally includes some case labels as described in 6.4.2.</ins></p>
+</blockquote>
+
+<p>Insert the following paragraph after &sect;3.3.10 [basic.scope.hiding] paragraph 4:</p>
+<blockquote class="std">
+<p><ins>Within the <var>constant-expression</var> of a case label where the potential scope of an enumerator has been extended to include the <var>constant-expression</var> (6.4.2), a name declared at class or namespace scope can be hidden by the enumerator, and the enumerator can be hidden by a name declared at function or block scope.</ins></p>
+</blockquote>
+
+<p>Insert the following paragraph after &sect;6.4.2 [stmt.switch] paragraph 2:</p>
+<blockquote class="std">
+<p><ins>When the condition is of enumeration type, the potential scope of the enumerators of the enumeration is extended to include the <var>constant-expression</var>s of the <code>switch</code> statement's associated <code>case</code> labels.
+[&nbsp;<i>Example:</i></ins></p>
+<pre class="example">
+<ins><code>enum class color { red, yellow, green, blue };
+bool reddish(color col)
+{
+    switch (col)
+    {
+    case red:           // <em>ok: color::red</em>
+    case yellow:        // <em>ok: color::blue</em>
+        return true;
+    default:
+        return false;
+    }
+}</code></ins>
+</pre>
+<p><ins>&mdash;<i>end example</i>&nbsp;]</ins></p>
+</blockquote>
+
+</body></html>
