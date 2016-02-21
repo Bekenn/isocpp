@@ -32,6 +32,13 @@ blockquote.std del { text-decoration: line-through;
   border: 1px solid #ECD7EC; }
 blockquote.std ins { text-decoration: underline;
   color: #000000; background-color: #C8FFC8; }
+blockquote.stddel { text-decoration: line-through;
+  color: #000000; background-color: #FFEBFF;
+  border: 1px solid #ECD7EC;
+  padding-left: 0.5empadding-right: 0.5em; }
+blockquote.stdins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8;
+  border: 1px solid #B3EBB3; padding: 0.5em; }
 
 table { border: 1px solid black; border-spacing: 0px;
   margin-left: auto; margin-right: auto; }
@@ -55,20 +62,20 @@ ul.dash li:before { content: '\2014'; margin-left: -1em }
 <table class="frontmatter" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="619">
     <tr>
         <td align="left" valign="top">Document number:</td>
-        <td>P0282R0</td>
+        <td>D0282R1</td>
     </tr>
     <tr>
         <td align="left" valign="top">Date:</td>
-        <td>2016-02-07</td>
+        <td>2016-02-20</td>
     </tr>
     <tr>
         <td align="left" valign="top">Project:</td>
         <td>Programming Language C++, Library Evolution Working Group</td>
     </tr>
-    <!--tr>
+    <tr>
         <td align="left" valign="top">Revises:</td>
-        <td><a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2016/pnnnnrr.html">PnnnnRr</a></td>
-    </tr-->
+        <td><a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2016/p0282r0.html">P0280R0</a></td>
+    </tr>
     <tr>
         <td align="left" valign="top">Reply-to:</td>
         <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
@@ -80,6 +87,7 @@ ul.dash li:before { content: '\2014'; margin-left: -1em }
     <li><a href="#TableOfContents">Table of Contents</a></li>
     <li><a href="#Overview">Overview</a></li>
     <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
+    <li><a href="#DesignDecisions">Design Decisions</a></li>
     <li><a href="#Wording">Wording</a></li>
 </ol>
 
@@ -99,91 +107,232 @@ This is pretty much asking for undefined behavior:</p>
 
 <p>Example (current usage, generates no warnings):</p>
 <pre class="example">
-<code class="prettyprint">const char* PI_STR = "3.14159 or so";
+<code class="prettyprint">constexpr const char* PI_STR = "3.14159 or so";
 char* endptr;   // <em>can't use const char*, would fail to compile on the next line</em>
 float pi = strtof(PI_STR, &amp;endptr); // <em>bad: silent cast to char*</em>
 *endptr = 'x';  // <em>universe explodes</em></code>
 </pre>
 
 <h2><a id="ImpactOnTheStandard">Impact On the Standard</a></h2>
-<p>The proposal adds a few new overloads covering the C library <code>strto<i>x</i></code> family of functions and deprecates the existing versions.
-Apart from the deprecations, the wording is essentially identical to wording for other overloads already present.</p>
+<p>The proposal adds a few new overloads covering the C library <code>strto<i>x</i></code> and <code>wcsto<i>x</i></code> family of functions and deprecates the existing versions.
+It also adds a new rule prioritizing conversions to <code class="prettyprint">nullptr_t</code> over conversions to null pointer values.</p>
+
+<p>No existing code should be invalidated by these changes.</p>
+
+<h2><a id="DesignDecisions">Design Decisions</a></h2>
+<p>The new overload set includes variants for const-qualified and non-const-qualified input sequences.
+Example:</p>
+<pre class="example">
+<code class="prettyprint">float strtof(const char* nptr, const char** endptr);
+float strtof(      char* nptr,       char** endptr);</code>
+</pre>
+
+<p>To avoid breaking existing code, the existing variant of each function is retained, but deprecated:</p>
+<pre class="example">
+<code class="prettyprint">float strtof(const char* nptr, char** endptr);  // <em>D.7 (deprecated)</em></code>
+</pre>
+
+<p>This unfortunately creates an ambiguity when the function is called with a null pointer constant for the second argument, because the new const-preserving variant is not considered a better candidate than the existing variant.
+Two approaches to resolving this ambiguity were considered.</p>
+
+<h3>Approach 1: (Even) More Overloads</h3>
+<p>The ambiguity can be partially addressed by the addition of another overload using <code class="prettyprint">nullptr_t</code> as the type of its second argument, but this only resolves the ambiguity when the function is called with <code class="prettyprint">nullptr</code>:</p>
+<pre class="example">
+<code class="prettyprint">float strtof(const char* nptr, const char** endptr);    // <em>1</em>
+float strtof(      char* nptr,       char** endptr);    // <em>2</em>
+float strtof(const char* nptr,       char** endptr);    // <em>3, D.7 (deprecated)</em>
+float strtof(const char* nptr,           nullptr_t);    // <em>4</em>
+
+float pi()
+{
+    constexpr const char* PI_STR = "3.14159 or so";
+    // return strtof(PI_STR, NULL); // <em>ambiguous</em>
+    return strtof(PI_STR, nullptr); // <em>ok: calls 4</em>
+}</code>
+</pre>
+
+<p>The ambiguity with <code class="prettyprint">NULL</code> (or <code class="prettyprint">0</code>) exists because the overload rules treat conversion from a null pointer constant to a null pointer value as indistinguishable from a conversion to <code class="prettyprint">nullptr_t</code>.
+A small addition to these rules that favors conversions to <code class="prettyprint">nullptr_t</code> resolves the ambiguity.
+This unfortunately requires a change (however minor) in the core language rules in order to support a library proposal, which is a concern that should not be taken lightly.
+However, the author believes that this is a reasonable change to make, even without this proposal as a catalyst.
+Given two overloaded functions, one of which takes an argument of type <code class="prettyprint">nullptr_t</code>, the library writer's intent to capture null pointer constants seems clear.</p>
+
+<h3>Approach 2: Remove the existing variant</h3>
+<p>An alternative and far simpler approach would be to remove the existing declarations instead of deprecating them.
+This would be in keeping with the existing modifications to strchr et al in the C++ standard, but unfortunately (and unlike those modifications) breaks a large body of existing code.
+Doing so without first deprecating the existing declarations seems unkind.</p>
+
+<p>This paper favors the first approach.</p>
 
 <h2><a id="Wording">Wording</a></h2>
 <p>All modifications are presented relative to N4567.</p>
 
+<p>Insert a new item to the initial (outermost) list in &sect;13.3.3.2 paragraph 4:</p>
+<blockquote class="std">
+<p>Standard conversion sequences are ordered by their ranks:
+an Exact Match is a better conversion than a Promotion, which is a better conversion than a Conversion.
+Two conversion sequences with the same rank are indistinguishable unless one of the following rules applies:</p>
+<ul class="dash">
+<li> A conversion that does not convert a pointer, a pointer to member, or <code>std::nullptr_t</code> to <code>bool</code> is better than one that does.</li>
+<li> A conversion that promotes an enumeration whose underlying type is fixed to its underlying type is better than one that promotes to the promoted underlying type, if the two are different.</li>
+<li> <ins>A conversion that converts a null pointer constant of integral type to a prvalue of type <code>std::nullptr_t</code> is better than one that converts to a null pointer value.</ins></li>
+<li> If class <code>B</code> is derived directly or indirectly from class <code>A</code>, conversion of <code>B*</code> to <code>A*</code> is better than conversion of <code>B*</code> to <code>void*</code>, and conversion of <code>A*</code> to <code>void*</code> is better than conversion of <code>B*</code> to <code>void*</code>.</li>
+<li> <i>[...]</i></li>
+</ul>
+</blockquote>
+
 <p>Insert the following new paragraphs in &sect;21.8 [c.strings] after paragraph 13:</p>
-<blockquote class="std">
-<p><ins>The function signature <code>strtod(const char*, char**)</code> shall be supplemented with the two declarations:</ins></p>
+<blockquote class="stdins">
+<p>The function signature <code>strtod(const char*, char**)</code> shall be supplemented with the declarations:</p>
 <pre>
-<ins><code>double strtod(const char* nptr, const char** endptr);
-double strtod(      char* nptr,       char** endptr);</code></ins>
+<code>double strtod(const char* nptr, const char** endptr);
+double strtod(      char* nptr,       char** endptr);
+double strtod(const char* nptr,           nullptr_t);</code>
 </pre>
-<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+<p>each of which shall have the same behavior as the original declaration.</p>
 </blockquote>
 
-<blockquote class="std">
-<p><ins>The function signature <code>strtof(const char*, char**)</code> shall be supplemented with the two declarations:</ins></p>
+<blockquote class="stdins">
+<p>The function signature <code>strtof(const char*, char**)</code> shall be supplemented with the declarations:</p>
 <pre>
-<ins><code>float strtof(const char* nptr, const char** endptr);
-float strtof(      char* nptr,       char** endptr);</code></ins>
+<code>float strtof(const char* nptr, const char** endptr);
+float strtof(      char* nptr,       char** endptr);
+float strtof(const char* nptr,           nullptr_t);</code>
 </pre>
-<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+<p>each of which shall have the same behavior as the original declaration.</p>
 </blockquote>
 
-<blockquote class="std">
-<p><ins>The function signature <code>strtold(const char*, char**)</code> shall be supplemented with the two declarations:</ins></p>
+<blockquote class="stdins">
+<p>The function signature <code>strtold(const char*, char**)</code> shall be supplemented with the declarations:</p>
 <pre>
-<ins><code>long double strtold(const char* nptr, const char** endptr);
-long double strtold(      char* nptr,       char** endptr);</code></ins>
+<code>long double strtold(const char* nptr, const char** endptr);
+long double strtold(      char* nptr,       char** endptr);
+long double strtold(const char* nptr,           nullptr_t);</code>
 </pre>
-<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+<p>each of which shall have the same behavior as the original declaration.</p>
 </blockquote>
 
-<blockquote class="std">
-<p><ins>The function signature <code>strtol(const char*, char**, int)</code> shall be supplemented with the two declarations:</ins></p>
+<blockquote class="stdins">
+<p>The function signature <code>strtol(const char*, char**, int)</code> shall be supplemented with the declarations:</p>
 <pre>
-<ins><code>long int strtol(const char* nptr, const char** endptr, int base);
-long int strtol(      char* nptr,       char** endptr, int base);</code></ins>
+<code>long int strtol(const char* nptr, const char** endptr, int base);
+long int strtol(      char* nptr,       char** endptr, int base);
+long int strtol(const char* nptr,           nullptr_t, int base);</code>
 </pre>
-<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+<p>each of which shall have the same behavior as the original declaration.</p>
 </blockquote>
 
-<blockquote class="std">
-<p><ins>The function signature <code>strtoll(const char*, char**, int)</code> shall be supplemented with the two declarations:</ins></p>
+<blockquote class="stdins">
+<p>The function signature <code>strtoll(const char*, char**, int)</code> shall be supplemented with the declarations:</p>
 <pre>
-<ins><code>long long int strtoll(const char* nptr, const char** endptr, int base);
-long long int strtoll(      char* nptr,       char** endptr, int base);</code></ins>
+<code>long long int strtoll(const char* nptr, const char** endptr, int base);
+long long int strtoll(      char* nptr,       char** endptr, int base);
+long long int strtoll(const char* nptr,           nullptr_t, int base);</code>
 </pre>
-<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+<p>each of which shall have the same behavior as the original declaration.</p>
 </blockquote>
 
-<blockquote class="std">
-<p><ins>The function signature <code>strtoul(const char*, char**, int)</code> shall be supplemented with the two declarations:</ins></p>
+<blockquote class="stdins">
+<p>The function signature <code>strtoul(const char*, char**, int)</code> shall be supplemented with the declarations:</p>
 <pre>
-<ins><code>unsigned long int strtoul(const char* nptr, const char** endptr, int base);
-unsigned long int strtoul(      char* nptr,       char** endptr, int base);</code></ins>
+<code>unsigned long int strtoul(const char* nptr, const char** endptr, int base);
+unsigned long int strtoul(      char* nptr,       char** endptr, int base);
+unsigned long int strtoul(const char* nptr,           nullptr_t, int base);</code>
 </pre>
-<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+<p>each of which shall have the same behavior as the original declaration.</p>
 </blockquote>
 
-<blockquote class="std">
-<p><ins>The function signature <code>strtoull(const char*, char**, int)</code> shall be supplemented with the two declarations:</ins></p>
+<blockquote class="stdins">
+<p>The function signature <code>strtoull(const char*, char**, int)</code> shall be supplemented with the declarations:</p>
 <pre>
-<ins><code>unsigned long long int strtoull(const char* nptr, const char** endptr, int base);
-unsigned long long int strtoull(      char* nptr,       char** endptr, int base);</code></ins>
+<code>unsigned long long int strtoull(const char* nptr, const char** endptr, int base);
+unsigned long long int strtoull(      char* nptr,       char** endptr, int base);
+unsigned long long int strtoull(const char* nptr,           nullptr_t, int base);
+</code>
 </pre>
-<p><ins>both of which shall have the same behavior as the original declaration.</ins></p>
+<p>each of which shall have the same behavior as the original declaration.</p>
+</blockquote>
+
+<blockquote class="stdins">
+<p>The function signature <code>wcstod(const wchar_t*, wchar_t**)</code> shall be supplemented with the declarations:</p>
+<pre>
+<code>double wcstod(const wchar_t* nptr, const wchar_t** endptr);
+double wcstod(      wchar_t* nptr,       wchar_t** endptr);
+double wcstod(const wchar_t* nptr,              nullptr_t);</code>
+</pre>
+<p>each of which shall have the same behavior as the original declaration.</p>
+</blockquote>
+
+<blockquote class="stdins">
+<p>The function signature <code>wcstof(const wchar_t*, wchar_t**)</code> shall be supplemented with the declarations:</p>
+<pre>
+<code>float wcstof(const wchar_t* nptr, const wchar_t** endptr);
+float wcstof(      wchar_t* nptr,       wchar_t** endptr);
+float wcstof(const wchar_t* nptr,              nullptr_t);</code>
+</pre>
+<p>each of which shall have the same behavior as the original declaration.</p>
+</blockquote>
+
+<blockquote class="stdins">
+<p>The function signature <code>wcstold(const wchar_t*, wchar_t**)</code> shall be supplemented with the declarations:</p>
+<pre>
+<code>long double wcstold(const wchar_t* nptr, const wchar_t** endptr);
+long double wcstold(      wchar_t* nptr,       wchar_t** endptr);
+long double wcstold(const wchar_t* nptr,              nullptr_t);</code>
+</pre>
+<p>each of which shall have the same behavior as the original declaration.</p>
+</blockquote>
+
+<blockquote class="stdins">
+<p>The function signature <code>wcstol(const wchar_t*, wchar_t**, int)</code> shall be supplemented with the declarations:</p>
+<pre>
+<code>long int wcstol(const wchar_t* nptr, const wchar_t** endptr, int base);
+long int wcstol(      wchar_t* nptr,       wchar_t** endptr, int base);
+long int wcstol(const wchar_t* nptr,              nullptr_t, int base);</code>
+</pre>
+<p>each of which shall have the same behavior as the original declaration.</p>
+</blockquote>
+
+<blockquote class="stdins">
+<p>The function signature <code>wcstoll(const wchar_t*, wchar_t**, int)</code> shall be supplemented with the declarations:</p>
+<pre>
+<code>long long int wcstoll(const wchar_t* nptr, const wchar_t** endptr, int base);
+long long int wcstoll(      wchar_t* nptr,       wchar_t** endptr, int base);
+long long int wcstoll(const wchar_t* nptr,              nullptr_t, int base);</code>
+</pre>
+<p>each of which shall have the same behavior as the original declaration.</p>
+</blockquote>
+
+<blockquote class="stdins">
+<p>The function signature <code>wcstoul(const wchar_t*, wchar_t**, int)</code> shall be supplemented with the declarations:</p>
+<pre>
+<code>unsigned long int wcstoul(const wchar_t* nptr, const wchar_t** endptr, int base);
+unsigned long int wcstoul(      wchar_t* nptr,       wchar_t** endptr, int base);
+unsigned long int wcstoul(const wchar_t* nptr,              nullptr_t, int base);</code>
+</pre>
+<p>each of which shall have the same behavior as the original declaration.</p>
+</blockquote>
+
+<blockquote class="stdins">
+<p>The function signature <code>wcstoull(const wchar_t*, wchar_t**, int)</code> shall be supplemented with the declarations:</p>
+<pre>
+<code>unsigned long long int wcstoull(const wchar_t* nptr, const wchar_t** endptr, int base);
+unsigned long long int wcstoull(      wchar_t* nptr,       wchar_t** endptr, int base);
+unsigned long long int wcstoull(const wchar_t* nptr,              nullptr_t, int base);
+</code>
+</pre>
+<p>each of which shall have the same behavior as the original declaration.</p>
 </blockquote>
 
 <p>Add the following new section to Annex D [depr]:</p>
-<blockquote class="std">
-<h3><ins>D.7 Null-terminated sequence utilities [depr.c.strings]</ins></h3>
-<p><ins>The functions from the C standard library shown in Table 160 are deprecated.
-[&nbsp;<i>Note:</i> The corresponding overloads defined in 21.8 are not deprecated. &mdash;<i>end note</i>&nbsp;]</ins></p>
+<blockquote class="stdins">
+<h3>D.7 Null-terminated sequence utilities [depr.c.strings]</h3>
+<p>The functions from the C standard library shown in Table 160 are deprecated.
+[&nbsp;<i>Note:</i> The corresponding overloads defined in 21.8 are not deprecated. &mdash;<i>end note</i>&nbsp;]</p>
 <table>
-<caption><ins>Table 160 &mdash; C string conversion utilities</ins></caption>
-<tr><td><ins>strtod</ins></td><td><ins>strtof</ins></td><td><ins>strtold</ins></td><td><ins>strtol</ins></td><td><ins>strtoll</ins></td><td><ins>strtoul</ins></td><td><ins>strtoull</ins></td></tr>
+<caption>Table 160 &mdash; C string conversion utilities</caption>
+<tr><td>strtod</td><td>strtof</td><td>strtold</td><td>strtol</td><td>strtoll</td><td>strtoul</td><td>strtoull</td></tr>
+<tr><td>wcstod</td><td>wcstof</td><td>wcstold</td><td>wcstol</td><td>wcstoll</td><td>wcstoul</td><td>wcstoull</td></tr>
 </table>
 </blockquote>
 
