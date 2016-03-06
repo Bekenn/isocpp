@@ -32,6 +32,14 @@ blockquote.std del { text-decoration: line-through;
   border: 1px solid #ECD7EC; }
 blockquote.std ins { text-decoration: underline;
   color: #000000; background-color: #C8FFC8; }
+blockquote.stddel { text-decoration: line-through;
+  color: #000000; background-color: #FFEBFF;
+  border: 1px solid #ECD7EC;
+  padding-left: 0.5em padding-right: 0.5em; }
+blockquote.stdins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8;
+  border: 1px solid #B3EBB3;
+  padding-left: 0.5em; padding-right: 0.5em; }
 
 table { border: 1px solid black; border-spacing: 0px;
   margin-left: auto; margin-right: auto; }
@@ -55,11 +63,11 @@ ul.dash li:before { content: '\2014'; margin-left: -1em }
 <table class="frontmatter" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="619">
     <tr>
         <td align="left" valign="top">Document number:</td>
-        <td>P0127R0</td>
+        <td>D0127R1</td>
     </tr>
     <tr>
         <td align="left" valign="top">Date:</td>
-        <td>2015-09-25</td>
+        <td>2016-03-04</td>
     </tr>
     <tr>
         <td align="left" valign="top">Project:</td>
@@ -67,17 +75,19 @@ ul.dash li:before { content: '\2014'; margin-left: -1em }
     </tr>
     <tr>
         <td align="left" valign="top">Revises:</td>
-        <td><a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4469.html">N4469</a></td>
+        <td><a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/p0127r0.html">P0127R0</a></td>
     </tr>
     <tr>
         <td align="left" valign="top">Reply-to:</td>
-        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;<br>
+        Mike Spertus, Symantec &lt;<a href="mailto:mike_spertus@symantec.com">mike_spertus@symantec.com</a>&gt;</td>
     </tr>
 </table>
 
 <h2><a id="TableOfContents">Table of Contents</a></h2>
 <ol>
     <li><a href="#TableOfContents">Table of Contents</a></li>
+    <li><a href="#WhatsNew">What's New</a></li>
     <li><a href="#Introduction">Introduction</a></li>
     <li><a href="#MotivationAndScope">Motivation and Scope</a></li>
     <li><a href="#ImpactOnTheStandard">Impact On the Standard</a></li>
@@ -86,6 +96,12 @@ ul.dash li:before { content: '\2014'; margin-left: -1em }
     <li><a href="#Wording">Wording</a></li>
     <li><a href="#Acknowledgments">Acknowledgments</a></li>
 </ol>
+
+<h2><a id="WhatsNew">What's New</a></h2>
+<h3>Changes since P0127R0</h3>
+<ul>
+<li>Added wording for a hypothetical post-Concepts draft of the Standard.</li>
+</ul>
 
 <h2><a id="Introduction">Introduction</a></h2>
 <p>This paper proposes allowing non-type template parameters to be declared with the <code>auto</code> placeholder type specifier.
@@ -275,6 +291,13 @@ It has been suggested that <code class="prettyprint">auto</code> could be used t
 <p>Such a feature is desirable, but the use of the <code class="prettyprint">auto</code> keyword for it is not.
 There is no existing context in which <code class="prettyprint">auto</code> acts as anything other than a stand-in for a type name; consistency with the rest of the language dictates that <code class="prettyprint">auto</code> behave as spelled out in this paper.</p>
 
+<h3>Compatibility with Concepts</h3>
+<p>This proposal is intended to be fully compatible with the Concepts TS.
+Because Concepts introduces new rules for dealing with placeholders, care had to be taken to avoid impacting any features of Concepts.
+The wording provided in this proposal is careful to specify that the rules introduced here are only applicable to placeholders <i>designated by <code class="prettyprint">auto</code> or <code class="prettyprint">decltype(auto)</code></i>.
+Concepts does not establish any new behaviors for <code class="prettyprint">auto</code> that conflict with this proposal.
+</p>
+
 <h2><a id="DesignDecisions">Design Decisions</a></h2>
 <p>A few people have suggested that all values in a parameter pack introduced by <code class="prettyprint">auto</code> should have the same type.
 The rationale seems to be that because <code class="prettyprint">auto</code> can be replaced by a single type name in a multiple variable definition, the same should be true here:</p>
@@ -301,7 +324,8 @@ template &lt;auto... vs&gt; struct value_list { };</code>
 </ul>
 
 <h2><a id="Wording">Wording</a></h2>
-<p>All modifications are presented relative to N4296.</p>
+<h3>Relative to the Working Draft</h3>
+<p>All modifications are presented relative to N4567.</p>
 
 <p>Modify &sect;7.1.6.4 [dcl.spec.auto] paragraph 5:</p>
 <blockquote class="std">
@@ -310,6 +334,60 @@ in the <var>type-specifier-seq</var> in the <var>new-type-id</var> or <var>type-
 in a <var>for-range-declaration</var>,
 <del>and </del>in declaring a static data member with a brace-or-equal-initializer that appears within the member-specification of a class definition (9.4.2)<ins>,
 and in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var> of a <var>template-parameter</var> (14.1)</ins>.</p>
+</blockquote>
+
+<p>Modify &sect;7.1.6.4 [dcl.spec.auto] paragraph 7:</p>
+<blockquote class="std">
+<p>When a variable <ins>or non-type template parameter </ins>declared using a placeholder type is initialized, or a <code>return</code> statement occurs in a function declared with a return type that contains a placeholder type, the deduced return type<ins>,</ins><del> or</del> variable type<ins>, or template parameter type</ins> is determined from the type of its initializer.
+In the case of a <code>return</code> with no operand or with an operand of type <code>void</code>, the declared return type shall be <code>auto</code> and the deduced return type is <code>void</code>.
+Otherwise, let <code>T</code> be the declared type of the variable<ins>, template parameter,</ins> or return type of the function.
+If the placeholder is the <code>auto</code> <var>type-specifier</var>, the deduced type is determined using the rules for template argument deduction.
+If the initialization is direct-list-initialization then the <var>braced-init-list</var> shall contain only a single <var>assignment-expression</var> <code>L</code>.
+If the deduction is for a return statement and the initializer is a <var>braced-init-list</var> (8.5.4), the program is ill-formed.
+Otherwise, obtain <code>P</code> from <code>T</code> by replacing the occurrences of <code>auto</code> with either a new invented type template parameter <code>U</code> or, if the initialization is copy-list-initialization, with <code>std::initializer_list&lt;U&gt;</code>.
+Deduce a value for <code>U</code> using the rules of template argument deduction from a function call (14.8.2.1), where <code>P</code> is a function template parameter type and the corresponding argument is the initializer, or <code>L</code> in the case of direct-list-initialization.
+If the deduction fails, the declaration is ill-formed.
+Otherwise, the type deduced for the variable or return type is obtained by substituting the deduced <code>U</code> into <code>P</code>.
+[&nbsp;<i>Example:</i></p>
+<pre class="example">
+<code>  auto x1 = { 1, 2 };       // decltype(x1) <em>is</em> std::initializer_list&lt;int&gt;
+  auto x2 = { 1, 2.0 };     // <em>error: cannot deduce element type</em>
+  auto x3{ 1, 2 };          // <em>error: not a single element</em>
+  auto x4 = { 3 };          // decltype(x4) <em>is</em> std::initializer_list&lt;int&gt;
+  auto x5{ 3 };             // decltype(x5) <em>is</em> int</code>
+</pre>
+<p>&mdash;<i>end example</i>&nbsp;]</p>
+
+<p>[&nbsp;<i>Example:</i></p>
+<pre class="example">
+<code>  const auto &amp;i = expr;</code>
+</pre>
+<p>The type of <code>i</code> is the deduced type of the parameter <code>u</code> in the call <code>f(expr)</code> of the following invented function template:</p>
+<pre class="example">
+  <code>template &lt;class U&gt; void f(const U&amp; u);</code>
+</pre>
+<p>&mdash;<i>end example</i>&nbsp;]</p>
+
+<p>If the placeholder is the <code>decltype(auto)</code> <var>type-specifier</var>, <del>the declared type of the variable or return type of the function</del><ins><code>T</code></ins> shall be the placeholder alone.
+The type deduced for <del>the variable or return type</del><ins><code>T</code></ins> is determined as described in 7.1.6.2, as though the <var>initializer-clause</var> or <var>expression-list</var> of the <var>initializer</var> <ins>or the <var>constant-expression</var> of the corresponding <var>template-argument</var> </ins>or the <var>expression</var> of the <code>return</code> statement had been the operand of the <code>decltype</code>.
+[&nbsp;<i>Example:</i></p>
+<pre class="example">
+<code>int i;
+int&amp;&amp; f();
+auto           x2a(i);          // decltype(x2a) <em>is</em> int
+decltype(auto) x2d(i);          // decltype(x2d) <em>is</em> int
+auto           x3a = i;         // decltype(x3a) <em>is</em> int
+decltype(auto) x3d = i;         // decltype(x3d) <em>is</em> int
+auto           x4a = (i);       // decltype(x4a) <em>is</em> int
+decltype(auto) x4d = (i);       // decltype(x4d) <em>is</em> int&amp;
+auto           x5a = f();       // decltype(x5a) <em>is</em> int
+decltype(auto) x5d = f();       // decltype(x5d) <em>is</em> int&amp;&amp;
+auto           x6a = { 1, 2 };  // decltype(x6a) <em>is</em> std::initializer_list&lt;int&gt;
+decltype(auto) x6d = { 1, 2 };  // <em>error,</em> { 1, 2 } <em>is not an expression</em>
+auto          *x7a = &amp;i;        // decltype(x7a) <em>is</em> int*
+decltype(auto)*x7d = &amp;i;        // <em>error, declared type is not plain</em> decltype(auto)</code>
+</pre>
+<p>&mdash;<i>end example</i>&nbsp;]</p>
 </blockquote>
 
 <p>Modify &sect;14.1 [temp.param] paragraph 4:</p>
@@ -321,14 +399,14 @@ and in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var>
 <li>lvalue reference to object or lvalue reference to function,</li>
 <li>pointer to member,</li>
 <li><code>std::nullptr_t</code><del>.</del><ins>,</ins></li>
-<li><ins>a type that contains a placeholder type designated by <code>auto</code> (7.1.6.4).</ins></li>
+<li><ins>a type that contains a placeholder type designated by <code>auto</code> or <code>decltype(auto)</code> (7.1.6.4).</ins></li>
 </ul>
 </blockquote>
 
 <p>Modify &sect;14.3.2 [temp.arg.nontype] paragraph 1:</p>
 <blockquote class="std">
 <p>A <var>template-argument</var> for a non-type <var>template-parameter</var> shall be a converted constant expression (5.20) of the type of the <var>template-parameter</var>.
-<ins>If the type of the <var>template-parameter</var> contains a placeholder type (7.1.6.4, 14.1), the deduced parameter type is determined from the type of the <var>template-argument</var> using the rules for template argument deduction from a function call (14.8.2.1).
+<ins>If the type of the <var>template-parameter</var> contains a placeholder type (7.1.6.4, 14.1), the deduced parameter type is determined from the type of the <var>template-argument</var> as described in 7.6.1.4.
 If a deduced parameter type is not permitted for a <var>template-parameter</var> declaration (14.1), the program is ill-formed.</ins>
 For a non-type <var>template-parameter</var> of reference or pointer type, the value of the constant expression shall not refer to (or for a pointer type, shall not be the address of):</p>
 <ul class="dash">
@@ -374,7 +452,7 @@ B&lt;2.5&gt; b3; // <em>error: template parameter type cannot be double</em></in
 
 <p>Modify &sect;14.5.5 [temp.class.spec] paragraph 8 list item 8.2:</p>
 <blockquote class="std">
-<p>The type of a template parameter corresponding to a specialized non-type argument shall not be dependent on a parameter of the specialization<ins> that appears as a (possibly cv-qualified) argument in the argument list of the specialization.
+<p>The type of a template parameter corresponding to a specialized non-type argument shall not be dependent on a parameter of the specialization<ins> that appears as a <var>type-specifier</var> in the <var>type-specifier-seq</var> of an argument in the argument list of the specialization.
 Otherwise, the corresponding arguments are deduced from the type of the non-type argument</ins>.
 [&nbsp;<i>Example:</i></p>
 <pre class="example">
@@ -415,7 +493,7 @@ Expressions of the following forms are type-dependent only if the type specified
 </dl>
 </blockquote>
 
-<p>Modify &sect;14.8.2.5 [temp.deduct.type] paragraph 3:</p>
+<p>Modify &sect;14.8.2.5 [temp.deduct.type] paragraph 5:</p>
 <blockquote class="std">
 <p>The non-deduced contexts are:</p>
 <ul class="dash">
@@ -441,9 +519,202 @@ g({1,2,3}); // <em>error: no argument deduced for T</em></code>
 </ul>
 </blockquote>
 
+<h3>Relative to the Concepts TS</h3>
+<p>All modifications are presented relative to ISO/IEC 14882:2014 (N4141) as amended first by the Concepts TS (N4553) and then incorporating changes to the working draft up through N4567.</p>
+
+<p>Add a new paragraph after &sect;7.1.6.4 [dcl.spec.auto] paragraph 8:</p>
+<blockquote class="stdins">
+<p>A placeholder type designated by <code>auto</code> or <code>decltype(auto)</code> can also be used in the <var>decl-specifier-seq</var> in the <var>parameter-declaration</var> of a <var>template-parameter</var> (14.1).</p>
+</blockquote>
+
+<p>Modify &sect;7.1.6.4 [dcl.spec.auto] paragraph 10 (paragraph 11 here):</p>
+<blockquote class="std">
+<p>When a variable <ins>or non-type template parameter </ins>declared using a placeholder type is initialized, or a <code>return</code> statement occurs in a function declared with a return type that contains a placeholder type, the deduced return type<ins>,</ins><del> or</del> variable type<ins>, or template parameter type</ins> is determined from the type of its initializer.
+In the case of a <code>return</code> with no operand or with an operand of type <code>void</code>, the declared return type shall be <code>auto</code> and the deduced return type is <code>void</code>.
+Otherwise, let <code>T</code> be the declared type of the variable<ins>, template parameter,</ins> or return type of the function.
+If the placeholder is the <code>auto</code> <var>type-specifier</var>, the deduced type is determined using the rules for template argument deduction.
+If the initialization is direct-list-initialization then the <var>braced-init-list</var> shall contain only a single <var>assignment-expression</var> <code>L</code>.
+If the deduction is for a return statement and the initializer is a <var>braced-init-list</var> (8.5.4), the program is ill-formed.
+Otherwise, obtain <code>P</code> from <code>T</code> by replacing the occurrences of <code>auto</code> with either a new invented type template parameter <code>U</code> or, if the initialization is copy-list-initialization, with <code>std::initializer_list&lt;U&gt;</code>.
+Deduce a value for <code>U</code> using the rules of template argument deduction from a function call (14.9.2.1), where <code>P</code> is a function template parameter type and the corresponding argument is the initializer, or <code>L</code> in the case of direct-list-initialization.
+If the deduction fails, the declaration is ill-formed.
+Otherwise, the type deduced for the variable or return type is obtained by substituting the deduced <code>U</code> into <code>P</code>.
+[&nbsp;<i>Example:</i></p>
+<pre class="example">
+<code>  auto x1 = { 1, 2 };       // decltype(x1) <em>is</em> std::initializer_list&lt;int&gt;
+  auto x2 = { 1, 2.0 };     // <em>error: cannot deduce element type</em>
+  auto x3{ 1, 2 };          // <em>error: not a single element</em>
+  auto x4 = { 3 };          // decltype(x4) <em>is</em> std::initializer_list&lt;int&gt;
+  auto x5{ 3 };             // decltype(x5) <em>is</em> int</code>
+</pre>
+<p>&mdash;<i>end example</i>&nbsp;]</p>
+
+<p>[&nbsp;<i>Example:</i></p>
+<pre class="example">
+<code>  const auto &amp;i = expr;</code>
+</pre>
+<p>The type of <code>i</code> is the deduced type of the parameter <code>u</code> in the call <code>f(expr)</code> of the following invented function template:</p>
+<pre class="example">
+  <code>template &lt;class U&gt; void f(const U&amp; u);</code>
+</pre>
+<p>&mdash;<i>end example</i>&nbsp;]</p>
+
+<p>If the placeholder is the <code>decltype(auto)</code> <var>type-specifier</var>, <del>the declared type of the variable or return type of the function</del><ins><code>T</code></ins> shall be the placeholder alone.
+The type deduced for <del>the variable or return type</del><ins><code>T</code></ins> is determined as described in 7.1.6.2, as though the <var>initializer-clause</var> or <var>expression-list</var> of the <var>initializer</var> <ins>or the <var>constant-expression</var> of the corresponding <var>template-argument</var> </ins>or the <var>expression</var> of the <code>return</code> statement had been the operand of the <code>decltype</code>.
+[&nbsp;<i>Example:</i></p>
+<pre class="example">
+<code>int i;
+int&amp;&amp; f();
+auto           x2a(i);          // decltype(x2a) <em>is</em> int
+decltype(auto) x2d(i);          // decltype(x2d) <em>is</em> int
+auto           x3a = i;         // decltype(x3a) <em>is</em> int
+decltype(auto) x3d = i;         // decltype(x3d) <em>is</em> int
+auto           x4a = (i);       // decltype(x4a) <em>is</em> int
+decltype(auto) x4d = (i);       // decltype(x4d) <em>is</em> int&amp;
+auto           x5a = f();       // decltype(x5a) <em>is</em> int
+decltype(auto) x5d = f();       // decltype(x5d) <em>is</em> int&amp;&amp;
+auto           x6a = { 1, 2 };  // decltype(x6a) <em>is</em> std::initializer_list&lt;int&gt;
+decltype(auto) x6d = { 1, 2 };  // <em>error,</em> { 1, 2 } <em>is not an expression</em>
+auto          *x7a = &amp;i;        // decltype(x7a) <em>is</em> int*
+decltype(auto)*x7d = &amp;i;        // <em>error, declared type is not plain</em> decltype(auto)</code>
+</pre>
+<p>&mdash;<i>end example</i>&nbsp;]</p>
+</blockquote>
+
+<p>Modify &sect;14.1 [temp.param] paragraph 5:</p>
+<blockquote class="std">
+<p>A non-type <var>template-parameter</var> shall have one of the following (optionally <var>cv-qualified</var>) types:</p>
+<ul class="dash">
+<li>integral or enumeration type,</li>
+<li>pointer to object or pointer to function,</li>
+<li>lvalue reference to object or lvalue reference to function,</li>
+<li>pointer to member,</li>
+<li><code>std::nullptr_t</code><del>.</del><ins>,</ins></li>
+<li><ins>a type that contains a placeholder type designated by <code>auto</code> or <code>decltype(auto)</code> (7.1.6.4).</ins></li>
+</ul>
+</blockquote>
+
+<p>Modify &sect;14.4.2 [temp.arg.nontype] paragraph 1:</p>
+<blockquote class="std">
+<p>A <var>template-argument</var> for a non-type <var>template-parameter</var> shall be a converted constant expression (5.20) of the type of the <var>template-parameter</var>.
+<ins>If the type of the <var>template-parameter</var> contains a placeholder type (7.1.6.4, 14.1), the deduced parameter type is determined from the type of the <var>template-argument</var> using the rules for template argument deduction from a function call (14.9.2.1).
+If a deduced parameter type is not permitted for a <var>template-parameter</var> declaration (14.1), the program is ill-formed.</ins>
+For a non-type <var>template-parameter</var> of reference or pointer type, the value of the constant expression shall not refer to (or for a pointer type, shall not be the address of):</p>
+<ul class="dash">
+<li>a subobject (1.8),</li>
+<li>a temporary object (12.2),</li>
+<li>a string literal (2.13.5),</li>
+<li>the result of a <code>typeid</code> expression (5.2.8), or</li>
+<li>a predefined <code>__func__</code> variable (8.4.1).</li>
+</ul>
+<p>[&nbsp;<i>Note:</i> If the <var>template-argument</var> represents a set of overloaded functions (or a pointer or member pointer to such), the matching function is selected from the set (13.4). &mdash;<i>end note</i>&nbsp;]</p>
+</blockquote>
+
+<p>Modify &sect;14.4.2 [temp.arg.nontype] paragraph 2:</p>
+<blockquote class="std">
+<p>[&nbsp;<i>Example:</i></p>
+<pre class="example">
+<code>template&lt;const int* pci&gt; struct X { /* <em>...</em> */ };
+int ai[10];
+X&lt;ai&gt; xi; // <em>array to pointer and qualification conversions</em>
+
+struct Y { /* <em>...</em> */ };
+template&lt;const Y&amp; b&gt; struct Z { /* <em>...</em> */ };
+Y y;
+Z&lt;y&gt; z; // <em>no conversion, but note extra cv-qualification</em>
+
+template&lt;int (&amp;pa)[5]&gt; struct W { /* <em>...</em> */ };
+int b[5];
+W&lt;b&gt; w; // <em>no conversion</em>
+
+void f(char);
+void f(int);
+
+template&lt;void (*pf)(int)&gt; struct A { /* <em>...</em> */ };
+A&lt;&amp;f&gt; a; // <em>selects f(int)</em>
+<ins>
+template&lt;auto n&gt; struct B { /* <em>...</em> */ };
+B&lt;5&gt; b1;   // <em>OK: template parameter type is int</em>
+B&lt;'a'&gt; b2; // <em>OK: template parameter type is char</em>
+B&lt;2.5&gt; b3; // <em>error: template parameter type cannot be double</em></ins></code>
+</pre>
+<p>&mdash;<i>end example</i>&nbsp;]</p>
+</blockquote>
+
+<p>Modify &sect;14.6.5 [temp.class.spec] paragraph 9 list item 9.2:</p>
+<blockquote class="std">
+<p>The type of a template parameter corresponding to a specialized non-type argument shall not be dependent on a parameter of the specialization<ins> that appears as a <var>type-specifier</var> in the <var>type-specifier-seq</var> of an argument in the argument list of the specialization.
+Otherwise, the corresponding arguments are deduced from the type of the non-type argument</ins>.
+[&nbsp;<i>Example:</i></p>
+<pre class="example">
+<code>template &lt;class T, T t&gt; struct C {};
+template &lt;class T&gt; struct C&lt;T, 1&gt;;                  // <em>error</em>
+template&lt; int X, int (*array_ptr)[X] &gt; class A {};
+int array[5];
+template&lt; int X &gt; class A&lt;X,&amp;array&gt; { };            // <em>error</em>
+<ins>template &lt;auto f&gt; class B {};
+template &lt;class R, class... Args, R (* f)(Args...)&gt; class B&lt;f&gt; {} // <em>ok</em></ins></code>
+</pre>
+<p>&mdash;<i>end example</i>&nbsp;]</p>
+</blockquote>
+
+<p>Modify &sect;14.7.2.2 [temp.dep.expr] paragraph 3:</p>
+<blockquote class="std">
+<p>An <var>id-expression</var> is type-dependent if it contains</p>
+<ul class="dash">
+<li>an <var>identifier</var> associated by name lookup with one or more declarations declared with a dependent type,</li>
+<li><ins>an <var>identifier</var> associated by name lookup with a non-type <var>template-parameter</var> declared with a type that contains a placeholder type (7.1.6.4),</ins></li>
+<li>an <var>identifier</var> associated by name lookup with one or more declarations of member functions of the current instantiation declared with a return type that contains a placeholder type<del> (7.1.6.4)</del>,</li>
+<li>the <var>identifier</var> <code>__func__</code> (8.4.1), where any enclosing function is a template, a member of a class template, or a generic lambda,</li>
+<li>a <var>template-id</var> that is dependent,</li>
+<li>a <var>conversion-function-id</var> that specifies a dependent type, or</li>
+<li>a <var>nested-name-specifier</var> or a <var>qualified-id</var> that names a member of an unknown specialization;</li>
+</ul>
+<p>or if it names a dependent member of the current instantiation that is a static data member of type &ldquo;array of unknown bound of T&rdquo; for some T (14.6.1.3).
+Expressions of the following forms are type-dependent only if the type specified by the <var>type-id</var>, <var>simple-type-specifier</var> or <var>new-type-id</var> is dependent, even if any subexpression is type-dependent:</p>
+<dl>
+<dd><var>simple-type-specifier</var> <code>(</code> <var>expression-list<sub>opt</sub></var> <code>)</code></dd>
+<dd><code>::</code><var><sub>opt</sub></var> <code>new</code> <var>new-placement<sub>opt</sub></var> <var>new-type-id</var> <var>new-initializer<sub>opt</sub></var></dd>
+<dd><code>::</code><var><sub>opt</sub></var> <code>new</code> <var>new-placement<sub>opt</sub></var> <code>(</code> <var>type-id</var> <code>)</code> <var>new-initializer<sub>opt</sub></var></dd>
+<dd><code>dynamic_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
+<dd><code>static_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
+<dd><code>const_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
+<dd><code>reinterpret_cast</code> <code>&lt;</code> <var>type-id</var> <code>&gt;</code> <code>(</code> <var>expression</var> <code>)</code></dd>
+<dd><code>(</code> <var>type-id</var> <code>)</code> <var>cast-expression</var></dd>
+</dl>
+</blockquote>
+
+<p>Modify &sect;14.9.2.5 [temp.deduct.type] paragraph 5:</p>
+<blockquote class="std">
+<p>The non-deduced contexts are:</p>
+<ul class="dash">
+<li>The <var>nested-name-specifier</var> of a type that was specified using a <var>qualified-id</var>.</li>
+<li>The <var>expression</var> of a <var>decltype-specifier</var>.</li>
+<li>A non-type template argument or an array bound in which a subexpression references a template parameter.
+<ins>[&nbsp;<i>Note:</i> Deduction is still performed based on the type of a non-type template argument. &mdash;<i>end note</i>&nbsp;]</ins></li>
+<li>A template parameter used in the parameter type of a function parameter that has a default argument that is being used in the call for which argument deduction is being done.</li>
+<li>A function parameter for which argument deduction cannot be done because the associated function argument is a function, or a set of overloaded functions (13.4), and one or more of the following apply:
+<ul class="dash">
+<li>more than one function matches the function parameter type (resulting in an ambiguous deduction), or</li>
+<li>no function matches the function parameter type, or</li>
+<li>the set of functions supplied as an argument contains one or more function templates.</li>
+</ul></li>
+<li>A function parameter for which the associated argument is an initializer list (8.5.4) but the parameter does not have a type for which deduction from an initializer list is specified (14.9.2.1).
+[&nbsp;<i>Example:</i>
+<pre class="example">
+<code>template&lt;class T&gt; void g(T);
+g({1,2,3}); // <em>error: no argument deduced for T</em></code>
+</pre>
+&mdash;<i>end example</i>&nbsp;]</li>
+<li>A function parameter pack that does not occur at the end of the <var>parameter-declaration-list</var>.</li>
+</ul>
+</blockquote>
+
 <h2><a id="Acknowledgments">Acknowledgments</a></h2>
 <p>Numerous people gave constructive feedback regarding the use of <code class="prettyprint">auto</code> in template parameter lists in an <a href="http://isocpp.org/">isocpp.org</a> discussion <a href="https://groups.google.com/a/isocpp.org/forum/?fromgroups#!topic/std-proposals/cqaS7PcU5Qc">thread</a>.</p>
 
 <p>Special thanks to Mike Spertus and Gabriel dos Reis for their invaluable analysis and assistance.</p>
+
+<p>Thanks also to Andrew Sutton for assistance and instruction in identifying potential areas of conflict with the Concepts TS.</p>
 
 </body></html>
