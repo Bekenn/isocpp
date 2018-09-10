@@ -1,0 +1,929 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<title>Homogeneous variadic function parameters</title>
+
+<style type="text/css">
+
+body { color: #000000; background-color: #FFFFFF; }
+del { text-decoration: line-through; color: #8B0040; }
+ins { text-decoration: underline; color: #005100; }
+
+table { border-collapse: collapse; margin-left: auto; margin-right: auto; }
+th { border: 1px solid black; padding-left: 0.8em; padding-right: 0.8em;
+    vertical-align: top; }
+td { border: 1px solid black; padding-left: 0.8em; padding-right: 0.8em;
+    vertical-align: top; }
+
+span.comment { font-style: italic; }
+span.comment code { font-style: normal; }
+span.comment em { font-weight: bold; }
+span.comment var { font-style: normal; }
+
+p.example { margin-left: 1em; }
+pre.example { margin-left: 1em; }
+div.example { margin-left: 1em; }
+
+code.extract { background-color: #F5F6A2; }
+pre.extract { margin-left: 2em; background-color: #F5F6A2;
+  border: 1px solid #E1E28E; }
+
+p.function { }
+.attribute { margin-left: 2em; }
+.attribute dt { float: left; font-style: italic;
+  padding-right: 1ex; }
+.attribute dd { margin-left: 0em; }
+
+blockquote.std { color: #000000; background-color: #F1F1F1;
+  border: 1px solid #D1D1D1;
+  padding-left: 0.5em; padding-right: 0.5em; }
+blockquote.std.ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8;
+  border: 1px solid #B3EBB3; }
+blockquote.std.del { text-decoration: line-through;
+  color: #000000; background-color: #FFC8EB;
+  border: 1px solid #ECB3C7; }
+blockquote.std div { margin-top: 1em; margin-bottom: 1em; }
+blockquote.std ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8; }
+blockquote.std del { text-decoration: line-through;
+  color: #000000; background-color: #FFC8EB; }
+blockquote.std ins * { background-color: inherit; }
+blockquote.std del * { background-color: inherit; }
+blockquote.std dt { margin-top: 1em; }
+blockquote.std ul { list-style-type: none; padding-left: 2em;
+  margin-top: -0.2em; margin-bottom: -0.2em; }
+blockquote.std li { margin-top: 0.6em; margin-bottom: 0.6em; }
+blockquote.std ul > li::before { content: '\2014'; position: absolute; margin-left: -1.5em; }
+
+div.stdnote { display: inline; }
+div.stdexample { display: inline; }
+
+table.std { border: 1px solid black; border-spacing: 0px;
+  margin-left: auto; margin-right: auto; }
+table.std th { text-align: left; vertical-align: top;
+  padding-left: 0.8em; padding-right: 0.8em; border-style: none; }
+table.std td { text-align: left; vertical-align: top;
+  padding-left: 0.8em; padding-right: 0.8em; border-style: none; }
+
+a.stdref::before { content: "["; }
+a.stdref::after { content: "]"; }
+
+table.frontmatter { border: 0; margin: 0; }
+table.frontmatter th { border: 0; }
+table.frontmatter td { border: 0; }
+
+span.highlight { background-color: #7FDFFF }
+
+</style>
+
+<script type="text/javascript" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        var notes = document.getElementsByClassName("stdnote");
+        for (var n = 0; n < notes.length; ++n) {
+            var node = notes[n];
+            node.insertAdjacentHTML("beforebegin",
+                "<span>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Note:<\/i> <\/span>");
+            node.insertAdjacentHTML("beforeEnd",
+                "<span> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end note<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/span>");
+        }
+
+        var examples = document.getElementsByClassName("stdexample");
+        for (var n = 0; n < examples.length; ++n) {
+            var node = examples[n];
+            node.insertAdjacentHTML("beforebegin",
+                "<span>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Example:<\/i> <\/span>");
+            node.insertAdjacentHTML("beforeEnd",
+                "<span> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end example<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/span>");
+        }
+
+        var references = document.getElementsByClassName("stdref");
+        for (var n = 0; n < references.length; ++n) {
+            var node = references[n];
+            node.setAttribute("href", "http://eel.is/c++draft/" + node.innerText);
+        }
+
+        var wg21links = document.getElementsByClassName("wg21link");
+        for (var n = 0; n < wg21links.length; ++n) {
+            var node = wg21links[n];
+            node.setAttribute("href", "https://wg21.link/" + node.innerText);
+        }
+    });
+</script>
+</head>
+
+<body>
+<h1>Homogeneous variadic function parameters</h1>
+<table class="frontmatter" border="0" cellpadding="0" cellspacing="0" width="619">
+    <tr>
+        <td align="left" valign="top">Document number:</td>
+        <td>P1219R0</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Date:</td>
+        <td>2018-10-08</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Project:</td>
+        <td>Programming Language C++, Evolution Working Group</td>
+    </tr>
+    <!--tr>
+        <td align="left" valign="top">Revises:</td>
+        <td><a href=""></a></td>
+    </tr-->
+    <tr>
+        <td align="left" valign="top">Reply-to:</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
+    </tr>
+</table>
+
+<h2><a id="TableOfContents">Table of Contents</a></h2>
+<ol>
+    <li><a href="#TableOfContents">Table of Contents</a></li>
+    <li><a href="#Introduction">Introduction</a></li>
+    <li><a href="#Definitions">Definitions</a></li>
+    <li><a href="#ImplementationExperience">Implementation Experience</a></li>
+    <li><a href="#MotivationAndScope">Motivation and Scope</a></li>
+    <li><a href="#DesignDecisions">Design Decisions</a></li>
+    <li><a href="#Wording">Wording</a></li>
+    <li><a href="#References">References</a></li>
+    <li><a href="#Acknowledgments">Acknowledgments</a></li>
+    <li><a href="References">References</a></li>
+</ol>
+
+<h2><a id="Introduction">Introduction</a></h2>
+<p>This paper seeks to expand the usefulness of variadic templates by allowing variadic function parameters to be declared using a single type.
+This would make the following construct legal:</p>
+
+<pre class="example">
+<code class="prettyprint">template &lt;class T&gt;  // <span class="comment"><var>T</var> is not a parameter pack...</span>
+void foo(T... vs);  // <span class="comment">...but <var>vs</var> <em>is</em> a parameter pack.</span></code>
+</pre>
+
+<p>At first glance, this seems a simple and natural extension to variadic templates; after all, the following is already legal:</p>
+
+<pre class="example">
+<code class="prettyprint">// <span class="comment">Legal since C++11: <var>T</var> is not a parameter pack, but <var>vs</var> is.</span>
+template &lt;class T, T... vs&gt;
+void foo();</code>
+</pre>
+
+<p>In both examples, <code>vs</code> is a parameter pack, with each element having the type <code>T</code>.
+The meaning follows naturally from the rules for variadic templates, so it is a bit surprising that one is legal and the other is not.
+This paper explores the design space around making the first example legal.</p>
+
+<h2><a id="Definitions">Definitions</a></h2>
+<p>Throughout this paper, the term <dfn>homogeneous parameter pack</dfn> (or <dfn>homogeneous pack</dfn>) will be used to refer to a parameter pack containing values, all of the same type, where the pack's declaration does not expand a pack of types.
+A parameter pack containing values that are permitted to be of different types is referred to as a <dfn>heterogeneous parameter pack</dfn> (or <dfn>heterogeneous pack</dfn>).
+The term <dfn>homogeneous function parameter pack</dfn> refers to a homogeneous pack of function parameters, and the term <dfn>homogeneous template parameter pack</dfn> refers to a homogeneous pack of template parameters.
+The terms <dfn>heterogeneous function parameter pack</dfn> and <dfn>heterogeneous template parameter pack</dfn> refer to heterogeneous packs of function and template parameters, respectively.</p>
+
+<h2><a id="ImplementationExperience">Implementation Experience</a></h2>
+<p>An implementation of this proposal based on Clang can be found at <a href="https://github.com/Bekenn/clang/tree/func-parm-packs">https://github.com/Bekenn/clang/tree/func-parm-packs</a>.
+It is believed to be very nearly both complete and correct, with only minor deviations in behavior from the wording provided in this paper.
+The remaining issues are expected to be resolved before the San Diego meeting.</p>
+
+<h2><a id="MotivationAndScope">Motivation and Scope</a></h2>
+<h3>Meeting user expectations</h3>
+<p>This table showcases the current lack of symmetry between function parameter packs and function parameter packs:</p>
+<table>
+    <tr><th></th><th>Template parameter pack</th><th>Function parameter pack</th></tr>
+    <tr>
+        <th>Heterogeneous</th>
+        <td style="background-color: #C8FFC8;">
+<pre><code class="prettyprint">// <span class=comment>OK:</span>
+template &lt;class... TypePack, TypePack... vs&gt;
+void f();</code></pre>
+        </td>
+        <td style="background-color: #C8FFC8;">
+<pre><code class="prettyprint">// <span class="comment">OK:</span>
+template &lt;class... TypePack&gt;
+void f(TypePack... vs);</code></pre>
+        </td>
+    </tr>
+    <tr>
+        <th>Homogeneous</th>
+        <td style="background-color: #C8FFC8;">
+<pre><code class="prettyprint">// <span class="comment">OK:</span>
+template &lt;class Type, Type... vs&gt;
+void f();</code></pre>
+        </td>
+        <td style="background-color: #FFEBFF;">
+<pre><code class="prettyprint">// <span class="comment">Ill-formed:</span>
+template &lt;class Type&gt;
+void f(Type... vs);</code></pre>
+        </td>
+    </tr>
+</table>
+
+<p>The absence of homogeneous function parameter packs is a source of confusion among programmers.
+A cursory search of <a href="https://stackoverflow.com/">Stack Overflow</a> turned up several questions ([<a href="#ref1">1</a>], [<a href="#ref2">2</a>], [<a href="#ref3">3</a>], [<a href="#ref4">4</a>], [<a href="#ref5">5</a>], [<a href="#ref6">6</a>], [<a href="#ref7">7</a>], [<a href="#ref8">8</a>]) that basically amount to asking how to write a function with a homogeneous parameter pack.
+Some work-arounds are suggested:</p>
+<table>
+    <tr><th>Recursion</th><th><code>std::initializer_list</code></th><th>Homogeneous pack (this proposal)</th></tr>
+    <tr>
+        <td>
+<pre><code class="prettyprint">template &lt;class T&gt;
+T min(T v)
+{
+    return v;
+}
+
+template &lt;class T, class... Args&gt;
+T min(T v1, Args... vs)
+{
+    T v2 = min(vs...);
+    return v2 < v1 ? v2 : v1;
+}</code></pre>
+        </td>
+        <td>
+<pre><code class="prettyprint">template &lt;class T&gt;
+T min(std::initializer_list&lt;T&gt; vs)
+    [[expects: vs.size() > 0]]
+{
+    auto i = vs.begin();
+    T v = *i++;
+    for (; i != vs.end(); ++i)
+    {
+        if (*i < v)
+            v = *i;
+    }
+
+    return v;
+}</code></pre>
+        </td>
+        <td>
+<pre><code class="prettyprint">template &lt;class T&gt;
+T min(T v1, T... vs)
+{
+    return (v1, ..., (v1 = vs < v1 ? vs : v1));
+}</code></pre>
+        </td>
+    </tr>
+</table>
+
+<p>The work-arounds suffer from a lack of clarity in the interface.
+The recursion approach advertises a function that can take variadic arguments of any type,
+but any attempt to call the function with a non-<code>T</code> will either cause the program to fail to compile,
+or lead to potentially unwanted implicit conversions.
+The <code>std::initializer_list</code> approach correctly advertises the accepted type,
+but is inflexible with mutability and requires the user to enclose its arguments in braces.
+In the <code>min</code> example above, the contract precondition could be removed if an explicit argument preceded the <code>std::initializer_list</code>,
+but the syntactic separation remains, resulting in calls such as <code>min(a, { b, c, d })</code>.</p>
+
+<p>These patterns can also be found in the Library Fundamentals TS in the form of <code>make_array</code>, and even in the standard for <code>std::min</code> and <code>std::max</code>.
+All of these could arguably be written more naturally with homogeneous parameter packs.</p>
+
+<table>
+    <tr><th>Current</th><th>With homogeneous packs</th></tr>
+    <tr>
+        <td>
+<pre><code class="prettyprint">template &lt;class T&gt;
+constexpr T min(initializer_list&lt;T&gt; t);
+
+template &lt;class T, class Compare&gt;
+constexpr T min(initializer_list&lt;T&gt; t, Compare comp);</code></pre>
+        </td>
+        <td>
+<pre><code class="prettyprint">template &lt;class T&gt;
+constexpr T min(T v1, T... vs);
+
+template &lt;class Compare, class T&gt;
+constexpr T min(Compare comp, T v1, T... vs);</code></pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+<pre><code class="prettyprint">template &lt;class D = void, class... Types&gt;
+constexpr array&lt;conditional_t&lt;is_void_v&lt;D&gt;,
+                              common_type_t&lt;Types...&gt;, D&gt;,
+                sizeof...(Types)&gt;
+    make_array(Types&&... t);</code></pre>
+        </td>
+        <td>
+<pre><code class="prettyprint">template &lt;class T&gt;
+constexpr auto make_array(T&&... t)
+    -> array&lt;decay_t&lt;T&gt;, sizeof...(t)&gt;;</code></pre>
+        </td>
+    </tr>
+</table>
+
+<h3>Compared to <code>std::initializer_list</code></h3>
+<p>This table shows some of the differences between homogeneous packs and <code>std::initializer_list</code>.</p>
+
+<table>
+    <tr><th></th><th><code>std::initializer_list</code></th><th>homogeneous packs</th></tr>
+    <tr><th>Can be used outside of a template?</th><td>Yes</td><td>No</td></tr>
+    <tr><th>Can mutate elements?</th><td>No</td><td>Yes</td></tr>
+    <tr><th>Can appear before other arguments?</th><td>Yes</td><td>No</td>
+    <tr><th>Get the number of elements</th><td><code class="prettyprint">x.size()</code></td><td><code class="prettyprint">sizeof...(x)</code></td></tr>
+    <tr><th>Iterate over the elements</th><td>Range-based <code class="prettyprint">for</code></td><td>Fold expressions</td></tr>
+</table>
+
+<p>Homogeneous function parameter packs are <em>not</em> intended as a replacement for <code>std::initializer_list</code>.
+Although there are certainly areas of overlap ([<a href="#ref9">9</a>]), each has its place.
+Whereas a <code>std::initializer_list</code> forms a range over its component elements and is passed as a single argument, the elements of a parameter pack are passed as distinct arguments.
+This can render a constructor taking a parameter pack uninvocable if another constructor is deemed a better match.
+Consider the case of container initialization:</p>
+
+<pre class="example">
+<code class="prettyprint">template &lt;class T&gt;
+class MyContainer
+{
+public:
+    MyContainer(std::initializer_list&lt;T&gt; elems);
+    // <span class=comment>...</span>
+};</code>
+</pre>
+
+<p>The <code>std::initializer_list</code> constructor allows an instance of <code>MyContainer</code> to be constructed using list-initialization from a list of element values:</p>
+
+<pre class="example">
+<code class="prettyprint">MyContainer&lt;int&gt; cont = { 5, 10 };  // <span class="comment">invokes <code>MyContainer&lt;int&gt;::MyContainer(std::initializer_list&lt;int&gt;)</code></span></code>
+</pre>
+
+<p>Under the rules governing uniform initialization, this syntax continues to work with homogeneous parameter packs:</p>
+
+<pre class="example">
+<code class="prettyprint">template &lt;class T&gt;
+class MyContainer
+{
+public:
+    template &lt;&gt; MyContainer(const T&amp;... elems);
+    // <span class="comment">...</span>
+};
+
+MyContainer&lt;int&gt; cont = { 5, 10 };  // <span class="comment">invokes <code>MyContainer&lt;int&gt;::MyContainer(const int&amp;, const int&amp;)</code></span></code>
+</pre>
+
+<p><em>...unless</em> there is a competing constructor that is a better match:</p>
+
+<pre class="example">
+<code class="prettyprint">template &lt;class T&gt;
+class MyContainer
+{
+public:
+    template &lt;&gt; MyContainer(const T&amp;... elems);
+    explicit MyContainer(const T&amp; min, const T&amp; max);
+    // <span class="comment">...</span>
+};
+
+MyContainer&lt;int&gt; cont = { 5, 10 };  // <span class="comment">error: <code>MyContainer&lt;int&gt;::MyContainer(const int&amp;, const int&amp;)</code> is explicit</span></code>
+</pre>
+
+<p>With the additional constructor, it is now impossible to invoke the constructor containing the homogeneous parameter pack when there are exactly two elements, regardless of the initialization syntax chosen.
+In contrast, the constructor with <code>std::initializer_list</code> is <em>always</em> chosen when using list-initialization, and can be unambiguously selected (or not) when using direct non-list initialization.</p>
+
+<table>
+    <tr><th>Declaration</th><th>With <code>std::initializer_list</code></th><th>With homogeneous packs</th></tr>
+    <tr>
+        <td></td>
+        <td><pre><code class="prettyprint">template &lt;class T&gt;
+class MyContainer
+{
+public:
+    MyContainer(std::initializer_list&lt;T&gt; elems);
+    explicit MyContainer(const T&amp; min, const T&amp; max);
+    // <span class="comment">...</span>
+};</code></pre>
+        </td>
+        <td><pre><code class="prettyprint">template &lt;class T&gt;
+class MyContainer
+{
+public:
+    template &lt;&gt; MyContainer(const T&amp;... elems);
+    explicit MyContainer(const T&amp; min, const T&amp; max);
+    // <span class="comment">...</span>
+};</code></pre>
+        </td>
+    </tr>
+    <tr>
+        <td><code class="prettyprint">MyContainer&lt;int&gt; cont{1, 2, 3};</code></td>
+        <td>Selects <code>std::initializer_list</code> constructor</td>
+        <td>Selects homogeneous pack constructor</td>
+    </tr>
+    <tr>
+        <td><code class="prettyprint">MyContainer&lt;int&gt; cont = { 1, 2, 3 };</code></td>
+        <td>Selects <code>std::initializer_list</code> constructor</td>
+        <td>Selects homogeneous pack constructor</td>
+    </tr>
+    <tr>
+        <td><code class="prettyprint">MyContainer&lt;int&gt; cont(1, 2, 3);</code></td>
+        <td>Error: no matching constructor</td>
+        <td>Selects homogeneous pack constructor</td>
+    </tr>
+    <tr>
+        <td><code class="prettyprint">MyContainer&lt;int&gt; cont({ 1, 2, 3 });</code></td>
+        <td>Selects <code>std::initializer_list</code> constructor</td>
+        <td>Error: no matching constructor</td>
+    </tr>
+    <tr>
+        <td><code class="prettyprint">MyContainer&lt;int&gt; cont{1, 2};</code></td>
+        <td>Selects <code>std::initializer_list</code> constructor</td>
+        <td>Selects <code>explicit</code> constructor</td>
+    </tr>
+    <tr>
+        <td><code class="prettyprint">MyContainer&lt;int&gt; cont = { 1, 2 };</code></td>
+        <td>Selects <code>std::initializer_list</code> constructor</td>
+        <td>Error: selects <code>explicit</code> constructor</td>
+    </tr>
+    <tr>
+        <td><code class="prettyprint">MyContainer&lt;int&gt; cont(1, 2);</code></td>
+        <td>Selects <code>explicit</code> constructor</td>
+        <td>Selects <code>explicit</code> constructor</td>
+    </tr>
+    <tr>
+        <td><code class="prettyprint">MyContainer&lt;int&gt; cont({ 1, 2 });</code></td>
+        <td>Selects <code>std::initializer_list</code> constructor</td>
+        <td>Error: no matching constructor</td>
+    </tr>
+</table>
+
+<p>For this reason, homogeneous packs are likely inappropriate for constructors.
+Outside of constructors, where initializer lists must be separately enclosed in curly braces, homogeneous packs are likely a better option.
+One possible exception to this is when the API designer wishes to <em>move</em> or <em>forward</em> variadic constructor arguments rather than <em>copy</em> them.
+Frustratingly, the <code>std::initializer_list</code> template permits access to its elements only via references to <code>const</code>, whereas packs do not have this limitation.</p>
+
+<h2><a id="DesignDecisions">Design Decisions</a></h2>
+<h3>Declaring a homogeneous function parameter pack</h3>
+<p>A homogeneous function parameter pack is declared in exactly the same way as any other function parameter pack; the only difference is that the parameter declaration does not mention a template parameter pack:</p>
+
+<pre class="example">
+<code class="prettyprint">template &lt;class... T&gt; void f(T... v);   // <span class="comment">heterogeneous function parameter pack</span>
+template &lt;class T&gt;    void f(T... v);   // <span class="comment">homogeneous function parameter pack</span></code>
+</pre>
+
+<p>The size of a homogeneous function parameter pack is deduced from function arguments at the call site.
+This requires the pack to be placed in a deduced context, which means that a function can have at most one homogeneous function parameter pack, and the pack must appear at the end of the function parameter list.
+In all other respects, a homogeneous function parameter pack behaves no differently from any other parameter pack.</p>
+
+<h3>Lambdas</h3>
+<pre class="example">
+<code class="prettyprint">auto a = [](int... v) { return (1 * ... * v); };</code>
+</pre>
+
+<p>The syntax for declaring a homogeneous function parameter pack in a lambda expression follows naturally from the syntax used for a function template.
+Just as packs can only be declared in templates, adding a homogeneous pack declaration to a lambda expression will cause it to become a generic lambda.</p>
+
+<h3>The template introducer</h3>
+<p>Function parameter packs can only appear in templates, and this proposal does nothing to change that.
+Under the current rules, function templates must be introduced using the <code>template</code> keyword, followed by the template parameter list in angle brackets.
+This requirement may change, depending on the outcome of ongoing discussions surrounding a terse syntax for concepts; this proposal is intended to work naturally with whatever outcome emerges.</p>
+
+<p>Under the proposed rules, any function declaration that includes a parameter pack must be a template, and requires a <var>template-head</var>.
+If the parameter pack is the only part of the function declaration requiring it to be a template, and the pattern of the parameter pack does not contain any dependent names, then the template parameter list may be omitted.
+In this case, the angle brackets are still required.
+At first glance, this may appear to conflict with the syntax used for explicit specializations, but the compiler can disambiguate based on the presence of a parameter pack:</p>
+
+<pre class="example">
+<code class="prettyprint">template &lt;class T&gt; void foo(T... v);        // <span class="comment">#1 OK</span>
+template &lt;&gt; void foo(int... v);             // <span class="comment">#2 OK, declares a template with an empty template parameter list</span>
+template &lt;&gt; void foo(int a);                // <span class="comment">OK, declares an explicit specialization of #2</span>
+template &lt;&gt; void foo&lt;&gt;(int a, int b);       // <span class="comment">OK, declares an explicit specialization of #2</span>
+template &lt;&gt; void foo(float a);              // <span class="comment">OK, declares an explicit specialization of #1</span>
+template &lt;&gt; void foo&lt;int&gt;(int a, int b);    // <span class="comment">OK, declares an explicit specialization of #1</span>
+void bar(int... v);                         // <span class="comment">Error: parameter pack without template</span>
+template &lt;&gt; void baz();                     // <span class="comment">Error: no template parameters or packs, and does not specialize an existing template</span></code>
+</pre>
+
+<h4>Alternative: Allow the angle brackets to be omitted when no template parameters are needed.</h4>
+<pre class="example">
+<code class="prettyprint">template void foo(int... v);</code>
+</pre>
+
+<p>This removes the apparent conflict with explicit specialization syntax, but introduces the same apparent conflict with the syntax for explicit instantiations.
+In both cases, there is no actual conflict; the compiler can tell that the function is a template by the presence of the parameter pack.
+This approach was considered and rejected because it introduces an irregularity into the grammar.
+Currently, all templates are introduced with a parameter list enclosed in angle brackets; removing them would be akin to removing the parentheses on a parameterless function declaration.
+The only declaration that uses the <code>template</code> keyword without angle brackets is the explicit instantiation declaration, and those do not declare templates.</p>
+
+<h4>Alternative: Allow the entire <var>template-head</var> to be omitted when no template parameters are needed.</h4>
+<pre class="example">
+<code class="prettyprint">void foo(int... v);</code>
+</pre>
+
+<p>This idea is certainly attractive, but it has already been discussed extensively in relation to a terse syntax for concepts, and this paper has nothing new to add to that discussion.
+All of the concerns brought up when discussing concepts are equally applicable here.
+If a terse syntax for concepts can be agreed upon, homogeneous function parameter packs will likely fit into that syntax without any problems.</p>
+
+<h4>Alternative: Allow or require a template parameter for the size of the pack.</h4>
+<pre class="example">
+<code class="prettyprint">template &lt;size_t Len&gt; void foo(int...[Len] v);</code>
+</pre>
+
+<p>This would allow the size of the homogeneous pack to be explicitly specified, which could be useful in some situations.
+Making the length of the pack a parameter would also make clear in the syntax that the length is an axis of specialization; under the currently proposed rules, this is still true, but the fact is hidden from the user, and the length can only be deduced rather than specified.</p>
+
+<p>The drawback to this approach is a matter of regularity.
+While the language allows the user to query the size of a pack using the <code>sizeof...</code> operator, it does not currently allow the size to be explicitly specified.
+If this facility were added, it could reasonably be applied to homogeneous template parameter packs as well as homogeneous function paremeter packs.
+It would make little sense to try to apply this to heterogeneous packs, since the size must match the number of arguments passed to the template parameter pack.
+Since this facility would necessarily be optional for homogeneous template parameter packs, consistency demands that it should also be optional for homogeneous function parameter packs.</p>
+
+<h4>Alternative: Allow empty angle brackets even when there is no homogeneous parameter pack.</h4>
+<pre class="example">
+<code class="prettyprint">template &lt;&gt; void foo(int n);</code>
+</pre>
+
+<p>The proposed rules the <var>template-parameter-list</var> optional in a <var>template-head</var> in order to permit homogeneous packs with non-dependent types.
+The proposed rules also add semantic constraints requiring at least one template parameter whenever there is no homogeneous pack.
+The semantic constraints could be relaxed, allowing trivial templates that only permit vacuous specialization.
+This would not be very useful; these trivial templates would behave like normal non-template entities in almost every way imaginable, aside from syntactic minutiae (for instance, a trivial function template would be implicitly inline).</p>
+
+<p>Apart from minor simplifications in the language specification, about the only "benefit" of this approach would be to make well-formed the token sequence <code class="prettyprint">[]&lt;&gt;(){}</code> for the amusement of language nerds.</p>
+
+<h3>The Oxford variadic comma</h3>
+<p>In the C programming language, the appearance of an ellipsis in the <var>parameter-type-list</var> of a function declarator indicates that the function accepts a variable number of arguments of varying types following the last formal parameter in the list.
+Such an ellipsis will henceforth be referred to as a <dfn>varargs ellipsis</dfn> to distinguish it from the ellipsis used in the declaration of a parameter pack.
+To be syntactically valid in C, a varargs ellipsis must be preceded by at least one parameter declaration and an intervening comma:</p>
+
+<blockquote class="std">
+<dl>
+<dt><dfn>parameter-type-list</dfn>:</dt>
+<dd><var>parameter-list</var></dd>
+<dd><var>parameter-list</var> <code>,</code> <code>...</code></dd>
+</dl>
+</blockquote>
+
+<p>C++ inherits this behavior, but expands the syntax, no longer requiring either the preceding parameter declaration or the intervening comma:</p>
+
+<blockquote class="std">
+<dl>
+<dt><dfn>parameter-declaration-clause</dfn>:</dt>
+<dd><var>parameter-declaration-list</var><sub><i>opt</i></sub> <code>...</code><sub><i>opt</i></sub></dd>
+<dd><var>parameter-declaration-list</var> <code>,</code> <code>...</code></dd>
+</dl>
+</blockquote>
+
+<p>When paired with function parameter packs, this creates a syntactic ambiguity that is currently resolved via a disambiguation rule:
+When an ellipsis that appears in a function parameter list might be part of an abstract (nameless) declarator,
+it is treated as such if the parameter's type names an unexpanded parameter pack or contains <code>auto</code>;
+otherwise, it is a varargs ellipsis.
+At present, this rule effectively disambiguates in favor of a parameter pack whenever doing so produces a well-formed result.</p>
+
+<p>Example (status quo):</p>
+<pre class="example">
+<code class="prettyprint">template &lt;class... T&gt;
+void f(T...); // <span class="comment">declares a function with a variadic parameter pack</span>
+
+template &lt;class T&gt;
+void f(T...); // <span class="comment">same as <code>void f(T, ...)</code></span></code>
+</pre>
+
+<p>With homogeneous function parameter packs, this disambiguation rule needs to be revisited.
+It would be very natural to interpret the second declaration above as a function template with a homogeneous parameter pack,
+and that is the resolution proposed here.
+By requiring a comma between a parameter list and a varargs ellipsis, the disambiguation rule can be dropped entirely,
+simplifying the language without losing any functionality or degrading compatibility with C.</p>
+
+<p>This is a breaking change, but likely not a very impactful one.
+In the parlance of <a class="wg21link">P0684R2</a>, this would be a "Very Good Change":
+Compilers can issue warnings in C++17 mode (or earlier) whenever the disambiguation rule is resolved in favor of a varargs ellipsis,
+and the warning can be resolved without any change in meaning by the addition of a single character.
+Moreover, the number of instances should be vanishingly small.
+In modern C++ code, the varargs ellipsis has largely been superseded by function parameter packs.
+Today, apart from SFINAE uses where the disambiguation rule doesn't apply,
+the varargs ellipsis can mainly be found in header files that are intended to be consumed by both C and C++ code,
+in order to facilitate interoperability between the two languages.
+In these cases, the declarations must conform to the rules imposed by C syntax, and so they will already conform to the rules proposed here.
+Lastly, personal experience suggests that the vast majority of C++ users aren't even aware that the comma preceding a varargs ellipsis is optional.</p>
+
+<h2><a id="Wording">Wording</a></h2>
+<p>All modifications are presented relative to <a class="wg21link">N4762</a>.
+"<i>[...]</i>" indicates elided content that is to remain unchanged.</p>
+
+<p>Modify the grammar synopsis in &sect;7.5.5 <a class="stdref">expr.prim.lambda</a>:</p>
+<blockquote class="std">
+<div><dl>
+<dt><dfn>lambda-expression</dfn>:</dt>
+<dd><var>lambda-introducer</var> <var>compound-statement</var></dd>
+<dd><var>lambda-introducer</var> <var>lambda-declarator</var> <var>requires-clause</var><sub><i>opt</i></sub> <var>compound-statement</var></dd>
+<dd><var>lambda-introducer</var> <code>&lt;</code> <var>template-parameter-list</var><ins><sub><i>opt</i></sub></ins> <code>&gt;</code> <var>requires-clause</var><sub><i>opt</i></sub> <var>compound-statement</var></dd>
+<dd><var>lambda-introducer</var> <code>&lt;</code> <var>template-parameter-list</var><ins><sub><i>opt</i></sub></ins> <code>&gt;</code> <var>requires-clause</var><sub><i>opt</i></sub> <var>lambda-declarator</var> <var>requires-clause</var><sub><i>opt</i></sub> <var>compound-statement</var></dd>
+</dl>
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;7.5.5 <a class="stdref">expr.prim.lambda</a> paragraph 5:</p>
+<blockquote class="std">
+<div>A lambda is a generic lambda if<del> the <code>auto</code> <var>type-specifier</var> appears as one of the <var>decl-specifier</var>s in the <var>decl-specifier-seq</var> of a <var>parameter-declaration</var> of the <var>lambda-expression</var>, or if the lambda has a <var>template-parameter-list</var>.</del>
+<ins><ul>
+<li>the <code>auto</code> <var>type-specifier</var> appears as one of the <var>decl-specifier</var>s in the <var>decl-specifier-seq</var> of a <var>parameter-declaration</var> of the <var>lambda-expression</var>,</li>
+<li>the lambda has a <var>template-parameter-list</var>, or</li>
+<li>the lambda has a <var>lambda-declarator</var> and any <var>parameter-declaration</var> declares a parameter pack (<a class="stdref">temp.variadic</a>).</li>
+</ul></ins>
+<div class="stdexample"><pre class="example">
+<code>int i = [](int i, auto a) { return i; }(3, 4);          // <span class="comment">OK: a generic lambda</span>
+int j = []&lt;class T&gt;(T t, int i) { return i; }(3, 4);    // <span class="comment">OK: a generic lambda</span>
+<ins>int k = [](int... i) { return (0 + ... + i); }(3, 4);   // <span class="comment">OK: a generic lambda</span></ins></code>
+</pre></div></div>
+</blockquote>
+
+<p>Modify &sect;9.2.3.5 <a class="stdref">dcl.fct</a> paragraph 3:
+<blockquote class="std">
+<div>A type of either form is a function type.
+<dl>
+<dt><dfn>parameter-declaration-clause</dfn>:</dt>
+<dd><var>parameter-declaration-list</var><sub><i>opt</i></sub><del> <code>...</code><sub><i>opt</i></sub></del></dd>
+<dd><ins><code>...</code></ins></dd>
+<dd><var>parameter-declaration-list</var> <code>,</code> <code>...</code></dd>
+</dl>
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;9.2.3.5 <a class="stdref">dcl.fct</a> paragraph 4:</p>
+<blockquote class="std">
+<div><i>[...]</i>
+If the <var>parameter-declaration-clause</var> terminates with an ellipsis or a function parameter pack (<a class="stdref">temp.variadic</a>),
+the number of arguments shall be equal to or greater than the number of parameters that do not have a default argument and are not function parameter packs.
+<del>Where syntactically correct and where <q><code>...</code></q> is not part of an <var>abstract-declarator</var>, <q><code>, ...</code></q> is synonymous with <q><code>...</code></q>.</del>
+<div class="stdexample">The declaration
+<pre class="example">int printf(const char*, ...);</pre>
+declares a function that can be called with varying numbers and types of arguments.
+<pre class="example">printf("hello world");
+printf("a=%d b=%d", a, b);</pre>
+However, the first argument must be of a type that can be converted to a const char*</div>
+<div class="stdnote">The standard header <code>&lt;cstdarg&gt;</code> contains a mechanism for accessing arguments passed using the ellipsis (see <a class="stdref">expr.call</a> and <a class="stdref">support.runtime</a>).</div></div>
+</blockquote>
+
+<p>Modify &sect;9.2.3.5 <a class="stdref">dcl.fct</a> paragraph 17:</p>
+<blockquote class="std">
+<div>A <var>declarator-id</var> or <var>abstract-declarator</var> containing an ellipsis shall only be used in a <var>parameter-declaration</var>.
+When it is part of a <var>parameter-declaration-clause</var>, the <var>parameter-declaration</var> declares a function parameter pack (<a class="stdref">temp.variadic</a>).
+Otherwise, the <var>parameter-declaration</var> is part of a <var>template-parameter-list</var> and declares a template parameter pack; see <a class="stdref">temp.param</a>.
+A function parameter pack is a pack expansion (<a class="stdref">temp.variadic</a>)<ins> when the type of the parameter contains one or more template parameter packs that have not otherwise been expanded</ins>.
+<div class="stdexample">
+<pre class="example">template&lt;typename... T&gt; void f(T (* ...t)(int, int));
+
+int add(int, int);
+float subtract(int, int);
+
+void g() {
+  f(add, subtract);
+}</pre>
+</div></div>
+</blockquote>
+
+<p>Delete &sect;9.2.3.5 <a class="stdref">dcl.fct</a> paragraph 18 and the accompanying footnote:</p>
+<blockquote class="std del">
+<div>There is a syntactic ambiguity when an ellipsis occurs at the end of a <var>parameter-declaration-clause</var> without a preceding comma.
+In this case, the ellipsis is parsed as part of the <var>abstract-declarator</var> if the type of the parameter either names a template parameter pack that has not been expanded or contains <code>auto</code>;
+otherwise, it is parsed as part of the <var>parameter-declaration-clause</var>.</div>
+</blockquote>
+
+<p>Modify &sect;11.4 <a class="stdref">over.over</a> paragraph 2:</p>
+<blockquote class="std">
+<div>If the name is a function template, template argument deduction is done (<a class="stdref">temp.deduct.funcaddr</a>), and if the argument deduction succeeds, <del>the resulting template argument list is used to generate </del>a single function template specialization<del>, which </del><ins>is generated using the resulting template argument list and the deduced number of elements for the trailing homogeneous function parameter pack (if present).
+The generated function template specialization </ins>is <ins>then </ins>added to the set of overloaded functions considered.
+<div class="stdnote">As described in <a class="stdref">temp.arg.explicit</a>, if deduction fails and the function template name is followed by an explicit template argument list, the <var>template-id</var> is then examined to see whether it identifies a single function template specialization.
+If it does, the <var>template-id</var> is considered to be an lvalue for that function template specialization.
+The target type is not used in that determination.</div></div>
+</blockquote>
+
+<p>Modify &sect;12 <a class="stdref">temp</a> paragraph 1:</p>
+<blockquote class="std">
+<div>A <dfn>template</dfn> defines a family of classes, functions, or variables, an alias for a family of types, or a concept.
+<dl>
+<dt><dfn>template-declaration</dfn>:</dt>
+<dd><var>template-head</var> <var>declaration</var></dd>
+<dd><var>template-head</var> <var>concept-definition</var></dd>
+<dt><dfn>template-head</dfn>:</dt>
+<dd><var>template</var> <code>&lt;</code> <var>template-parameter-list</var><ins><sub><i>opt</i></sub></ins> <code>&gt;</code> <var>requires-clause</var><sub><i>opt</i></sub></dd>
+<dt><dfn>template-parameter-list</dfn>:</dt>
+<dd><var>template-parameter</var></dd>
+<dd><var>template-parameter-list</var> <code>,</code> <var>template-parameter</var></dd>
+</dl>
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;12.3 <a class="stdref">temp.arg</a> paragraph 4:</p>
+<blockquote class="std">
+<div>When <ins>a template declares no <var>template-paremeter</var>s, or when </ins>template argument packs or default <var>template-argument</var>s are used, a <var>template-argument</var> list can be empty.
+In that case the empty <code>&lt;&gt;</code> brackets shall still be used as the <var>template-argument-list</var>.
+<div class="stdexample">
+<pre class="example">template&lt;class T = char&gt; class String;
+String&lt;&gt;* p;                    // <span class="comment">OK: <code>String&lt;char&gt;</code></span>
+String* q;                      // <span class="comment">syntax error</span>
+template&lt;class ... Elements&gt; class Tuple;
+Tuple&lt;&gt;* t;                     // <span class="comment">OK: <var>Elements</var> is empty</span>
+Tuple* u;                       // <span class="comment">syntax error</span>
+</pre></div></div>
+</blockquote>
+
+<p>Delete &sect;12.6 <a class="stdref">temp.decls</a> paragraph 3 (redundant, moved to <a class="stdref">temp.alias</a>):</p>
+<blockquote class="std del">
+<div>Because an <var>alias-declaration</var> cannot declare a <var>template-id</var>, it is not possible to partially or explicitly specialize an alias template.</div>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;12.6 <a class="stdref">temp.decls</a> paragraph 2 (pending a resolution to CWG <a href="https://wg21.link/cwg1711">issue 1711</a>):</p>
+<blockquote class="std ins">
+<div>The declaration of a primary template for a variable or static data member shall declare at least one <var>template-parameter</var>.</div>
+</blockquote>
+
+<p>Modify &sect;12.6.3 <a class="stdref">temp.variadic</a> paragraph 5:</p>
+<blockquote class="std">
+<div>A pack expansion consists of a pattern and an ellipsis, the instantiation of which produces zero or more instantiations of the pattern in a list (described below).
+The form of the pattern depends on the context in which the expansion occurs.
+Pack expansions can occur in the following contexts:
+<ul>
+<li>In a function parameter pack <ins>that is a pack expansion </ins>(<a class="stdref">dcl.fct</a>); the pattern is the <var>parameter-declaration</var> without the ellipsis.</li>
+</ul>
+<i>[...]</i></div>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;12.6.3 <a class="stdref">temp.variadic</a> paragraph 5:</p>
+<blockquote class="std ins">
+<div>A function parameter pack whose declaration is not a pack expansion is a <dfn>homogeneous function parameter pack</dfn>.
+A homogeneous function parameter pack shall only appear at the end of the <var>parameter-declaration-clause</var> of a function template or a generic lambda.
+<span class="stdnote">Because a homogeneous function parameter pack has no corresponding template parameter packs, the length of the pack must be deduced at the point of use; therefore, the pack cannot appear in a non-deduced context.</span></div>
+</blockquote>
+
+<p>Modify &sect;12.6.3 <a class="stdref">temp.variadic</a> paragraph 10:</p>
+<blockquote class="std">
+<div><i>[...]</i> <div class="stdexample">
+<pre class="example">template&lt;<del>typename ...Args</del>&gt;
+bool all(<del>Args</del><ins>bool</ins> ...args) { return (... &amp;&amp; args); }
+bool b = all(true, true, true, false);</pre>
+Within the instantiation of <code>all</code>, the returned expression expands to <code>((true &amp;&amp; true) &amp;&amp; true) &amp;&amp; false</code>,
+which evaluates to <code>false</code>.</div> <i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;12.6.5 <a class="stdref">temp.class.spec</a> paragraph 1:</p>
+<blockquote class="std">
+<div>A <dfn>primary class template</dfn> declaration is one in which the class template name is an identifier.
+A template declaration in which the class template name is a <var>simple-template-id</var> is a <dfn>partial specialization</dfn> of the class template named in the <var>simple-template-id</var>.
+A partial specialization of a class template provides an alternative definition of the template that is used instead of the primary definition when the arguments in a specialization match those given in the partial specialization (<a class="stdref">temp.class.spec.match</a>).
+The primary template shall be declared before any specializations of that template<ins> and shall declare at least one <var>template-parameter</var></ins>.
+A partial specialization shall be declared before the first use of a class template specialization that would make use of the partial specialization as the result of an implicit or explicit instantiation in every translation unit in which such a use occurs; no diagnostic is required.</div>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;12.6.6 <a class="stdref">temp.fct</a> paragraph 2:</p>
+<blockquote class="std ins">
+<div>A function template declaration shall either declare a homogeneous function paraemeter pack or declare at least one <var>template-parameter</var>.</div>
+</blockquote>
+
+<p>Modify &sect;12.6.7 <a class="stdref">temp.alias</a> paragraph 1:</p>
+<blockquote class="std">
+<div>A <var>template-declaration</var> in which the declaration is an <var>alias-declaration</var> (<a class="stdref">dcl.dcl</a>) declares the identifier to be an <dfn>alias template</dfn>.
+An alias template is a name for a family of types.
+The name of the alias template is a <var>template-name</var>.
+<ins><div class="stdnote">Because an <var>alias-declaration</var> cannot declare a <var>template-id</var>, it is not possible to partially or explicitly specialize an alias template.</div></ins></div>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;12.6.7 <a class="stdref">temp.alias</a> paragraph 1:</p>
+<blockquote class="std ins">
+<div>An alias template declaration shall declare at least one <var>template-parameter</var>.</div>
+</blockquote>
+
+<p>Modify &sect;12.6.8 <a class="stdref">temp.concept</a> paragraph 3:</p>
+<blockquote class="std">
+<div>A <var>concept-definition</var> shall appear at namespace scope (<a class="stdref">basic.scope.namespace</a>)<ins> and shall declare at least one <var>template-parameter</var></ins>.</div>
+</blockquote>
+
+<p>Modify &sect;12.7.2 <a class="stdref">temp.dep</a> paragraph 1:</p>
+<blockquote class="std">
+<div><i>[...]</i>
+An expression may be <dfn>type-dependent</dfn> (that is, its type may depend on a template parameter<ins> or the number of elements in a parameter pack</ins>) or <dfn>value-dependent</dfn> (that is, its value when evaluated as a constant expression (<a class="stdref">expr.const</a>) may depend on a template parameter) as described in this subclause.
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;12.7.2.1 <a class="stdref">temp.dep.type</a> paragraph 9:</p>
+<blockquote class="std">
+<div>A type is dependent if it is
+<ul>
+<li>a template parameter,</li>
+<li>a member of an unknown specialization,</li>
+<li>a nested class or enumeration that is a dependent member of the current instantiation,</li>
+<li>a cv-qualified type where the cv-unqualified type is dependent,</li>
+<li>a compound type constructed from any dependent type,</li>
+<li>an array type whose element type is dependent or whose bound (if any) is value-dependent,</li>
+<li><ins>a function type whose parameter-type-list contains a parameter pack,</ins></li>
+<li>a function type whose exception specification is value-dependent,</li>
+<li>denoted by a <var>simple-template-id</var> in which either the template name is a template parameter or any of the template arguments is a dependent type or an expression that is type-dependent or value-dependent or is a pack expansion
+<div class="stdnote">This includes an <var>injected-class-name</var> (<a class="stdref">class</a>) of a class template used without a <var>template-argument-list</var>.</div> , or</li>
+<li>denoted by <code>decltype(</code><i>expression</i><code>)</code>, where <i>expression</i> is type-dependent (<a class="stdref">temp.dep.expr</a>).</li>
+</ul></div>
+</blockquote>
+
+<p>Modify &sect;12.9.2 <a class="stdref">temp.deduct</a> paragraph 1:</p>
+<blockquote class="std">
+<div>When a function template specialization is referenced, all of the template arguments shall have values<ins> and the number of elements in each function parameter pack shall be known</ins>.
+The <del>values</del><ins>template arguments</ins> can be explicitly specified or, in some cases, be deduced from the use or obtained from default <var>template-argument</var>s.
+<ins>The number of elements in a homogeneous function parameter pack must be deduced.
+<div class="stdnote">If a function template declaration includes a homogeneous function parameter pack, then a <var>template-id</var> is never sufficient to refer to an individual specialization of the template.</div></ins>
+<div class="stdexample"><pre class="example">
+<code><ins>template&lt;class T&gt; class Array { /* <span class="comment">...</span> */ };
+template&lt;class T&gt; void sort(Array&lt;T&gt;&amp; v);
+</ins>
+void f(Array&lt;dcomplex&gt;&amp; cv, Array&lt;int&gt;&amp; ci) {
+  sort(cv);                   // <span class="comment">calls <code>sort(Array&lt;dcomplex&gt;&amp;)</code></span>
+  sort(ci);                   // <span class="comment">calls <code>sort(Array&lt;int&gt;&amp;)</code></span>
+}</code>
+</pre><del> and </del><pre class="example">
+<code><ins>template&lt;class U, class V&gt; U convert(V v);
+</ins>
+void g(double d) {
+  int i = convert&lt;int&gt;(d);    // <span class="comment">calls <code>convert&lt;int,double&gt;(double)</code></span>
+  int c = convert&lt;char&gt;(d);   // <span class="comment">calls <code>convert&lt;char,double&gt;(double)</code></span>
+}
+<ins>
+template&lt;&gt; int sum(int... n) { return (0 + ... + n); }
+
+void h(int x, int y, int z) {
+  int i = sum(x, y, z);       // <span class="comment">calls <code>sum&lt;&gt;(int,int,int)</code></span>
+}</ins></code>
+</pre></div></div>
+</blockquote>
+
+<p>Modify &sect;12.9.2 <a class="stdref">temp.deduct</a> paragraph 5:</p>
+<blockquote class="std">
+<div><i>[...]</i>
+When all template arguments have been deduced or obtained from default template arguments, all uses of template parameters in the template parameter list of the template and the function type are replaced with the corresponding deduced or default argument values.
+<ins>If the function type has a homogeneous function parameter pack and the number of elements for the pack has been deduced, the pack is replaced with a corresponding number of function parameters, each an instance of the pack's pattern.</ins>
+If the substitution results in an invalid type, as described above, type deduction fails.
+If the function template has associated constraints (<a class="stdref">temp.constr.decl</a>), those constraints are checked for satisfaction (<a class="stdref">temp.constr.constr</a>).
+If the constraints are not satisfied, type deduction fails.</div>
+</blockquote>
+
+<p>Modify &sect;12.9.2 <a class="stdref">temp.deduct</a> paragraph 11:</p>
+<blockquote class="std">
+<div><div class="stdnote">Type deduction may fail for the following reasons:
+<i>[...]</i>
+<ul>
+<li><ins>Attempting to deduce the type of a function template specialization from a <var>template-id</var> when the function template contains a homogeneous function parameter pack.
+<div class="stdexample"><pre class="example">
+<code>template &lt;class T&gt; void f(T... v);
+auto p = &amp;f&lt;int&gt;;   // <span class="comment">ambiguous; function parameter pack of unknown size</span></code>
+</pre></div></ins></li>
+</ul></div></div>
+</blockquote>
+
+<p>Modify &sect;12.9.2.1 <a class="stdref">temp.deduct.call</a> paragraph 1:</p>
+<blockquote class="std">
+<div><i>[...]</i>
+For a function parameter pack that occurs at the end of the <var>parameter-declaration-list</var>, <ins>the number of elements in the pack is determined as the number of arguments remaining in the call.</ins>
+<del>d</del><ins>D</ins>eduction is performed for each remaining argument<del> of the call</del>, taking the type <code>P</code> of the <var>declarator-id</var> of the function parameter pack as the corresponding function template parameter type.
+Each deduction deduces template arguments for subsequent positions in the template parameter packs expanded by the function parameter pack<ins> (if any)</ins>.
+When a function parameter pack appears in a non-deduced context (<a class="stdref">temp.deduct.type</a>), the type of that pack is never deduced.
+<div class="stdexample"><pre class="example">
+<code>template&lt;class ... Types&gt; void f(Types&amp; ...);
+template&lt;class T1, class ... Types&gt; void g(T1, Types ...);
+template&lt;class T1, class ... Types&gt; void g1(Types ..., T1);
+void h(int x, float&amp; y) {
+  const int z = x;
+  f(x, y, z);                   // <span class="comment"><code>Types</code> is deduced to <code>int, float, const int</code></span>
+  g(x, y, z);                   // <span class="comment"><code>T1</code> is deduced to <code>int</code>; <code>Types</code> is deduced to <code>float, int</code></span>
+  g1(x, y, z);                  // <span class="comment">error: <code>Types</code> is not deduced</span>
+  g1&lt;int, int, int&gt;(x, y, z);   // <span class="comment">OK, no deduction occurs</span>
+}</code>
+</pre></div></div>
+</blockquote>
+
+<p>Modify &sect;12.9.2.4 <a class="stdref">temp.deduct.partial</a> paragraph 8:</p>
+<blockquote class="std">
+<div>Using the resulting types <code>P</code> and <code>A</code>, the deduction is then done as described in <a class="stdref">temp.deduct.type</a>.
+If <code>P</code> is a function parameter pack, the type <code>A</code> of each remaining parameter type of the argument template is compared with the type <code>P</code> of the <var>declarator-id</var> of the function parameter pack.
+Each comparison deduces template arguments for subsequent positions in the template parameter packs expanded by the function parameter pack<ins> (if any)</ins>.
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;12.9.2.5 <a class="stdref">temp.deduct.type</a> paragraph 10:</p>
+<blockquote class="std">
+<div><i>[...]</i>
+If the <var>parameter-declaration</var> corresponding to <code>P</code><sub><i>i</i></sub> is a function parameter pack, then the type of its <var>declarator-id</var> is compared with each remaining parameter type in the <var>parameter-type-list</var> of <code>A</code>.
+Each comparison deduces template arguments for subsequent positions in the template parameter packs expanded by the function parameter pack<ins> (if any)</ins>.
+<i>[...]</i>
+</div>
+</blockquote>
+
+<p>Insert a new paragraph after &sect;12.10 <a class="stdref">temp.deduct.guide</a> paragraph 3:</p>
+<blockquote class="std ins">
+<div>A <var>template-declaration</var> in which the declaration is a <var>deduction-guide</var> shall declare at least one <var>template-parameter</var>.</div>
+</blockquote>
+
+<h2><a id="References">References</a></h2>
+<ol>
+    <li><a id="ref1"></a><a href="https://stackoverflow.com/questions/3703658/">Specifying one type for all arguments passed to variadic function or variadic template function w/out using array, vector, structs, etc?</a><br>
+    (https://stackoverflow.com/questions/3703658/)</li>
+    <li><a id="ref2"></a><a href="https://stackoverflow.com/questions/38528801/">C++ parameter pack, constrained to have instances of a single type?</a><br>
+    (https://stackoverflow.com/questions/38528801/)</li>
+    <li><a id="ref3"></a><a href="https://stackoverflow.com/questions/30773216/">Variadic template parameters of one specific type</a><br>
+    (https://stackoverflow.com/questions/30773216/)</li>
+    <li><a id="ref4"></a><a href="https://stackoverflow.com/questions/47470874/">C++ parameter pack with single type enforced in arguments</a><br>
+    (https://stackoverflow.com/questions/47470874/)</li>
+    <li><a id="ref5"></a><a href="https://stackoverflow.com/questions/18017543/">C++11 variable number of arguments, same specific type</a><br>
+    (https://stackoverflow.com/questions/18017543/)</li>
+    <li><a id="ref6"></a><a href="https://stackoverflow.com/questions/30346652/">Enforce variadic template of certain type</a><br>
+    (https://stackoverflow.com/questions/30346652/)</li>
+    <li><a id="ref7"></a><a href="https://stackoverflow.com/questions/13636290/">variadic template of a specific type</a><br>
+    (https://stackoverflow.com/questions/13636290/)</li>
+    <li><a id="ref8"></a><a href="https://stackoverflow.com/questions/9762531/">C++11: Variadic Homogeneous Non-POD Template Function Arguments?</a><br>
+    (https://stackoverflow.com/questions/9762531/)</li>
+    <li><a id="ref9"></a>Bjarne Stroustrup, <a href="https://parasol.tamu.edu/people/bs/622-GP/variadic-templates-and-tuples.pdf">Variadic Templates</a><br>
+    (https://parasol.tamu.edu/people/bs/622-GP/variadic-templates-and-tuples.pdf)</li>
+</ol>
+
+</body>
+</html>
