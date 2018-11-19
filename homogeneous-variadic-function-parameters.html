@@ -119,11 +119,11 @@ span.highlight { background-color: #7FDFFF }
 <table class="frontmatter" border="0" cellpadding="0" cellspacing="0" width="619">
     <tr>
         <td align="left" valign="top">Document number:</td>
-        <td>P1219R0</td>
+        <td>D 1219R1</td>
     </tr>
     <tr>
         <td align="left" valign="top">Date:</td>
-        <td>2018-10-08</td>
+        <td>2018-11-20</td>
     </tr>
     <tr>
         <td align="left" valign="top">Project:</td>
@@ -187,7 +187,7 @@ The remaining issues are expected to be resolved before the San Diego meeting.</
 
 <h2><a id="MotivationAndScope">Motivation and Scope</a></h2>
 <h3>Meeting user expectations</h3>
-<p>This table showcases the current lack of symmetry between function parameter packs and function parameter packs:</p>
+<p>This table showcases the current lack of symmetry between template parameter packs and function parameter packs:</p>
 <table>
     <tr><th></th><th>Template parameter pack</th><th>Function parameter pack</th></tr>
     <tr>
@@ -222,8 +222,8 @@ void f(Type... vs);</code></pre>
 A cursory search of <a href="https://stackoverflow.com/">Stack Overflow</a> turned up several questions ([<a href="#ref1">1</a>], [<a href="#ref2">2</a>], [<a href="#ref3">3</a>], [<a href="#ref4">4</a>], [<a href="#ref5">5</a>], [<a href="#ref6">6</a>], [<a href="#ref7">7</a>], [<a href="#ref8">8</a>]) that basically amount to asking how to write a function with a homogeneous parameter pack.
 Some work-arounds are suggested:</p>
 <table>
-    <tr><th>Recursion</th><th><code>std::initializer_list</code></th><th>Homogeneous pack (this proposal)</th></tr>
     <tr>
+        <th>Recursion</th>
         <td>
 <pre><code class="prettyprint">template &lt;class T&gt;
 T min(T v)
@@ -238,6 +238,9 @@ T min(T v1, Args... vs)
     return v2 < v1 ? v2 : v1;
 }</code></pre>
         </td>
+    </tr>
+    <tr>
+        <th><code>std::initializer_list</code></th>
         <td>
 <pre><code class="prettyprint">template &lt;class T&gt;
 T min(std::initializer_list&lt;T&gt; vs)
@@ -254,6 +257,32 @@ T min(std::initializer_list&lt;T&gt; vs)
     return v;
 }</code></pre>
         </td>
+    </tr>
+    <tr>
+        <th>SFINAE</th>
+        <td>
+<pre><code class="prettyprint">template &lt;class T, class... Args,
+          std::enable_if_t&lt;(... && std::is_same_v&lt;Args, T&gt;),
+                           std::nullptr_t&gt; = nullptr&gt;
+T min(T v1, Args... vs)
+{
+    return (v1, ..., (v1 = vs < v1 ? vs : v1));
+}</code></pre>
+        </td>
+    </tr>
+    <tr>
+        <th>Concepts</th>
+        <td>
+<pre><code class="prettyprint">template &lt;class T, class... Args&gt;
+    requires (... &amp;&amp; std::Same&lt;Args, T&gt;)
+T min(T v1, Args... vs)
+{
+    return (v1, ..., (v1 = vs < v1 ? vs : v1));
+}</code></pre>
+        </td>
+    </tr>
+    <tr>
+        <th>Homogeneous pack (this proposal)</th>
         <td>
 <pre><code class="prettyprint">template &lt;class T&gt;
 T min(T v1, T... vs)
@@ -265,15 +294,16 @@ T min(T v1, T... vs)
 </table>
 
 <p>The work-arounds suffer from a lack of clarity in the interface.
-The recursion approach advertises a function that can take variadic arguments of any type,
-but any attempt to call the function with a non-<code>T</code> will either cause the program to fail to compile,
-or lead to potentially unwanted implicit conversions.
-The <code>std::initializer_list</code> approach correctly advertises the accepted type,
-but is inflexible with mutability and requires the user to enclose its arguments in braces.
-In the <code>min</code> example above, the contract precondition could be removed if an explicit argument preceded the <code>std::initializer_list</code>,
-but the syntactic separation remains, resulting in calls such as <code>min(a, { b, c, d })</code>.</p>
+<ul>
+<li>The recursion approach advertises a function that can take variadic arguments of any type, but any attempt to call the function with a non-<code>T</code> will either cause the program to fail to compile, or lead to potentially unwanted implicit conversions.</li>
+<li>The <code>std::initializer_list</code> approach correctly advertises the accepted type, but is inflexible with respect to mutability and requires the user to enclose its arguments in braces.
+In the <code>min</code> example above, the contract precondition could be removed if an explicit argument preceded the <code>std::initializer_list</code>, but the syntactic separation remains, resulting in calls such as <code>min(a, { b, c, d })</code>.</li>
+<li>The SFINAE approach achieves the goal of constraining all arguments to be of the same type, but at the expense of readability, and the application of the <code>is_same_v</code> trait can disable desired conversions when constraining to a non-dependent parameter type.</li>
+<li>The Concepts approach is more readable than the SFINAE approach, but is otherwise interchangeable.</li>
+</ul>
+</p>
 
-<p>These patterns can also be found in the Library Fundamentals TS in the form of <code>make_array</code>, and even in the standard for <code>std::min</code> and <code>std::max</code>.
+<p>These patterns can be found in the Library Fundamentals TS in the form of <code>make_array</code>, and even in the standard for <code>std::min</code> and <code>std::max</code>.
 All of these could arguably be written more naturally with homogeneous parameter packs.</p>
 
 <table>
@@ -442,13 +472,14 @@ public:
 </table>
 
 <p>For this reason, homogeneous packs are likely inappropriate for constructors.
-Outside of constructors, where initializer lists must be separately enclosed in curly braces, homogeneous packs are likely a better option.
+Homogeneous packs are likely the better option outside of constructors, where initializer lists must be separately enclosed in curly braces.
 One possible exception to this is when the API designer wishes to <em>move</em> or <em>forward</em> variadic constructor arguments rather than <em>copy</em> them.
 Frustratingly, the <code>std::initializer_list</code> template permits access to its elements only via references to <code>const</code>, whereas packs do not have this limitation.</p>
 
 <h2><a id="DesignDecisions">Design Decisions</a></h2>
 <h3>Declaring a homogeneous function parameter pack</h3>
-<p>A homogeneous function parameter pack is declared in exactly the same way as any other function parameter pack; the only difference is that the parameter declaration does not mention a template parameter pack:</p>
+<p>A homogeneous function parameter pack is declared in exactly the same way as any other function parameter pack.
+The only difference is that the parameter declaration does not mention a template parameter pack:</p>
 
 <pre class="example">
 <code class="prettyprint">template &lt;class... T&gt; void f(T... v);   // <span class="comment">heterogeneous function parameter pack</span>
@@ -468,12 +499,8 @@ In all other respects, a homogeneous function parameter pack behaves no differen
 Just as packs can only be declared in templates, adding a homogeneous pack declaration to a lambda expression will cause it to become a generic lambda.</p>
 
 <h3>The template introducer</h3>
-<p>Function parameter packs can only appear in templates, and this proposal does nothing to change that.
-Under the current rules, function templates must be introduced using the <code>template</code> keyword, followed by the template parameter list in angle brackets.
-This requirement may change, depending on the outcome of ongoing discussions surrounding a terse syntax for concepts; this proposal is intended to work naturally with whatever outcome emerges.</p>
-
-<p>Under the proposed rules, any function declaration that includes a parameter pack must be a template, and requires a <var>template-head</var>.
-If the parameter pack is the only part of the function declaration requiring it to be a template, and the pattern of the parameter pack does not contain any dependent names, then the template parameter list may be omitted.
+<p>Under the proposed rules, any function declaration that includes a parameter pack is a template declaration and may have a <var>template-head</var>.
+If the parameter pack is the only part of the function declaration requiring it to be a template and the pattern of the parameter pack does not contain any dependent names, then the template parameter list may be omitted from the <var>template-head</var>.
 In this case, the angle brackets are still required.
 At first glance, this may appear to conflict with the syntax used for explicit specializations, but the compiler can disambiguate based on the presence of a parameter pack:</p>
 
@@ -484,9 +511,31 @@ template &lt;&gt; void foo(int a);                // <span class="comment">OK, d
 template &lt;&gt; void foo&lt;&gt;(int a, int b);       // <span class="comment">OK, declares an explicit specialization of #2</span>
 template &lt;&gt; void foo(float a);              // <span class="comment">OK, declares an explicit specialization of #1</span>
 template &lt;&gt; void foo&lt;int&gt;(int a, int b);    // <span class="comment">OK, declares an explicit specialization of #1</span>
-void bar(int... v);                         // <span class="comment">Error: parameter pack without template</span>
-template &lt;&gt; void baz();                     // <span class="comment">Error: no template parameters or packs, and does not specialize an existing template</span></code>
+template &lt;&gt; void bar();                     // <span class="comment">Error: no template parameters or packs, and does not specialize an existing template</span></code>
 </pre>
+
+<p>With the recent adoption of <a class="wg21link">P1141R2</a>, function templates can now be declared without any <var>template-head</var> at all, provided that no template parameter names are needed within the declaration.
+These <dfn>abbreviated</dfn> function templates rely on placeholder types such as <code>auto</code> in the function signature to signal that they are templates.</p>
+
+<p>Under this proposal, the presence of a homogeneous parameter pack in a function signature also indicates that a function declaration is an abbreviated function template declaration:</p>
+
+<pre class="example">
+<code class="prettyprint">void foo(int... v);                         // <span class="comment">OK, redeclares #2</span></code>
+</pre>
+
+<h4>Alternative: Require a sigil in the template parameter list to indicate that a homogeneous pack will be present in the function declaration.</h4>
+<pre class="example">
+<code class="prettyprint">template &lt;...&gt; void foo(int... v);
+template &lt;class T, ...&gt; void bar(T... v);</code>
+</pre>
+
+<p>This idea, including the use of the ellipsis as the sigil, was suggested by Richard Smith in an impromptu conversation during the San Diego meeting.
+He and Daveed Vandevoorde both indicated that this requirement would make the feature simpler to implement across a broad range of compilers.
+This notion is not directly supported by the experience of implementing the feature in Clang, but there is as yet no implementation experience with any other compiler.
+In Clang, the presence of an unparenthesized ellipsis in a declarator causes the compiler to treat the declaration as having a particular dependent type corresponding to a parameter pack, and the presence of a parameter of that type is enough to differentiate a function declaration as a template declaration instead of an explicit specialization or ordinary function declaration.</p>
+
+<p><a class="wg21link">P1141R2</a>, adopted in San Diego, adds support for function template declarations that lack a template head entirely; in this case, the presence of the <code>auto</code> keyword in the function parameter list indicates that the function declaration declares a function template.
+Any implementation that can handle these new declarations should also be able to handle homogeneous packs without added syntax.</p>
 
 <h4>Alternative: Allow the angle brackets to be omitted when no template parameters are needed.</h4>
 <pre class="example">
@@ -498,15 +547,6 @@ In both cases, there is no actual conflict; the compiler can tell that the funct
 This approach was considered and rejected because it introduces an irregularity into the grammar.
 Currently, all templates are introduced with a parameter list enclosed in angle brackets; removing them would be akin to removing the parentheses on a parameterless function declaration.
 The only declaration that uses the <code>template</code> keyword without angle brackets is the explicit instantiation declaration, and those do not declare templates.</p>
-
-<h4>Alternative: Allow the entire <var>template-head</var> to be omitted when no template parameters are needed.</h4>
-<pre class="example">
-<code class="prettyprint">void foo(int... v);</code>
-</pre>
-
-<p>This idea is certainly attractive, but it has already been discussed extensively in relation to a terse syntax for concepts, and this paper has nothing new to add to that discussion.
-All of the concerns brought up when discussing concepts are equally applicable here.
-If a terse syntax for concepts can be agreed upon, homogeneous function parameter packs will likely fit into that syntax without any problems.</p>
 
 <h4>Alternative: Allow or require a template parameter for the size of the pack.</h4>
 <pre class="example">
@@ -527,7 +567,7 @@ Since this facility would necessarily be optional for homogeneous template param
 <code class="prettyprint">template &lt;&gt; void foo(int n);</code>
 </pre>
 
-<p>The proposed rules the <var>template-parameter-list</var> optional in a <var>template-head</var> in order to permit homogeneous packs with non-dependent types.
+<p>Under the proposed rules, the <var>template-parameter-list</var> is optional in a <var>template-head</var> in order to permit homogeneous packs with non-dependent types.
 The proposed rules also add semantic constraints requiring at least one template parameter whenever there is no homogeneous pack.
 The semantic constraints could be relaxed, allowing trivial templates that only permit vacuous specialization.
 This would not be very useful; these trivial templates would behave like normal non-template entities in almost every way imaginable, aside from syntactic minutiae (for instance, a trivial function template would be implicitly inline).</p>
@@ -894,14 +934,26 @@ Each comparison deduces template arguments for subsequent positions in the templ
 <div><i>[...]</i>
 If the <var>parameter-declaration</var> corresponding to <code>P</code><sub><i>i</i></sub> is a function parameter pack, then the type of its <var>declarator-id</var> is compared with each remaining parameter type in the <var>parameter-type-list</var> of <code>A</code>.
 Each comparison deduces template arguments for subsequent positions in the template parameter packs expanded by the function parameter pack<ins> (if any)</ins>.
-<i>[...]</i>
-</div>
+<i>[...]</i></div>
 </blockquote>
 
 <p>Insert a new paragraph after &sect;12.10 <a class="stdref">temp.deduct.guide</a> paragraph 3:</p>
 <blockquote class="std ins">
 <div>A <var>template-declaration</var> in which the declaration is a <var>deduction-guide</var> shall declare at least one <var>template-parameter</var>.</div>
 </blockquote>
+
+<h3>Abbreviated function templates</h3>
+<p><a class="wg21link">P1141R2</a> introduces <dfn>abbreviated function templates</dfn> to the language.
+At the time of this writing, the wording provided in P1141R2 has not yet been merged into the working draft of the standard.
+What follows is therefore a modification of the wording found in P1141R2.</p>
+
+<p>Modify the paragraph to be added to &sect;9.2.3.5 <a class="stdref">dcl.fct</a> after paragraph 16:</p>
+<blockquote class="std">
+<div>An <dfn>abbreviated function template</dfn> is a function declaration whose <var>parameter-type-list</var> includes one or more placeholders (<a class=stdref>dcl.spec.auto</a>)<ins> or a trailing homogeneous function parameter pack (<a class="stdref">temp.variadic</a>)</ins>.
+<i>[...]</i></div>
+</blockquote>
+
+<h2><a id="Acknowledgments">Acknowledgments</a></h2>
 
 <h2><a id="References">References</a></h2>
 <ol>
