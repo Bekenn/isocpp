@@ -1,0 +1,407 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<title>Generalized wording for partial specializations</title>
+
+<style type="text/css">
+
+body { color: #000000; background-color: #FFFFFF; }
+del { text-decoration: line-through; color: #8B0040; }
+ins { text-decoration: underline; color: #005100; }
+
+table { border-collapse: collapse; margin-left: auto; margin-right: auto; }
+th { border: 1px solid black; padding-left: 0.8em; padding-right: 0.8em;
+    vertical-align: top; }
+td { border: 1px solid black; padding-left: 0.8em; padding-right: 0.8em;
+    vertical-align: top; }
+
+span.comment { font-style: italic; }
+span.comment code { font-style: normal; }
+span.comment em { font-weight: bold; }
+span.comment var { font-style: normal; }
+
+p.example { margin-left: 1em; }
+pre.example { margin-left: 1em; }
+div.example { margin-left: 1em; }
+
+code.extract { background-color: #F5F6A2; }
+pre.extract { margin-left: 2em; background-color: #F5F6A2;
+  border: 1px solid #E1E28E; }
+
+.attribute { margin-left: 2em; }
+.attribute dt { float: left; font-style: italic;
+  padding-right: 1ex; }
+.attribute dd { margin-left: 0em; }
+
+blockquote.std { color: #000000; background-color: #F1F1F1;
+  border: 1px solid #D1D1D1;
+  padding-left: 0.5em; padding-right: 0.5em; }
+blockquote.std.ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8;
+  border: 1px solid #B3EBB3; }
+blockquote.std.del { text-decoration: line-through;
+  color: #000000; background-color: #FFC8EB;
+  border: 1px solid #ECB3C7; }
+blockquote.std div { margin-top: 1em; margin-bottom: 1em; }
+blockquote.std ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8; }
+blockquote.std del { text-decoration: line-through;
+  color: #000000; background-color: #FFC8EB; }
+blockquote.std ins * { background-color: inherit; }
+blockquote.std del * { background-color: inherit; }
+blockquote.std dt { margin-top: 1em; }
+blockquote.std ul { list-style-type: none; padding-left: 2em;
+  margin-top: -0.2em; margin-bottom: -0.2em; }
+blockquote.std li { margin-top: 0.6em; margin-bottom: 0.6em; }
+blockquote.std ul > li::before { content: '\2014'; position: absolute; margin-left: -1.5em; }
+blockquote.std table { border: 1px solid black; border-collapse: collapse;
+  margin-left: auto; margin-right: auto; margin-top: 0.8em; text-align: left;
+  hyphens: none; }
+blockquote.std caption { margin-bottom: 1em; }
+blockquote.std th { border: inherit; padding-left: 1em; padding-right: 1em; vertical-align: top; }
+blockquote.std td { border: inherit; padding-left: 1em; padding-right: 1em; vertical-align: top; }
+blockquote.std th.left, td.left { text-align: left; }
+blockquote.std th.right, td.right { text-align: right; }
+blockquote.std th.center, td.center { text-align: center; }
+blockquote.std th.justify, td.justify { text-align: justify; }
+blockquote.std th.border, td.border { border-left: 1px solid black; }
+blockquote.std tr.rowsep, td.cline { border-top: 1px solid black; }
+blockquote.std tr.capsep { border-top: 3px solid black; border-top-style: double; }
+blockquote.std th { border-bottom: 1px solid black; }
+
+div.stdnote { display: inline; }
+div.stdexample { display: inline; }
+
+a.stdref::before { content: "["; }
+a.stdref::after { content: "]"; }
+
+table.frontmatter { border: 0; margin: 0; }
+table.frontmatter th { border: 0; }
+table.frontmatter td { border: 0; }
+
+span.highlight { background-color: #7FDFFF }
+
+</style>
+
+<script type="text/javascript" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        var notes = document.getElementsByClassName("stdnote");
+        for (var n = 0; n < notes.length; ++n) {
+            var node = notes[n];
+            node.insertAdjacentHTML("beforebegin",
+                "<span>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Note:<\/i> <\/span>");
+            node.insertAdjacentHTML("beforeEnd",
+                "<span> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end note<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/span>");
+        }
+
+        var notes_ins = document.getElementsByClassName("stdnote-ins");
+        for (var n = 0; n < notes_ins.length; ++n) {
+            var node = notes_ins[n];
+            node.insertAdjacentHTML("beforebegin",
+                "<span><ins>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Note:<\/i> <\/ins><\/span>");
+            node.insertAdjacentHTML("beforeEnd",
+                "<span><ins> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end note<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/ins><\/span>");
+        }
+
+        var examples = document.getElementsByClassName("stdexample");
+        for (var n = 0; n < examples.length; ++n) {
+            var node = examples[n];
+            node.insertAdjacentHTML("beforebegin",
+                "<span>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Example:<\/i> <\/span>");
+            node.insertAdjacentHTML("beforeEnd",
+                "<span> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end example<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/span>");
+        }
+
+        var examples_ins = document.getElementsByClassName("stdexample-ins");
+        for (var n = 0; n < examples_ins.length; ++n) {
+            var node = examples_ins[n];
+            node.insertAdjacentHTML("beforebegin",
+                "<span><ins>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Example:<\/i> <\/ins><\/span>");
+            node.insertAdjacentHTML("beforeEnd",
+                "<span><ins> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end example<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/ins><\/span>");
+        }
+
+        var references = document.getElementsByClassName("stdref");
+        for (var n = 0; n < references.length; ++n) {
+            var node = references[n];
+            node.setAttribute("href", "http://eel.is/c++draft/" + node.innerText);
+        }
+
+        var wg21links = document.getElementsByClassName("wg21link");
+        for (var n = 0; n < wg21links.length; ++n) {
+            var node = wg21links[n];
+            node.setAttribute("href", "https://wg21.link/" + node.innerText);
+        }
+    });
+</script>
+</head>
+
+<body>
+<h1>Generalized wording for partial specializations</h1>
+<table class="frontmatter" border="0" cellpadding="0" cellspacing="0" width="619">
+    <tr>
+        <td align="left" valign="top">Document number:</td>
+        <td>P2096R0</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Date:</td>
+        <td>2020-02-01</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Project:</td>
+        <td>Programming Language C++, Core Working Group</td>
+    </tr>
+    <!--tr>
+        <td align="left" valign="top">Feature-test macros:</td>
+        <td><code>__cpp_variable_templates</code></td>
+    </tr-->
+    <tr>
+        <td align="left" valign="top">Reply-to:</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
+    </tr>
+</table>
+
+<h2><a id="TableOfContents">Table of Contents</a></h2>
+<ol>
+    <li><a href="#TableOfContents">Table of Contents</a></li>
+    <li><a href="#RevisionHistory">Revision History</a></li>
+    <li><a href="#Introduction">Introduction</a></li>
+    <li><a href="#Wording">Wording</a></li>
+    <li><a href="#Acknowledgments">Acknowledgments</a></li>
+    <li><a href="#References">References</a></li>
+</ol>
+
+<h2><a id="RevisionHistory">Revision History</a></h2>
+<h3>Revision 0 - 2020-02-01</h3>
+<ul>
+<li>Initial draft.</li>
+</ul>
+
+<h2><a id="Introduction">Introduction</a></h2>
+<p>This paper is intended to address CWG issue <a href="http://wg21.link/cwg1711">1711</a> by generalizing the existing wording for class template partial specializations to allow for partial specializations of variable templates.</p>
+
+<h2><a id="Wording">Wording</a></h2>
+<p>All modifications are presented relative to <a class="wg21link">N4849</a>.
+"<i>[...]</i>" indicates elided content that is to remain unchanged.</p>
+
+<p>Modify &sect;9.9 <a class="stdref">namespace.udecl</a> paragraph 11:</p>
+<blockquote class="std">
+<div><span class="stdnote">Partial specializations of<del> class</del> templates are found by looking up the primary<del> class</del> template and then considering all partial specializations of that template.
+If a <var>using-declaration</var> names a<del> class</del> template, partial specializations introduced after the <var>using-declaration</var> are effectively visible because the primary template is visible (<a class="stdref">temp.class.spec</a>).</span></div>
+</blockquote>
+
+<p>Modify &sect;13.1 <a class="stdref">temp.pre</a> paragraph 4:</p>
+<blockquote class="std">
+<div>A <var>template-declaration</var> can appear only as a namespace scope or class scope declaration.
+Its <var>declaration</var> shall not be an <var>export-declaration</var>.
+In a function template declaration, the last component of the <var>declarator-id</var> shall not be a <var>template-id</var>.
+<span class="stdnote">That last component may be an <var>identifier</var>, an <var>operator-function-id</var>, a <var>conversion-function-id</var>, or a <var>literal-operator-id</var>.
+In a class<ins> or variable</ins> template declaration, if the <del>class</del><ins>declared</ins> name is a <var>simple-template-id</var>, the declaration declares a<del> class template</del> partial specialization (<a class="stdref">temp.class.spec</a>).</span></div>
+</blockquote>
+
+<p>Modify &sect;13.1 <a class="stdref">temp.pre</a> paragraph 6:</p>
+<blockquote class="std">
+<div>A template name has linkage (<a class="stdref">basic.link</a>).
+Specializations (explicit or implicit) of a template that has internal linkage are distinct from all specializations in other translation units.
+A template, a<ins>n</ins><del> template</del> explicit specialization (<a class="stdref">temp.expl.spec</a>), and a<del> class template</del> partial specialization shall not have C linkage.
+Use of a linkage specification other than <code>"C"</code> or <code>"C++"</code> with any of these constructs is conditionally-supported, with implementation-defined semantics.
+Template definitions shall obey the one-definition rule (<a class="stdref">basic.def.odr</a>).
+<span class="stdnote">Default arguments for function templates and for member functions of class templates are considered definitions for the purpose of template instantiation (<a class="stdref">temp.decls</a>) and must also obey the one-definition rule.</span></div>
+</blockquote>
+
+<p>Modify &sect;13.4.3 <a class="stdref">temp.arg.template</a> paragraph 1:</p>
+<blockquote class="std">
+<div>A <var>template-argument</var> for a template <var>template-parameter</var> shall be the name of a class template or an alias template, expressed as <var>id-expression</var>.
+<del>When the <var>template-argument</var> names a class template, o</del><ins>O</ins>nly primary<del> class</del> templates are considered when matching the template template argument with the corresponding parameter;
+partial specializations are not considered even if their parameter lists match that of the template template parameter.</div>
+</blockquote>
+
+<p>Modify &sect;13.4.3 <a class="stdref">temp.arg.template</a> paragraph 2:</p>
+<blockquote class="std">
+<div>Any partial specializations (<a class="stdref">temp.class.spec</a>) associated with the primary<del> class</del> template<del> or primary variable template</del> are considered when a specialization based on the template <var>template-parameter</var> is instantiated.
+If a specialization is not visible at the point of instantiation, and it would have been selected had it been visible, the program is ill-formed, no diagnostic required.
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;13.7 <a class="stdref">temp.decls</a> paragraph 1:</p>
+<blockquote class="std">
+<div>A <var>template-id</var>, that is, the <var>template-name</var> followed by a <var>template-argument-list</var> shall not be specified in the <del>declaration</del><ins><var>declaration</var></ins> of a primary template declaration.
+<div class="stdexample"><pre class="example">
+<code>template&lt;class T1, class T2, int I&gt; class A&lt;T1, T2, I&gt; { }; // <span class="comment">error</span>
+template&lt;class T1, int I&gt; void sort&lt;T1, I&gt;(T1 data[I]); // <span class="comment">error</span></code>
+</pre></div>
+<span class="stdnote">However, this syntax is allowed in<del> class template</del> partial specializations (<a class="stdref">temp.class.spec</a>).</span></div>
+</blockquote>
+
+<p>Rename &sect;13.7.5 <a class="stdref">temp.class.spec</a>:</p>
+<blockquote class="std">
+<div><del>Class template p</del><ins>P</ins>artial specialization<del>s</del></div>
+</blockquote>
+
+<p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 1:</p>
+<blockquote class="std">
+<div>A <dfn>primary<del> class</del> template</dfn> declaration is one in which the<del> class</del> template name is an identifier.
+A template declaration in which the<del> class</del> template name is a <var>simple-template-id</var> is a <dfn>partial specialization</dfn> of the<del> class</del> template named in the <var>simple-template-id</var>.
+A partial specialization of a<del> class</del> template provides an alternative definition of the template that is used instead of the primary definition when the arguments in a specialization match those given in the partial specialization (<a class="stdref">temp.class.spec.match</a>).
+The primary template shall be declared before any<ins> partial</ins> specializations of that template.
+A partial specialization shall be declared before the first use of a<del> class</del> template specialization that would make use of the partial specialization as the result of an implicit or explicit instantiation in every translation unit in which such a use occurs; no diagnostic is required.
+<ins>Only class templates and variable templates may have partial specializations.</ins></div>
+</blockquote>
+
+<p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 2:</p>
+<blockquote class="std">
+<div>Each<del> class template</del> partial specialization is a distinct template<del> and</del><ins>.</ins>
+<del>d</del><ins>D</ins>efinitions shall be provided for the members of a<ins> class</ins> template partial specialization (<a class="stdref">temp.class.spec.mfunc</a>).</div>
+</blockquote>
+
+<p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 4:</p>
+<blockquote class="std">
+<div>A<del> class template</del> partial specialization may be constrained (<del><a class="stdref">temp.pre</a></del><ins><a class="stdref">temp.constr</a></ins>).
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 5:</p>
+<blockquote class="std">
+<div>The template parameters<ins> of a template</ins> are specified in the angle bracket enclosed list that immediately follows the keyword <code>template</code>.
+For partial specializations, the template argument list is explicitly written immediately following the<del> class</del> template name.
+For primary templates, this list is implicitly described by the template parameter list.
+<del>Specifically, the order of the template arguments is the sequence in which they appear in the template parameter list.</del>
+<ins>For each template parameter <code>P<sub>i</sub></code>, there is a corresponding template argument <code>A<sub>i</sub></code> consisting of the <var>type-id</var> or <var>id-expression</var> naming <code>P<sub>i</sub></code>.</ins>
+<span class="stdexample">The template argument list for the primary template in the example above is <code>&lt;T1, T2, I&gt;</code>.</span>
+<div class="stdnote">The template argument list cannot be specified in the primary template declaration.
+For example,
+<pre class="example">
+<code>template&lt;class T1, class T2, int I&gt;
+class A&lt;T1, T2, I&gt; { }; // <span class="comment">error</span></code>
+</pre>
+</div></div>
+</blockquote>
+
+<p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 6:</p>
+<blockquote class="std">
+<div>A<del> class template</del> partial specialization may be declared in any scope in which the corresponding primary template may be defined (<a class="stdref">namespace.memdef</a>, <a class="stdref">class.mem</a>, <a class="stdref">temp.mem</a>).
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 7:</p>
+<blockquote class="std">
+<div>Partial specialization declarations themselves are not found by name lookup.
+Rather, when the primary template name is used, any previously-declared partial specializations of the primary template are also considered.
+<span class="stdnote-ins">One consequence is that a <var>using-declaration</var> which refers to a<del> class</del> template does not restrict the set of partial specializations which may be found through the <var>using-declaration</var>.</span>
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 9:</p>
+<blockquote class="std">
+<div>Within the argument list of a<del> class template</del> partial specialization, the following restrictions apply:
+<ul>
+<li>The type of a template parameter corresponding to a specialized non-type argument shall not be dependent on a parameter of the<ins> partial</ins> specialization.
+<div class="stdexample">
+<pre class="example">
+<code>template &lt;class T, T t&gt; struct C {};
+template &lt;class T&gt; struct C&lt;T, 1&gt;; // <span class="comment">error</span>
+template&lt; int X, int (*array_ptr)[X] &gt; class A {};
+int array[5];
+template&lt; int X &gt; class A&lt;X,&amp;array&gt; { }; // <span class="comment">error</span></code>
+</pre>
+</div></li>
+<li>The<ins> partial</ins> specialization shall be more specialized than the primary template (<a class="stdref">temp.class.order</a>).</li>
+<li>The template parameter list of a<ins> partial</ins> specialization shall not contain default template argument values.</li>
+<li>An argument shall not contain an unexpanded pack.
+If an argument is a pack expansion (<a class="stdref">temp.variadic</a>), it shall be the last argument in the template argument list.</li>
+</ul></div>
+</blockquote>
+
+<p>Rename &sect;13.7.5.1 <a class="stdref">temp.class.spec.match</a>:</p>
+<blockquote class="std">
+<div>Matching of<del> class template</del> partial specializations</div>
+</blockquote>
+
+<p>Modify &sect;13.7.5.1 <a class="stdref">temp.class.spec.match</a> paragraph 1:</p>
+<blockquote class="std">
+<div>When a<del> class</del> template is used in a context that requires an instantiation of the <del>class</del><ins>template</ins>, it is necessary to determine whether the instantiation is to be generated using the primary template or one of the partial specializations.
+This is done by matching the template arguments of the<del> class</del> template specialization with the template argument lists of the partial specializations.
+<ul>
+<li>If exactly one matching<ins> partial</ins> specialization is found, the instantiation is generated from that<ins> partial</ins> specialization.</li>
+<li>If more than one matching<ins> partial</ins> specialization is found, the partial order rules (<a class="stdref">temp.class.order</a>) are used to determine whether one of the<ins> partial</ins> specializations is more specialized than the others.
+If <del>none of the specializations is more specialized than all of the other matching specializations</del><ins>such a partial specialization exists, the instantiation is generated from that partial specialization; otherwise</ins>,<del> then</del> the use of the<del> class</del> template is ambiguous and the program is ill-formed.</li>
+<li>If no matches are found, the instantiation is generated from the primary template.</li>
+</ul></div>
+</blockquote>
+
+<p>Modify &sect;13.7.5.1 <a class="stdref">temp.class.spec.match</a> paragraph 4:</p>
+<blockquote class="std">
+<div>In a<del> type</del> name that refers to a<del> class template</del> specialization<del>,</del><ins> of a class or variable template</ins> (e.g., <code>A&lt;int, int, 1&gt;</code>)<ins>,</ins> the argument list shall match the template parameter list of the primary template.
+The template arguments of a<ins> partial</ins> specialization are deduced from the arguments of the primary template.</div>
+</blockquote>
+
+<p>Rename &sect;13.7.5.2 <a class="stdref">temp.class.order</a>:</p>
+<blockquote class="std">
+<div>Partial ordering of <del>class template</del><ins>partial</ins> specializations</div>
+</blockquote>
+
+<p>Modify &sect;13.7.5.2 <a class="stdref">temp.class.order</a> paragraph 1:</p>
+<blockquote class="std">
+<div>For two<del> class template</del> partial specializations, the first is <dfn>more specialized</dfn> than the second if, given the following rewrite to two function templates, the first function template is more specialized than the second according to the ordering rules for function templates (<a class="stdref">temp.func.order</a>):
+<ul>
+<li>Each of the two function templates has the same template parameters and associated constraints (<a class="stdref">temp.constr.decl</a>) as the corresponding partial specialization.</li>
+<li>Each function template has a single function parameter whose type is a class template specialization where the template arguments are the corresponding template parameters from the function template for each template argument in the <var>template-argument-list</var> of the <var>simple-template-id</var> of the partial specialization.</li>
+</ul>
+<i>[...]</i></div>
+</blockquote>
+
+<p>Rename &sect;13.7.5.3 <a class="stdref">temp.class.spec.mfunc</a>:</p>
+<blockquote class="std">
+<div>Members of class template<ins> partial</ins> specializations</div>
+</blockquote>
+
+<p>Modify &sect;13.7.5.3 <a class="stdref">temp.class.spec.mfunc</a> paragraph 1:</p>
+<blockquote class="std">
+<div>The template parameter list of a member of a class template partial specialization shall match the template parameter list of the class template partial specialization.
+The template argument list of a member of a class template partial specialization shall match the template argument list of the class template partial specialization.<del>
+A class template partial specialization is a distinct template.</del>
+The members of the class template partial specialization are unrelated to the members of the primary template.
+Class template partial specialization members that are used in a way that requires a definition shall be defined; the definitions of members of the primary template are never used as definitions for members of a class template partial specialization.
+An explicit specialization of a member of a class template partial specialization is declared in the same way as an explicit specialization of<ins> a member of</ins> the primary template.
+<i>[...]</i></div>
+</blockquote>
+
+<p>Modify &sect;13.7.8 <a class="stdref">temp.concept</a> paragraph 5:</p>
+<blockquote class="std">
+<div>A concept is not instantiated (<a class="stdref">temp.spec</a>).
+<span class="stdnote">A <del>concept-id</del><ins><var>concept-id</var></ins> (<a class="stdref">temp.names</a>) is evaluated as an expression.
+A concept cannot be explicitly instantiated (<a class="stdref">temp.explicit</a>), explicitly specialized (<a class="stdref">temp.expl.spec</a>), or partially specialized<ins> (<a class="stdref">temp.class.spec</a>)</ins>.</span></div>
+</blockquote>
+
+<p>Modify &sect;13.8.2.1 <a class="stdref">temp.dep.type</a> paragraph 1:</p>
+<blockquote class="std">
+<div>A name refers to the <dfn>current instantiation</dfn> if it is
+<ul>
+<li>in the definition of a class template, a nested class of a class template, a member of a class template, or a member of a nested class of a class template, the <del>injected-class-name</del><ins><var>injected-class-name</var></ins> (<a class="stdref">class.pre</a>) of the class template or nested class,</li>
+<li>in the definition of a primary class template or a member of a primary class template, the name of the class template followed by the template argument list of the primary template (as described below) enclosed in <code>&lt;&gt;</code> (or an equivalent template alias specialization),</li>
+<li>in the definition of a nested class of a class template, the name of the nested class referenced as a member of the current instantiation, or</li>
+<li>in the definition of a<ins> class template</ins> partial specialization or a member of a<ins> class template</ins> partial specialization, the name of the class template followed by the template argument list of the partial specialization enclosed in <code>&lt;&gt;</code> (or an equivalent template alias specialization). If the <var>n</var><sup>th</sup> template parameter is a template parameter pack, the <var>n</var><sup>th</sup> template argument is a pack expansion (<a class="stdref">temp.variadic</a>) whose pattern is the name of the template parameter pack.</li>
+</ul></div>
+</blockquote>
+
+<p>Optional: Rename the following stable names as shown:</p>
+<table>
+<tr><th>Old Name</th><th>New Name</th></tr>
+<tr><td>temp.class.spec</td><td>temp.spec.partial</td></tr>
+<tr><td>temp.class.spec.match</td><td>temp.spec.partial.match</td></tr>
+<tr><td>temp.class.order</td><td>temp.spec.partial.order</td></tr>
+<tr><td>temp.class.spec.mfunc</td><td>temp.spec.partial.member</td></tr>
+</table>
+
+<h2><a id="Acknowledgments">Acknowledgments</a></h2>
+<p>Thanks to Daniel Krügler and Davis Herring for their feedback on an early version of this paper.</p>
+
+<h2><a id="References">References</a></h2>
+<ol>
+<li>CWG issue 1711: <a href="http://wg21.link/cwg1711">http://wg21.link/cwg1711</a></li>
+</ol>
+
+</body>
+</html>
