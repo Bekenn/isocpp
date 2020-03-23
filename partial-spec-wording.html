@@ -91,36 +91,36 @@ span.highlight { background-color: #7FDFFF }
         for (var n = 0; n < notes.length; ++n) {
             var node = notes[n];
             node.insertAdjacentHTML("beforebegin",
-                "<span>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Note:<\/i> <\/span>");
+                "<span>[&nbsp;<i>Note:<\/i> <\/span>");
             node.insertAdjacentHTML("beforeEnd",
-                "<span> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end note<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/span>");
+                "<span> &mdash;&nbsp;<i>end note<\/i>&nbsp;]<\/span>");
         }
 
         var notes_ins = document.getElementsByClassName("stdnote-ins");
         for (var n = 0; n < notes_ins.length; ++n) {
             var node = notes_ins[n];
             node.insertAdjacentHTML("beforebegin",
-                "<span><ins>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Note:<\/i> <\/ins><\/span>");
+                "<span><ins>[&nbsp;<i>Note:<\/i> <\/ins><\/span>");
             node.insertAdjacentHTML("beforeEnd",
-                "<span><ins> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end note<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/ins><\/span>");
+                "<span><ins> &mdash;&nbsp;<i>end note<\/i>&nbsp;]<\/ins><\/span>");
         }
 
         var examples = document.getElementsByClassName("stdexample");
         for (var n = 0; n < examples.length; ++n) {
             var node = examples[n];
             node.insertAdjacentHTML("beforebegin",
-                "<span>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Example:<\/i> <\/span>");
+                "<span>[&nbsp;<i>Example:<\/i> <\/span>");
             node.insertAdjacentHTML("beforeEnd",
-                "<span> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end example<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/span>");
+                "<span> &mdash;&nbsp;<i>end example<\/i>&nbsp;]<\/span>");
         }
 
         var examples_ins = document.getElementsByClassName("stdexample-ins");
         for (var n = 0; n < examples_ins.length; ++n) {
             var node = examples_ins[n];
             node.insertAdjacentHTML("beforebegin",
-                "<span><ins>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Example:<\/i> <\/ins><\/span>");
+                "<span><ins>[&nbsp;<i>Example:<\/i> <\/ins><\/span>");
             node.insertAdjacentHTML("beforeEnd",
-                "<span><ins> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end example<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/ins><\/span>");
+                "<span><ins> &mdash;&nbsp;<i>end example<\/i>&nbsp;]<\/ins><\/span>");
         }
 
         var references = document.getElementsByClassName("stdref");
@@ -143,11 +143,11 @@ span.highlight { background-color: #7FDFFF }
 <table class="frontmatter" border="0" cellpadding="0" cellspacing="0" width="619">
     <tr>
         <td align="left" valign="top">Document number:</td>
-        <td>P2096R0</td>
+        <td>D2096R1</td>
     </tr>
     <tr>
         <td align="left" valign="top">Date:</td>
-        <td>2020-02-01</td>
+        <td>2020-03-23</td>
     </tr>
     <tr>
         <td align="left" valign="top">Project:</td>
@@ -174,6 +174,10 @@ span.highlight { background-color: #7FDFFF }
 </ol>
 
 <h2><a id="RevisionHistory">Revision History</a></h2>
+<h3>Revision 1 - 2020-03-23</h3>
+<ul>
+<li>Incorporated review feedback from CWG telecon.</li>
+</ul>
 <h3>Revision 0 - 2020-02-01</h3>
 <ul>
 <li>Initial draft.</li>
@@ -227,12 +231,12 @@ If a specialization is not visible at the point of instantiation, and it would h
 
 <p>Modify &sect;13.7 <a class="stdref">temp.decls</a> paragraph 1:</p>
 <blockquote class="std">
-<div>A <var>template-id</var>, that is, the <var>template-name</var> followed by a <var>template-argument-list</var> shall not be specified in the <del>declaration</del><ins><var>declaration</var></ins> of a primary template declaration.
-<div class="stdexample"><pre class="example">
+<div><ins><span>[&nbsp<i>Note:</i> </span></ins>A <var>template-id</var><del>,</del> <ins>(</ins>that is, <del>the</del><ins>a</ins> <var>template-name</var> followed by a <var>template-argument-list</var><ins>)</ins> <del>shall not</del><ins>cannot</ins> be <del>specified in the declaration of</del><ins>the declared name of</ins> a primary template declaration.
+<div><del><div class="stdexample"><pre class="example">
 <code>template&lt;class T1, class T2, int I&gt; class A&lt;T1, T2, I&gt; { }; // <span class="comment">error</span>
 template&lt;class T1, int I&gt; void sort&lt;T1, I&gt;(T1 data[I]); // <span class="comment">error</span></code>
-</pre></div>
-<span class="stdnote">However, this syntax is allowed in<del> class template</del> partial specializations (<a class="stdref">temp.class.spec</a>).</span></div>
+</pre></div></del></div>
+<del><span>[&nbsp<i>Note:</i> </span></del>However, this syntax is allowed in<del> class template</del> partial specializations (<a class="stdref">temp.class.spec</a>).<span> &mdash;&nbsp<i>end note</i>&nbsp]</span></div>
 </blockquote>
 
 <p>Rename &sect;13.7.5 <a class="stdref">temp.class.spec</a>:</p>
@@ -242,18 +246,16 @@ template&lt;class T1, int I&gt; void sort&lt;T1, I&gt;(T1 data[I]); // <span cla
 
 <p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 1:</p>
 <blockquote class="std">
-<div>A <dfn>primary<del> class</del> template</dfn> declaration is one in which the<del> class</del> template name is an identifier.
-A template declaration in which the<del> class</del> template name is a <var>simple-template-id</var> is a <dfn>partial specialization</dfn> of the<del> class</del> template named in the <var>simple-template-id</var>.
+<div>A <dfn>primary<del> class</del> template</dfn> declaration is one in which the<del> class template name</del><ins><var>template-name</var></ins> is <del>an identifier</del><ins>not followed by a <var>template-argument-list</var></ins>.
+A template declaration in which the<del> class</del> template name is a <var>simple-template-id</var> is a <dfn>partial specialization</dfn> of the<del> class</del> template named in the <var>simple-template-id</var><ins>, which shall be a class or variable template</ins>.
 A partial specialization of a<del> class</del> template provides an alternative definition of the template that is used instead of the primary definition when the arguments in a specialization match those given in the partial specialization (<a class="stdref">temp.class.spec.match</a>).
 The primary template shall be declared before any<ins> partial</ins> specializations of that template.
-A partial specialization shall be declared before the first use of a<del> class</del> template specialization that would make use of the partial specialization as the result of an implicit or explicit instantiation in every translation unit in which such a use occurs; no diagnostic is required.
-<ins>Only class templates and variable templates may have partial specializations.</ins></div>
+A partial specialization shall be declared before the first use of a<del> class</del> template specialization that would make use of the partial specialization as the result of an implicit or explicit instantiation in every translation unit in which such a use occurs; no diagnostic is required.</div>
 </blockquote>
 
 <p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 2:</p>
 <blockquote class="std">
-<div>Each<del> class template</del> partial specialization is a distinct template<del> and</del><ins>.</ins>
-<del>d</del><ins>D</ins>efinitions shall be provided for the members of a<ins> class</ins> template partial specialization (<a class="stdref">temp.class.spec.mfunc</a>).</div>
+<div>Each<del> class template</del> partial specialization is a distinct template<del> and definitions shall be provided for the members of a template partial specialization (<a class="stdref">temp.class.spec.mfunc</a>)</del>.</div>
 </blockquote>
 
 <p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 4:</p>
