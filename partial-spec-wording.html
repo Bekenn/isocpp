@@ -143,11 +143,11 @@ span.highlight { background-color: #7FDFFF }
 <table class="frontmatter" border="0" cellpadding="0" cellspacing="0" width="619">
     <tr>
         <td align="left" valign="top">Document number:</td>
-        <td>D2096R1</td>
+        <td>D2096R2</td>
     </tr>
     <tr>
         <td align="left" valign="top">Date:</td>
-        <td>2020-03-23</td>
+        <td>2020-08-17</td>
     </tr>
     <tr>
         <td align="left" valign="top">Project:</td>
@@ -174,6 +174,10 @@ span.highlight { background-color: #7FDFFF }
 </ol>
 
 <h2><a id="RevisionHistory">Revision History</a></h2>
+<h3>Revision 2 - 2020-08-17</h3>
+<ul>
+<li>Incorporated additional review feedback from CWG telecon.</li>
+</ul>
 <h3>Revision 1 - 2020-03-23</h3>
 <ul>
 <li>Incorporated review feedback from CWG telecon.</li>
@@ -231,7 +235,7 @@ If a specialization is not visible at the point of instantiation, and it would h
 
 <p>Modify &sect;13.7 <a class="stdref">temp.decls</a> paragraph 1:</p>
 <blockquote class="std">
-<div><ins><span>[&nbsp<i>Note:</i> </span></ins>A <var>template-id</var><del>,</del> <ins>(</ins>that is, <del>the</del><ins>a</ins> <var>template-name</var> followed by a <var>template-argument-list</var><ins>)</ins> <del>shall not</del><ins>cannot</ins> be <del>specified in the declaration of</del><ins>the declared name of</ins> a primary template declaration.
+<div><ins><span>[&nbsp<i>Note:</i> </span></ins>A <var>template-id</var><del>, that is, the <var>template-name</var> followed by a <var>template-argument-list</var> shall not</del><ins>cannot</ins> be <del>specified in the declaration of</del><ins>the declared name of</ins> a primary template declaration.
 <div><del><div class="stdexample"><pre class="example">
 <code>template&lt;class T1, class T2, int I&gt; class A&lt;T1, T2, I&gt; { }; // <span class="comment">error</span>
 template&lt;class T1, int I&gt; void sort&lt;T1, I&gt;(T1 data[I]); // <span class="comment">error</span></code>
@@ -246,7 +250,7 @@ template&lt;class T1, int I&gt; void sort&lt;T1, I&gt;(T1 data[I]); // <span cla
 
 <p>Modify &sect;13.7.5 <a class="stdref">temp.class.spec</a> paragraph 1:</p>
 <blockquote class="std">
-<div>A <dfn>primary<del> class</del> template</dfn> declaration is one in which the<del> class template name</del><ins><var>template-name</var></ins> is <del>an identifier</del><ins>not followed by a <var>template-argument-list</var></ins>.
+<div>A <dfn>primary<del> class</del> template</dfn> declaration is one in which the<del> class template</del> name<ins> of the template</ins> is <del>an identifier</del><ins>not followed by a <var>template-argument-list</var></ins>.
 A template declaration in which the<del> class</del> template name is a <var>simple-template-id</var> is a <dfn>partial specialization</dfn> of the<del> class</del> template named in the <var>simple-template-id</var><ins>, which shall be a class or variable template</ins>.
 A partial specialization of a<del> class</del> template provides an alternative definition of the template that is used instead of the primary definition when the arguments in a specialization match those given in the partial specialization (<a class="stdref">temp.class.spec.match</a>).
 The primary template shall be declared before any<ins> partial</ins> specializations of that template.
@@ -268,9 +272,8 @@ A partial specialization shall be declared before the first use of a<del> class<
 <blockquote class="std">
 <div>The template parameters<ins> of a template</ins> are specified in the angle bracket enclosed list that immediately follows the keyword <code>template</code>.
 For partial specializations, the template argument list is explicitly written immediately following the<del> class</del> template name.
-For primary templates, this list is implicitly described by the template parameter list.
+For primary templates, this list is implicitly described by the template parameter list<ins> (<a class="stdref">temp.dep.type</a>)</ins>.
 <del>Specifically, the order of the template arguments is the sequence in which they appear in the template parameter list.</del>
-<ins>For each template parameter <code>P<sub>i</sub></code>, there is a corresponding template argument <code>A<sub>i</sub></code> consisting of the <var>type-id</var> or <var>id-expression</var> naming <code>P<sub>i</sub></code>.</ins>
 <span class="stdexample">The template argument list for the primary template in the example above is <code>&lt;T1, T2, I&gt;</code>.</span>
 <div class="stdnote">The template argument list cannot be specified in the primary template declaration.
 For example,
@@ -373,7 +376,7 @@ An explicit specialization of a member of a class template partial specializatio
 <p>Modify &sect;13.7.8 <a class="stdref">temp.concept</a> paragraph 5:</p>
 <blockquote class="std">
 <div>A concept is not instantiated (<a class="stdref">temp.spec</a>).
-<span class="stdnote">A <del>concept-id</del><ins><var>concept-id</var></ins> (<a class="stdref">temp.names</a>) is evaluated as an expression.
+<span class="stdnote">A concept-id (<a class="stdref">temp.names</a>) is evaluated as an expression.
 A concept cannot be explicitly instantiated (<a class="stdref">temp.explicit</a>), explicitly specialized (<a class="stdref">temp.expl.spec</a>), or partially specialized<ins> (<a class="stdref">temp.class.spec</a>)</ins>.</span></div>
 </blockquote>
 
@@ -381,7 +384,7 @@ A concept cannot be explicitly instantiated (<a class="stdref">temp.explicit</a>
 <blockquote class="std">
 <div>A name refers to the <dfn>current instantiation</dfn> if it is
 <ul>
-<li>in the definition of a class template, a nested class of a class template, a member of a class template, or a member of a nested class of a class template, the <del>injected-class-name</del><ins><var>injected-class-name</var></ins> (<a class="stdref">class.pre</a>) of the class template or nested class,</li>
+<li>in the definition of a class template, a nested class of a class template, a member of a class template, or a member of a nested class of a class template, the injected-class-name (<a class="stdref">class.pre</a>) of the class template or nested class,</li>
 <li>in the definition of a primary class template or a member of a primary class template, the name of the class template followed by the template argument list of the primary template (as described below) enclosed in <code>&lt;&gt;</code> (or an equivalent template alias specialization),</li>
 <li>in the definition of a nested class of a class template, the name of the nested class referenced as a member of the current instantiation, or</li>
 <li>in the definition of a<ins> class template</ins> partial specialization or a member of a<ins> class template</ins> partial specialization, the name of the class template followed by the template argument list of the partial specialization enclosed in <code>&lt;&gt;</code> (or an equivalent template alias specialization). If the <var>n</var><sup>th</sup> template parameter is a template parameter pack, the <var>n</var><sup>th</sup> template argument is a pack expansion (<a class="stdref">temp.variadic</a>) whose pattern is the name of the template parameter pack.</li>
