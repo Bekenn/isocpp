@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<title>CWG-2398 Template template parameter matching and deduction</title>
+
+<style type="text/css">
+
+body { color: #000000; background-color: #FFFFFF; }
+del { text-decoration: line-through; color: #8B0040; }
+ins { text-decoration: underline; color: #005100; }
+
+table { border-collapse: collapse; margin-left: auto; margin-right: auto; }
+th { border: 1px solid black; padding-left: 0.8em; padding-right: 0.8em;
+    vertical-align: top; }
+td { border: 1px solid black; padding-left: 0.8em; padding-right: 0.8em;
+    vertical-align: top; }
+
+span.comment { font-style: italic; }
+span.comment code { font-style: normal; }
+span.comment em { font-weight: bold; }
+span.comment var { font-style: normal; }
+
+p.example { margin-left: 1em; }
+pre.example { margin-left: 1em; }
+div.example { margin-left: 1em; }
+
+code.extract { background-color: #F5F6A2; }
+pre.extract { margin-left: 2em; background-color: #F5F6A2;
+  border: 1px solid #E1E28E; }
+
+.attribute { margin-left: 2em; }
+.attribute dt { float: left; font-style: italic;
+  padding-right: 1ex; }
+.attribute dd { margin-left: 0em; }
+
+blockquote.std { color: #000000; background-color: #F1F1F1;
+  border: 1px solid #D1D1D1;
+  padding-left: 0.5em; padding-right: 0.5em; }
+blockquote.std.ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8;
+  border: 1px solid #B3EBB3; }
+blockquote.std.del { text-decoration: line-through;
+  color: #000000; background-color: #FFC8EB;
+  border: 1px solid #ECB3C7; }
+blockquote.std div { margin-top: 1em; margin-bottom: 1em; }
+blockquote.std ins { text-decoration: underline;
+  color: #000000; background-color: #C8FFC8; }
+blockquote.std del { text-decoration: line-through;
+  color: #000000; background-color: #FFC8EB; }
+blockquote.std ins * { background-color: inherit; }
+blockquote.std del * { background-color: inherit; }
+blockquote.std dt { margin-top: 1em; }
+blockquote.std ul { list-style-type: none; padding-left: 2em;
+  margin-top: -0.2em; margin-bottom: -0.2em; }
+blockquote.std li { margin-top: 0.6em; margin-bottom: 0.6em; }
+blockquote.std ul > li::before { content: '\2014'; position: absolute; margin-left: -1.5em; }
+blockquote.std table { border: 1px solid black; border-collapse: collapse;
+  margin-left: auto; margin-right: auto; margin-top: 0.8em; text-align: left;
+  hyphens: none; }
+blockquote.std caption { margin-bottom: 1em; }
+blockquote.std th { border: inherit; padding-left: 1em; padding-right: 1em; vertical-align: top; }
+blockquote.std td { border: inherit; padding-left: 1em; padding-right: 1em; vertical-align: top; }
+blockquote.std th.left, td.left { text-align: left; }
+blockquote.std th.right, td.right { text-align: right; }
+blockquote.std th.center, td.center { text-align: center; }
+blockquote.std th.justify, td.justify { text-align: justify; }
+blockquote.std th.border, td.border { border-left: 1px solid black; }
+blockquote.std tr.rowsep, td.cline { border-top: 1px solid black; }
+blockquote.std tr.capsep { border-top: 3px solid black; border-top-style: double; }
+blockquote.std th { border-bottom: 1px solid black; }
+
+div.stdnote { display: inline; }
+div.stdexample { display: inline; }
+
+a.stdref::before { content: "["; }
+a.stdref::after { content: "]"; }
+
+table.frontmatter { border: 0; margin: 0; }
+table.frontmatter th { border: 0; }
+table.frontmatter td { border: 0; }
+
+span.highlight { background-color: #7FDFFF }
+
+</style>
+
+<script type="text/javascript" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        var notes = document.getElementsByClassName("stdnote");
+        for (var n = 0; n < notes.length; ++n) {
+            var node = notes[n];
+            node.insertAdjacentHTML("beforebegin",
+                "<span>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Note:<\/i> <\/span>");
+            node.insertAdjacentHTML("beforeEnd",
+                "<span> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end note<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/span>");
+        }
+
+        var examples = document.getElementsByClassName("stdexample");
+        for (var n = 0; n < examples.length; ++n) {
+            var node = examples[n];
+            node.insertAdjacentHTML("beforebegin",
+                "<span>[<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>Example:<\/i> <\/span>");
+            node.insertAdjacentHTML("beforeEnd",
+                "<span> &mdash;<span style=\"white-space:nowrap\">&ThinSpace;<\/span><i>end example<\/i><span style=\"white-space:nowrap\">&ThinSpace;<\/span>]<\/span>");
+        }
+
+        var references = document.getElementsByClassName("stdref");
+        for (var n = 0; n < references.length; ++n) {
+            var node = references[n];
+            node.setAttribute("href", "http://eel.is/c++draft/" + node.innerText);
+        }
+
+        var wg21links = document.getElementsByClassName("wg21link");
+        for (var n = 0; n < wg21links.length; ++n) {
+            var node = wg21links[n];
+            node.setAttribute("href", "https://wg21.link/" + node.innerText);
+        }
+    });
+</script>
+</head>
+
+<body>
+<h1>CWG-2398 Template template parameter matching and deduction</h1>
+<table class="frontmatter" border="0" cellpadding="0" cellspacing="0" width="619">
+    <tr>
+        <td align="left" valign="top">Document number:</td>
+        <td>D????R0</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Date:</td>
+        <td>2019-10-05</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Project:</td>
+        <td>Programming Language C++, Core Working Group</td>
+    </tr>
+    <tr>
+        <td align="left" valign="top">Reply-to:</td>
+        <td>James Touton &lt;<a href="mailto:bekenn@gmail.com">bekenn@gmail.com</a>&gt;</td>
+    </tr>
+</table>
+
+<h2><a id="TableOfContents">Table of Contents</a></h2>
+<ol>
+    <li><a href="#TableOfContents">Table of Contents</a></li>
+    <li><a href="#RevisionHistory">Revision History</a></li>
+    <li><a href="#DesignDecisions">Design Decisions</a></li>
+    <li><a href="#Wording">Wording</a></li>
+    <li><a href="#Acknowledgments">Acknowledgments</a></li>
+    <li><a href="#References">References</a></li>
+</ol>
+
+<h2><a id="RevisionHistory">Revision History</a></h2>
+<h3>Revision 0 - 2019-10-05</h3>
+<ul>
+<li>Initial draft.</li>
+</ul>
+
+<h2><a id="DesignDecisions">Design Decisions</a></h2>
+<pre class="example">
+<code class="prettyprint">template&lt;class T, class U = T&gt; class B { /* ... */ };
+template&lt;template&lt;class&gt; class P, class T&gt; void f(P&lt;T&gt;);
+
+int main()
+{
+    f(B&lt;int&gt;());       // <span class="comment">OK?</span>
+    f(B&lt;int,float&gt;()); // <span class="comment">ill-formed, T deduced to int and float</span>
+}
+</code>
+</pre>
+
+<p>The first line should be valid.</p>
+
+<pre class="example">
+<code class="prettyprint">template&lt;typename&gt; struct match;
+
+template&lt;template&lt;typename&gt; class t,typename T&gt;
+struct match&lt;t&lt;T&gt; &gt; { typedef int type; };      // <span class="comment">#1</span>
+
+template&lt;template&lt;typename,typename&gt; class t,typename T0,typename T1&gt;
+struct match&lt;t&lt;T0,T1&gt; &gt; { typedef int type; };  // <span class="comment">#2</span>
+
+template&lt;typename,typename = void&gt; struct other { };
+typedef match&lt;other&lt;void,void&gt; &gt;::type type;
+</code>
+</pre>
+
+<p>Valid or ambiguous?
+If valid, which partial specialization is selected?</p>
+
+<p>#2 should be selected.</p>
+
+<h2><a id="Wording">Wording</a></h2>
+<p>All modifications are presented relative to <a class="wg21link">N4830</a>.
+"<i>[...]</i>" indicates elided content that is to remain unchanged.</p>
+
+<h2><a id="Acknowledgments">Acknowledgments</a></h2>
+
+<h2><a id="References">References</a></h2>
+
+</body>
+</html>
