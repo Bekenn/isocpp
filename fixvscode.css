@@ -1,0 +1,6 @@
+code { color: inherit; }
+pre { background-color: inherit; }
+pre code { color: inherit; }
+.vscode-light pre { background-color: inherit; }
+.vscode-dark pre { background-color: inherit; }
+.vscode-high-contrast pre { background-color: inherit; }
