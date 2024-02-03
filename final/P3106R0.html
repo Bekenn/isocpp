@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="mpark/wg21" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2024-02-03" />
+  <title>Clarifying rules for brace elision in aggregate
+initialization</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+      div.csl-block{margin-left: 1.5em;}
+      ul.task-list{list-style: none;}
+      pre > code.sourceCode { white-space: pre; position: relative; }
+      pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+      pre > code.sourceCode > span:empty { height: 1.2em; }
+      .sourceCode { overflow: visible; }
+      code.sourceCode > span { color: inherit; text-decoration: inherit; }
+      div.sourceCode { margin: 1em 0; }
+      pre.sourceCode { margin: 0; }
+      @media screen {
+      div.sourceCode { overflow: auto; }
+      }
+      @media print {
+      pre > code.sourceCode { white-space: pre-wrap; }
+      pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+      }
+      pre.numberSource code
+        { counter-reset: source-line 0; }
+      pre.numberSource code > span
+        { position: relative; left: -4em; counter-increment: source-line; }
+      pre.numberSource code > span > a:first-child::before
+        { content: counter(source-line);
+          position: relative; left: -1em; text-align: right; vertical-align: baseline;
+          border: none; display: inline-block;
+          -webkit-touch-callout: none; -webkit-user-select: none;
+          -khtml-user-select: none; -moz-user-select: none;
+          -ms-user-select: none; user-select: none;
+          padding: 0 4px; width: 4em;
+          color: #aaaaaa;
+        }
+      pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+      div.sourceCode
+        {  background-color: #f6f8fa; }
+      @media screen {
+      pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+      }
+      code span { } /* Normal */
+      code span.al { color: #ff0000; } /* Alert */
+      code span.an { } /* Annotation */
+      code span.at { } /* Attribute */
+      code span.bn { color: #9f6807; } /* BaseN */
+      code span.bu { color: #9f6807; } /* BuiltIn */
+      code span.cf { color: #00607c; } /* ControlFlow */
+      code span.ch { color: #9f6807; } /* Char */
+      code span.cn { } /* Constant */
+      code span.co { color: #008000; font-style: italic; } /* Comment */
+      code span.cv { color: #008000; font-style: italic; } /* CommentVar */
+      code span.do { color: #008000; } /* Documentation */
+      code span.dt { color: #00607c; } /* DataType */
+      code span.dv { color: #9f6807; } /* DecVal */
+      code span.er { color: #ff0000; font-weight: bold; } /* Error */
+      code span.ex { } /* Extension */
+      code span.fl { color: #9f6807; } /* Float */
+      code span.fu { } /* Function */
+      code span.im { } /* Import */
+      code span.in { color: #008000; } /* Information */
+      code span.kw { color: #00607c; } /* Keyword */
+      code span.op { color: #af1915; } /* Operator */
+      code span.ot { } /* Other */
+      code span.pp { color: #6f4e37; } /* Preprocessor */
+      code span.re { } /* RegionMarker */
+      code span.sc { color: #9f6807; } /* SpecialChar */
+      code span.ss { color: #9f6807; } /* SpecialString */
+      code span.st { color: #9f6807; } /* String */
+      code span.va { } /* Variable */
+      code span.vs { color: #9f6807; } /* VerbatimString */
+      code span.wa { color: #008000; font-weight: bold; } /* Warning */
+      code.diff {color: #898887}
+      code.diff span.va {color: #006e28}
+      code.diff span.st {color: #bf0303}
+  </style>
+  <style type="text/css">
+body {
+margin: 5em;
+font-family: serif;
+
+hyphens: auto;
+line-height: 1.35;
+text-align: justify;
+}
+@media screen and (max-width: 30em) {
+body {
+margin: 1.5em;
+}
+}
+div.wrapper {
+max-width: 60em;
+margin: auto;
+}
+ul {
+list-style-type: none;
+padding-left: 2em;
+margin-top: -0.2em;
+margin-bottom: -0.2em;
+}
+a {
+text-decoration: none;
+color: #4183C4;
+}
+a.hidden_link {
+text-decoration: none;
+color: inherit;
+}
+li {
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+h1, h2, h3, h4 {
+position: relative;
+line-height: 1;
+}
+a.self-link {
+position: absolute;
+top: 0;
+left: calc(-1 * (3.5rem - 26px));
+width: calc(3.5rem - 26px);
+height: 2em;
+text-align: center;
+border: none;
+transition: opacity .2s;
+opacity: .5;
+font-family: sans-serif;
+font-weight: normal;
+font-size: 83%;
+}
+a.self-link:hover { opacity: 1; }
+a.self-link::before { content: "§"; }
+ul > li:before {
+content: "\2014";
+position: absolute;
+margin-left: -1.5em;
+}
+:target { background-color: #C9FBC9; }
+:target .codeblock { background-color: #C9FBC9; }
+:target ul { background-color: #C9FBC9; }
+.abbr_ref { float: right; }
+.folded_abbr_ref { float: right; }
+:target .folded_abbr_ref { display: none; }
+:target .unfolded_abbr_ref { float: right; display: inherit; }
+.unfolded_abbr_ref { display: none; }
+.secnum { display: inline-block; min-width: 35pt; }
+.header-section-number { display: inline-block; min-width: 35pt; }
+.annexnum { display: block; }
+div.sourceLinkParent {
+float: right;
+}
+a.sourceLink {
+position: absolute;
+opacity: 0;
+margin-left: 10pt;
+}
+a.sourceLink:hover {
+opacity: 1;
+}
+a.itemDeclLink {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+opacity: 0;
+}
+a.itemDeclLink:hover { opacity: 1; }
+span.marginalizedparent {
+position: relative;
+left: -5em;
+}
+li span.marginalizedparent { left: -7em; }
+li ul > li span.marginalizedparent { left: -9em; }
+li ul > li ul > li span.marginalizedparent { left: -11em; }
+li ul > li ul > li ul > li span.marginalizedparent { left: -13em; }
+div.footnoteNumberParent {
+position: relative;
+left: -4.7em;
+}
+a.marginalized {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+}
+a.enumerated_item_num {
+position: relative;
+left: -3.5em;
+display: inline-block;
+margin-right: -3em;
+text-align: right;
+width: 3em;
+}
+div.para { margin-bottom: 0.6em; margin-top: 0.6em; text-align: justify; }
+div.section { text-align: justify; }
+div.sentence { display: inline; }
+span.indexparent {
+display: inline;
+position: relative;
+float: right;
+right: -1em;
+}
+a.index {
+position: absolute;
+display: none;
+}
+a.index:before { content: "⟵"; }
+
+a.index:target {
+display: inline;
+}
+.indexitems {
+margin-left: 2em;
+text-indent: -2em;
+}
+div.itemdescr {
+margin-left: 3em;
+}
+.bnf {
+font-family: serif;
+margin-left: 40pt;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+}
+.ncbnf {
+font-family: serif;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+}
+.ncsimplebnf {
+font-family: serif;
+font-style: italic;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+background: inherit; 
+}
+span.textnormal {
+font-style: normal;
+font-family: serif;
+white-space: normal;
+display: inline-block;
+}
+span.rlap {
+display: inline-block;
+width: 0px;
+}
+span.descr { font-style: normal; font-family: serif; }
+span.grammarterm { font-style: italic; }
+span.term { font-style: italic; }
+span.terminal { font-family: monospace; font-style: normal; }
+span.nonterminal { font-style: italic; }
+span.tcode { font-family: monospace; font-style: normal; }
+span.textbf { font-weight: bold; }
+span.textsc { font-variant: small-caps; }
+a.nontermdef { font-style: italic; font-family: serif; }
+span.emph { font-style: italic; }
+span.techterm { font-style: italic; }
+span.mathit { font-style: italic; }
+span.mathsf { font-family: sans-serif; }
+span.mathrm { font-family: serif; font-style: normal; }
+span.textrm { font-family: serif; }
+span.textsl { font-style: italic; }
+span.mathtt { font-family: monospace; font-style: normal; }
+span.mbox { font-family: serif; font-style: normal; }
+span.ungap { display: inline-block; width: 2pt; }
+span.textit { font-style: italic; }
+span.texttt { font-family: monospace; }
+span.tcode_in_codeblock { font-family: monospace; font-style: normal; }
+span.phantom { color: white; }
+
+span.math { font-style: normal; }
+span.mathblock {
+display: block;
+margin-left: auto;
+margin-right: auto;
+margin-top: 1.2em;
+margin-bottom: 1.2em;
+text-align: center;
+}
+span.mathalpha {
+font-style: italic;
+}
+span.synopsis {
+font-weight: bold;
+margin-top: 0.5em;
+display: block;
+}
+span.definition {
+font-weight: bold;
+display: block;
+}
+.codeblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+.outputblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+div.itemdecl {
+margin-top: 2ex;
+}
+code.itemdeclcode {
+white-space: pre;
+display: block;
+}
+span.textsuperscript {
+vertical-align: super;
+font-size: smaller;
+line-height: 0;
+}
+.footnotenum { vertical-align: super; font-size: smaller; line-height: 0; }
+.footnote {
+font-size: small;
+margin-left: 2em;
+margin-right: 2em;
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+div.minipage {
+display: inline-block;
+margin-right: 3em;
+}
+div.numberedTable {
+text-align: center;
+margin: 2em;
+}
+div.figure {
+text-align: center;
+margin: 2em;
+}
+table {
+border: 1px solid black;
+border-collapse: collapse;
+margin-left: auto;
+margin-right: auto;
+margin-top: 0.8em;
+text-align: left;
+hyphens: none; 
+}
+td, th {
+padding-left: 1em;
+padding-right: 1em;
+vertical-align: top;
+}
+td.empty {
+padding: 0px;
+padding-left: 1px;
+}
+td.left {
+text-align: left;
+}
+td.right {
+text-align: right;
+}
+td.center {
+text-align: center;
+}
+td.justify {
+text-align: justify;
+}
+td.border {
+border-left: 1px solid black;
+}
+tr.rowsep, td.cline {
+border-top: 1px solid black;
+}
+tr.even, tr.odd {
+border-bottom: 1px solid black;
+}
+tr.capsep {
+border-top: 3px solid black;
+border-top-style: double;
+}
+tr.header {
+border-bottom: 3px solid black;
+border-bottom-style: double;
+}
+th {
+border-bottom: 1px solid black;
+}
+span.centry {
+font-weight: bold;
+}
+div.table {
+display: block;
+margin-left: auto;
+margin-right: auto;
+text-align: center;
+width: 90%;
+}
+span.indented {
+display: block;
+margin-left: 2em;
+margin-bottom: 1em;
+margin-top: 1em;
+}
+ol.enumeratea { list-style-type: none; background: inherit; }
+ol.enumerate { list-style-type: none; background: inherit; }
+
+code.sourceCode > span { display: inline; }
+</style>
+  <style type="text/css">div.std blockquote { color: #000000; background-color: #F1F1F1;
+border: 1px solid #D1D1D1;
+padding-left: 0.5em; padding-right: 0.5em; }
+div.std.ins blockquote { text-decoration: underline;
+color: #000000; background-color: #C8FFC8;
+border: 1px solid #B3EBB3; }
+div.std.del blockquote { text-decoration: line-through;
+color: #000000; background-color: #FFC8EB;
+border: 1px solid #ECB3C7; }
+div.std blockquote ins { text-decoration: underline;
+color: #000000; background-color: #C8FFC8; }
+div.std blockquote del { text-decoration: line-through;
+color: #000000; background-color: #FFC8EB; }
+div.std div.ins { text-decoration: underline;
+color: #000000; background-color: #C8FFC8; }
+div.std div.del { text-decoration: line-through;
+color: #000000; background-color: #FFC8EB; }
+div.std blockquote code * { color: #000000; }
+div.std div.sourceCode { background-color: inherit; margin-left: 1em; }
+div.std div.ins div.sourceCode * { text-decoration: underline; }
+div.std div.del div.sourceCode * { text-decoration: line-through; }
+div.std.ins div.sourceCode * { text-decoration: underline; }
+div.std.del div.sourceCode * { text-decoration: line-through; }
+
+.footnote { font-size: inherit;
+margin-left: 0;
+margin-right: 0;
+margin-top: 0;
+margin-bottom: 0;
+}
+</style>
+  <link href="data:image/x-icon;base64,AAABAAIAEBAAAAEAIABoBAAAJgAAACAgAAABACAAqBAAAI4EAAAoAAAAEAAAACAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAVoJEAN6CRADegkQAWIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wCCRAAAgkQAAIJEAACCRAAsgkQAvoJEAP+CRAD/gkQA/4JEAP+CRADAgkQALoJEAACCRAAAgkQAAP///wD///8AgkQAAIJEABSCRACSgkQA/IJEAP99PQD/dzMA/3czAP99PQD/gkQA/4JEAPyCRACUgkQAFIJEAAD///8A////AHw+AFiBQwDqgkQA/4BBAP9/PxP/uZd6/9rJtf/bybX/upd7/39AFP+AQQD/gkQA/4FDAOqAQgBc////AP///wDKklv4jlEa/3o7AP+PWC//8+3o///////////////////////z7un/kFox/35AAP+GRwD/mVYA+v///wD///8A0Zpk+NmibP+0d0T/8evj///////+/fv/1sKz/9bCs//9/fr//////+/m2/+NRwL/nloA/5xYAPj///8A////ANKaZPjRmGH/5cKh////////////k149/3UwAP91MQD/lmQ//86rhv+USg3/m1YA/5hSAP+bVgD4////AP///wDSmmT4zpJY/+/bx///////8+TV/8mLT/+TVx//gkIA/5lVAP+VTAD/x6B//7aEVv/JpH7/s39J+P///wD///8A0ppk+M6SWP/u2sf///////Pj1f/Nj1T/2KFs/8mOUv+eWhD/lEsA/8aee/+0glT/x6F7/7J8Rvj///8A////ANKaZPjRmGH/48Cf///////+/v7/2qt//82PVP/OkFX/37KJ/86siv+USg7/mVQA/5hRAP+bVgD4////AP///wDSmmT40ppk/9CVXP/69O////////7+/v/x4M//8d/P//7+/f//////9u7n/6tnJf+XUgD/nFgA+P///wD///8A0ppk+NKaZP/RmWL/1qNy//r07///////////////////////+vXw/9akdP/Wnmn/y5FY/6JfFvj///8A////ANKaZFTSmmTo0ppk/9GYYv/Ql1//5cWm//Hg0P/x4ND/5cWm/9GXYP/RmGH/0ppk/9KaZOjVnmpY////AP///wDSmmQA0ppkEtKaZI7SmmT60ppk/9CWX//OkVb/zpFW/9CWX//SmmT/0ppk/NKaZJDSmmQS0ppkAP///wD///8A0ppkANKaZADSmmQA0ppkKtKaZLrSmmT/0ppk/9KaZP/SmmT/0ppkvNKaZCrSmmQA0ppkANKaZAD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkUtKaZNzSmmTc0ppkVNKaZADSmmQA0ppkANKaZADSmmQA////AP5/AAD4HwAA4AcAAMADAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAMADAADgBwAA+B8AAP5/AAAoAAAAIAAAAEAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAyCRACMgkQA6oJEAOqCRACQgkQAEIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRABigkQA5oJEAP+CRAD/gkQA/4JEAP+CRADqgkQAZoJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAA4gkQAwoJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQAxIJEADyCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAP///wD///8A////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAWgkQAmIJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAJyCRAAYgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAdIJEAPCCRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAPSCRAB4gkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQASoJEANKCRAD/gkQA/4JEAP+CRAD/g0YA/39AAP9zLgD/bSQA/2shAP9rIQD/bSQA/3MuAP9/PwD/g0YA/4JEAP+CRAD/gkQA/4JEAP+CRADUgkQAToJEAACCRAAAgkQAAP///wD///8A////AP///wB+PwAAgkUAIoJEAKiCRAD/gkQA/4JEAP+CRAD/hEcA/4BBAP9sIwD/dTAA/5RfKv+viF7/vp56/76ee/+wiF7/lWAr/3YxAP9sIwD/f0AA/4RHAP+CRAD/gkQA/4JEAP+CRAD/gkQArIJEACaBQwAA////AP///wD///8A////AIBCAEBzNAD6f0EA/4NFAP+CRAD/gkQA/4VIAP92MwD/bSUA/6N1Tv/ezsL/////////////////////////////////38/D/6V3Uv9uJgD/dTEA/4VJAP+CRAD/gkQA/4JEAP+BQwD/fUAA/4FDAEj///8A////AP///wD///8AzJRd5qBlKf91NgD/dDUA/4JEAP+FSQD/cy4A/3YyAP/PuKP//////////////////////////////////////////////////////9K7qP94NQD/ciwA/4VJAP+CRAD/fkEA/35BAP+LSwD/mlYA6v///wD///8A////AP///wDdpnL/4qx3/8KJUv+PUhf/cTMA/3AsAP90LgD/4dK+/////////////////////////////////////////////////////////////////+TYxf91MAD/dTIA/31CAP+GRwD/llQA/6FcAP+gWwD8////AP///wD///8A////ANGZY/LSm2X/4ap3/92mcP+wdT3/byQA/8mwj////////////////////////////////////////////////////////////////////////////+LYxv9zLgP/jUoA/59bAP+hXAD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/RmWL/1p9q/9ubXv/XqXj////////////////////////////7+fD/vZyG/6BxS/+gcUr/vJuE//r37f//////////////////////3MOr/5dQBf+dVQD/nVkA/5xYAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmWP/yohJ//jo2P//////////////////////4NTG/4JDFf9lGAD/bSQA/20kAP9kGAD/fz8S/+Xb0f//////5NG9/6txN/+LOgD/m1QA/51aAP+cWAD/m1cA/5xYAP+cWADy////AP///wD///8A////ANKaZPLSmmT/0ppk/8+TWf/Unmv//v37//////////////////////+TWRr/VwsA/35AAP+ERgD/g0UA/4JGAP9lHgD/kFga/8KXX/+TRwD/jT4A/49CAP+VTQD/n10A/5xYAP+OQQD/lk4A/55cAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/y4tO/92yiP//////////////////////8NnE/8eCQP+rcTT/ez0A/3IyAP98PgD/gEMA/5FSAP+USwD/jj8A/5lUAP+JNwD/yqV2/694Mf+HNQD/jkAA/82rf/+laBj/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/LiUr/4byY///////////////////////gupX/0I5P/+Wuev/Lklz/l1sj/308AP+QSwD/ol0A/59aAP+aVQD/k0oA/8yoh///////+fXv/6pwO//Lp3v///////Pr4f+oay7y////AP///wD///8A////ANKaZPLSmmT/0ppk/8uJSv/hvJj//////////////////////+G7l//Jhkb/0ppk/96nc//fqXX/x4xO/6dkFP+QSQD/llEA/5xXAP+USgD/yaOA///////38uv/qG05/8ijdv//////8efb/6ZpLPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/zIxO/9yxh///////////////////////7dbA/8iEQf/Sm2X/0Zlj/9ScZv/eqHf/2KJv/7yAQf+XTgD/iToA/5lSAP+JNgD/yKFv/611LP+HNQD/jT8A/8qmeP+kZRT/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/Pk1n/1J5q//78+//////////////////+/fv/1aFv/8iEQv/Tm2b/0ppl/9GZY//Wn2z/1pZc/9eldf/Bl2b/kUcA/4w9AP+OQAD/lUwA/59eAP+cWQD/jT8A/5ZOAP+eXADy////AP///wD///8A////ANKaZPLSmmT/0ppk/9KZY//KiEn/8d/P///////////////////////47+f/05tm/8iCP//KiEj/yohJ/8eCP//RmGH//vfy///////n1sP/rXQ7/4k4AP+TTAD/nVoA/5xYAP+cVwD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/0ptl/8uLTf/aq37////////////////////////////+/fz/6c2y/961jv/etY7/6Myx//78+v//////////////////////3MWv/5xXD/+ORAD/mFQA/51ZAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmmT/0ppk/8mFRP/s1b//////////////////////////////////////////////////////////////////////////////+PD/0JFU/7NzMv+WUQD/kUsA/5tXAP+dWQDy////AP///wD///8A////ANKaZP/SmmT/0ppk/9KaZP/Sm2X/z5NZ/8yMT//z5NX/////////////////////////////////////////////////////////////////9Ofa/8yNUP/UmGH/36p5/8yTWv+qaSD/kksA/5ROAPz///8A////AP///wD///8A0ppk5NKaZP/SmmT/0ppk/9KaZP/TnGf/zY9T/82OUv/t1sD//////////////////////////////////////////////////////+7Yw//OkFX/zI5R/9OcZ//SmmP/26V0/9ymdf/BhUf/ol8R6P///wD///8A////AP///wDSmmQ80ppk9tKaZP/SmmT/0ppk/9KaZP/TnGj/zpFW/8qJSv/dson/8uHS//////////////////////////////////Lj0//etIv/y4lL/86QVf/TnGj/0ppk/9KaZP/RmWP/05xn/9ymdfjUnWdC////AP///wD///8A////ANKaZADSmmQc0ppkotKaZP/SmmT/0ppk/9KaZP/Tm2b/0Zli/8qJSf/NjlH/16Z3/+G8mP/myKr/5siq/+G8mP/Xp3f/zY5S/8qISf/RmGH/05tm/9KaZP/SmmT/0ppk/9KaZP/SmmSm0pljINWdaQD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkQtKaZMrSmmT/0ppk/9KaZP/SmmT/0ptl/9GYYf/Nj1P/y4lL/8qISP/KiEj/y4lK/82PU//RmGH/0ptl/9KaZP/SmmT/0ppk/9KaZP/SmmTO0ppkRtKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZGzSmmTu0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmTw0ppkcNKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZBLSmmSQ0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppklNKaZBTSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQy0ppkutKaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppkvtKaZDbSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkXNKaZODSmmT/0ppk/9KaZP/SmmT/0ppk5NKaZGDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkBtKaZIbSmmTo0ppk6tKaZIrSmmQK0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP/8P///+B///+AH//+AAf//AAD//AAAP/AAAA/gAAAHwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA+AAAAfwAAAP/AAAP/8AAP//gAH//+AH///4H////D//" rel="icon" />
+  
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<div class="wrapper">
+<header id="title-block-header">
+<h1 class="title" style="text-align:center">Clarifying rules for brace
+elision in aggregate initialization</h1>
+<table style="border:none;float:right">
+  <tr>
+    <td>Document #:</td>
+    <td>P3106R0</td>
+  </tr>
+  <tr>
+    <td>Date:</td>
+    <td>2024-02-03</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Project:</td>
+    <td>Programming Language C++</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Audience:</td>
+    <td>
+      CWG<br>
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Reply-to:</td>
+    <td>
+      James Touton<br>&lt;<a href="mailto:bekenn@gmail.com" class="email">bekenn@gmail.com</a>&gt;<br>
+    </td>
+  </tr>
+</table>
+</header>
+<div style="clear:both">
+<div id="TOC" role="doc-toc">
+<h2 id="toctitle">Contents</h2>
+<ul>
+<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction<span></span></a></li>
+<li><a href="#wording" id="toc-wording"><span class="toc-section-number">2</span> Wording<span></span></a></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">3</span> References<span></span></a></li>
+</ul>
+</div>
+<h2 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h2>
+<p><span class="citation" data-cites="CWG2149">[<a href="#ref-CWG2149" role="doc-biblioref">CWG2149</a>]</span> points out an inconsistency in
+the wording with respect to array lengths inferred from braced
+initializer lists in the presence of brace elision. The wording has
+changed since the issue was raised, but the essence of the issue
+remains. The standard first states that the length of an array of
+unknown bound is the same as the number of elements in the initializer
+list, but then describes the rules for brace elision, in which some
+elements are used to initialize subobjects of aggregate members, such
+that there is not a one-to-one mapping of initializer list elements to
+array elements. Similarly, aggregate initialization from a braced
+initializer list is supposed to explicitly initialize a number of
+aggregate elements equal to the length of the list, which is not
+possible in the presence of brace elision.</p>
+<p>This paper aims to resolve the core issue by clarifying the rules for
+brace elision to match user expectations and the behavior of existing
+compilers. The intent is to better describe the existing design without
+introducing any evolutionary changes.</p>
+<h2 data-number="2" id="wording"><span class="header-section-number">2</span> Wording<a href="#wording" class="self-link"></a></h2>
+<p>All changes are presented relative to <span class="citation" data-cites="N4971">[<a href="#ref-N4971" role="doc-biblioref">N4971</a>]</span>.</p>
+<p>§<span>9.4.2
+<a href="https://wg21.link/dcl.init.aggr">[dcl.init.aggr]</a></span>:</p>
+<p>Modify the second list item of paragraph 3:</p>
+<div class="std">
+<blockquote>
+<ul>
+<li><span class="marginalizedparent"><a class="marginalized">(3.2)</a></span> If
+the initializer list is a brace-enclosed <em>initializer-list</em>, the
+explicitly initialized elements of the aggregate are <span class="rm" style="color: #bf0303"><del>the first
+<span><code class="sourceCode default">n</code></span> elements of the
+aggregate, where <span><code class="sourceCode default">n</code></span>
+is the number of elements in the initializer list</del></span> <span class="add" style="color: #006e28"><ins>those for which an element of
+the initializer list appertains to the aggregate element or to a
+subobject thereof (see below)</ins></span>.</li>
+</ul>
+</blockquote>
+</div>
+<p>Modify the second list item of paragraph 4:</p>
+<div class="std">
+<blockquote>
+<ul>
+<li><p><span class="marginalizedparent"><a class="marginalized">(4.2)</a></span>
+Otherwise, <span class="add" style="color: #006e28"><ins>if the
+initializer list is a brace-enclosed
+<em>designated-initializer-list</em>,</ins></span> the element is <span class="rm" style="color: #bf0303"><del>copy-initialized from the
+corresponding <em>initializer-clause</em> or is</del></span> initialized
+with the <em>brace-or-equal-initializer</em> of the corresponding
+<em>designated-initializer-clause</em>. If that initializer is of the
+form <span class="rm" style="color: #bf0303"><del><em>assignment-expression</em>
+or</del></span>
+<code class="sourceCode default">= </code><em>assignment-expression</em>
+and a narrowing conversion (<span>9.4.5
+<a href="https://wg21.link/dcl.init.list">[dcl.init.list]</a></span>) is
+required to convert the expression, the program is ill-formed.</p>
+<div class="note">
+<p><span>[ <em>Note:</em> </span><span class="rm" style="color: #bf0303"><del>If the initialization is by
+<em>designated-initializer-clause</em>, its</del></span> <span class="add" style="color: #006e28"><ins>The</ins></span> form <span class="add" style="color: #006e28"><ins>of the initializer</ins></span>
+determines whether copy-initialization or direct-initialization is
+performed.<span> — <em>end note</em> ]</span></p>
+</div>
+<div class="note del">
+<p><span>[ <em>Note:</em> </span>If an initializer is itself an
+initializer list, <em>[…]</em><span> — <em>end note</em> ]</span></p>
+</div>
+<div class="example del">
+<p><span>[ <em>Example:</em> </span><em>[…]</em><span> — <em>end
+example</em> ]</span></p>
+</div></li>
+</ul>
+</blockquote>
+</div>
+<p>Add a new list item to paragraph 4:</p>
+<div class="std ins">
+<blockquote>
+<ul>
+<li><p><span class="marginalizedparent"><a class="marginalized">(4.3)</a></span>
+Otherwise, the initializer list is a brace-enclosed
+<em>initializer-list</em>. If an <em>initializer-clause</em> appertains
+to the aggregate element, then the aggregate element is copy-initialized
+from the <em>initializer-clause</em>. Otherwise, the aggregate element
+is copy-initialized from a brace-enclosed <em>initializer-list</em>
+consisting of all of the <em>initializer-clause</em>s that appertain to
+subobjects of the aggregate member, in the order that they appear.</p>
+<div class="note">
+<p><span>[ <em>Note:</em> </span>If an initializer is itself an
+initializer list, <em>[…]</em><span> — <em>end note</em> ]</span></p>
+</div>
+<div class="example">
+<p><span>[ <em>Example:</em> </span><em>[…]</em><span> — <em>end
+example</em> ]</span></p>
+</div></li>
+</ul>
+</blockquote>
+</div>
+<p>The note and example that are struck from 4.2 should appear verbatim
+in 4.3.</p>
+<p>Modify paragraph 6:</p>
+<div class="std">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">6</a></span></p>
+<div class="example">
+<span>[ <em>Example:</em> </span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> S <span class="op">{</span> <span class="dt">int</span> a; <span class="kw">const</span> <span class="dt">char</span><span class="op">*</span> b; <span class="dt">int</span> c; <span class="dt">int</span> d <span class="op">=</span> b<span class="op">[</span>a<span class="op">]</span>; <span class="op">}</span>;</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>S ss <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="st">&quot;asdf&quot;</span> <span class="op">}</span>;</span></code></pre></div>
+<p>initializes <code class="sourceCode default">ss.a</code> with 1,
+<code class="sourceCode default">ss.b</code> with
+<code class="sourceCode default">&quot;asdf&quot;</code>,
+<code class="sourceCode default">ss.c</code> with the value of an
+expression of the form <code class="sourceCode default">int{}</code>
+(that is, <code class="sourceCode default">0</code>), and
+<code class="sourceCode default">ss.d</code> with the value of
+<code class="sourceCode default">ss.b[ss.a]</code> (that is,
+<code class="sourceCode default">&#39;s&#39;</code>), and in</p>
+<div class="del">
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> X <span class="op">{</span> <span class="dt">int</span> i, j, k <span class="op">=</span> <span class="dv">42</span>; <span class="op">}</span>;</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>X a<span class="op">[]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span> <span class="op">}</span>;</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X b<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> <span class="op">}</span>, <span class="op">{</span> <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span> <span class="op">}</span> <span class="op">}</span>;</span></code></pre></div>
+<p><code class="sourceCode default">a</code> and
+<code class="sourceCode default">b</code> have the same value</p>
+</div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> A <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  string a;</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> b <span class="op">=</span> <span class="dv">42</span>;</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> c <span class="op">=</span> <span class="op">-</span><span class="dv">1</span>;</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<p><code class="sourceCode default">A{.c=21}</code> has the following
+steps:</p>
+<ul>
+<li><span class="marginalizedparent"><a class="marginalized">(6.1)</a></span>
+Initialize <code class="sourceCode default">a</code> with
+<code class="sourceCode default">{}</code></li>
+<li><span class="marginalizedparent"><a class="marginalized">(6.2)</a></span>
+Initialize <code class="sourceCode default">b</code> with
+<code class="sourceCode default">= 42</code></li>
+<li><span class="marginalizedparent"><a class="marginalized">(6.3)</a></span>
+Initialize <code class="sourceCode default">c</code> with
+<code class="sourceCode default">= 21</code></li>
+</ul>
+<span> — <em>end example</em> ]</span>
+</div>
+</blockquote>
+</div>
+<p>Modify paragraph 10:</p>
+<div class="std">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">10</a></span> <span class="rm" style="color: #bf0303"><del>An</del></span> <span class="add" style="color: #006e28"><ins>The number of elements (<span>9.3.4.5
+<a href="https://wg21.link/dcl.array">[dcl.array]</a></span>) in
+an</ins></span> array of unknown bound initialized with a brace-enclosed
+<em>initializer-list</em> <span class="rm" style="color: #bf0303"><del>containing
+<span><code class="sourceCode default">n</code></span>
+<em>initializer-clause</em>s</del></span> is defined as <span class="rm" style="color: #bf0303"><del>having
+<span><code class="sourceCode default">n</code></span> elements
+(<span>9.3.4.5
+<a href="https://wg21.link/dcl.array">[dcl.array]</a></span>)</del></span>
+<span class="add" style="color: #006e28"><ins>equal to the number of
+explicitly initialized elements of the array</ins></span>.</p>
+<div class="example">
+<span>[ <em>Example:</em> </span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> x<span class="op">[]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span> <span class="op">}</span>;</span></code></pre></div>
+<p>declares and initializes <code class="sourceCode default">x</code> as
+a one-dimensional array that has three elements since no size was
+specified and there are three initializers.<span> — <em>end example</em>
+]</span></p>
+</div>
+<div class="example ins">
+<p><span>[ <em>Example:</em> </span>In</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> X <span class="op">{</span> <span class="dt">int</span> i, j, k; <span class="op">}</span>;</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>X a<span class="op">[]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span> <span class="op">}</span>;</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>X b<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> <span class="op">}</span>, <span class="op">{</span> <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span> <span class="op">}</span> <span class="op">}</span>;</span></code></pre></div>
+<p><code class="sourceCode default">a</code> and
+<code class="sourceCode default">b</code> have the same value.<span> —
+<em>end example</em> ]</span></p>
+</div>
+<p>An array of unknown bound shall not be initialized with an empty
+<em>braced-init-list</em> <code class="sourceCode default">{}</code>.
+<span class="footnote"><span>[ <em>Footnote:</em> </span>The syntax
+provides for empty <em>braced-init-list</em>s, but nonetheless C++ does
+not have zero length arrays.<span> — <em>end footnote</em>
+]</span></span></p>
+<div class="note">
+<p><span>[ <em>Note:</em> </span>A default member initializer does not
+determine the bound for a member array of unknown bound. Since the
+default member initializer is ignored if a suitable
+<em>mem-initializer</em> is present (<span>11.9.3
+<a href="https://wg21.link/class.base.init">[class.base.init]</a></span>),
+the default member initializer is not considered to initialize the array
+of unknown bound.</p>
+<div class="example">
+<span>[ <em>Example:</em> </span>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> S <span class="op">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> y<span class="op">[]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">0</span> <span class="op">}</span>;          <span class="co">// error: non-static data member of incomplete type</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<span> — <em>end example</em> ]</span>
+</div>
+<span> — <em>end note</em> ]</span>
+</div>
+</blockquote>
+</div>
+<!--
+::: std
+> [12]{.pnum} An *initializer-list*
+> is ill-formed if [the number of *initializer-clause*s
+> exceeds the number of elements of the aggregate]{.rm}
+> [it contains elements that do not appertain to
+> elements of the aggregate or subobjects thereof]{.add}.
+>
+> ::: example
+>
+> ```c++
+> char cv[4] = { 'a', 's', 'd', 'f', 0 };     // error
+> ```
+>
+> is ill-formed.
+>
+> :::
+:::
+-->
+<p>Remove paragraph 12:</p>
+<div class="std del">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">12</a></span> An
+<em>initializer-list</em> is ill-formed if the number of
+<em>initializer-clause</em>s exceeds the number of elements of the
+aggregate.</p>
+<div class="example">
+<span>[ <em>Example:</em> </span>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> cv<span class="op">[</span><span class="dv">4</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="ch">&#39;a&#39;</span>, <span class="ch">&#39;s&#39;</span>, <span class="ch">&#39;d&#39;</span>, <span class="ch">&#39;f&#39;</span>, <span class="dv">0</span> <span class="op">}</span>;     <span class="co">// error</span></span></code></pre></div>
+<p>is ill-formed.<span> — <em>end example</em> ]</span></p>
+</div>
+</blockquote>
+</div>
+<p>Remove paragraph 14:</p>
+<div class="std del">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">14</a></span> If an
+aggregate class <code class="sourceCode default">C</code> contains a
+subaggregate element <code class="sourceCode default">e</code> with no
+elements, the <em>initializer-clause</em> for
+<code class="sourceCode default">e</code> shall not be omitted from an
+<em>initializer-list</em> for an object of type
+<code class="sourceCode default">C</code> unless the
+<em>initializer-clause</em>s for all elements of
+<code class="sourceCode default">C</code> following
+<code class="sourceCode default">e</code> are also omitted.</p>
+<div class="example">
+<p><span>[ <em>Example:</em> </span><em>[…]</em><span> — <em>end
+example</em> ]</span></p>
+</div>
+</blockquote>
+</div>
+<p>The example in the above paragraph is relocated to another paragraph
+below.</p>
+<p>Remove paragraph 16:</p>
+<div class="std del">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">16</a></span> Braces
+can be elided in an <em>initializer-list</em> as follows. If the
+<em>initializer-list</em> begins with a left brace, then the succeeding
+comma-separated list of <em>initializer-clause</em>s initializes the
+elements of a subaggregate; it is erroneous for there to be more
+<em>initializer-clause</em>s than elements. If, however, the
+<em>initializer-list</em> for a subaggregate does not begin with a left
+brace, then only enough <em>initializer-clause</em>s from the list are
+taken to initialize the elements of the subaggregate; any remaining
+<em>initializer-clause</em>s are left to initialize the next element of
+the aggregate of which the current subaggregate is an element.</p>
+<div class="example">
+<p><span>[ <em>Example:</em> </span><em>[…]</em><span> — <em>end
+example</em> ]</span></p>
+</div>
+</blockquote>
+</div>
+<p>The example in the above paragraph is relocated to another paragraph
+below.</p>
+<p>Insert a new paragraph in place of removed paragraph 16:</p>
+<div class="std ins">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">14</a></span> Each
+<em>initializer-clause</em> in a brace-enclosed
+<em>initializer-list</em> is said to <em>appertain</em> to an element or
+subobject thereof of the aggregate being initialized. Beginning with the
+first aggregate member and the first <em>initializer-clause</em>, each
+<em>initializer-clause</em> appertains to the corresponding aggregate
+member if</p>
+<ul>
+<li><span class="marginalizedparent"><a class="marginalized">(14.1)</a></span> the
+aggregate member is not an aggregate, or</li>
+<li><span class="marginalizedparent"><a class="marginalized">(14.2)</a></span> the
+<em>initializer-clause</em> begins with a left brace, or</li>
+<li><span class="marginalizedparent"><a class="marginalized">(14.3)</a></span> the
+<em>initializer-clause</em> is an expression whose type is convertible
+to the cv-unqualified type of the aggregate member, or</li>
+<li><span class="marginalizedparent"><a class="marginalized">(14.4)</a></span> the
+aggregate member is an aggregate that itself has no aggregate
+members.</li>
+</ul>
+<p>Otherwise, the members of the subaggregate are considered in place of
+the subaggregate.</p>
+<div class="note">
+<p><span>[ <em>Note:</em> </span>These rules are applied recursively to
+the aggregate’s subaggregates, and to subaggregates of the
+subaggregates, and so on.</p>
+<div class="example">
+<p><span>[ <em>Example:</em> </span>In</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> S1 <span class="op">{</span> <span class="dt">int</span> a, b; <span class="op">}</span>;</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> S2 <span class="op">{</span> S1 s, t; <span class="op">}</span>;</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>S2 x<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span> <span class="op">}</span>;</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>S2 y<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span> <span class="op">}</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span> <span class="dv">3</span>, <span class="dv">4</span> <span class="op">}</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span> <span class="dv">5</span>, <span class="dv">6</span> <span class="op">}</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span> <span class="dv">7</span>, <span class="dv">8</span> <span class="op">}</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<p><code class="sourceCode default">x</code> and
+<code class="sourceCode default">y</code> have the same value.<span> —
+<em>end example</em> ]</span></p>
+</div>
+<span> — <em>end note</em> ]</span>
+</div>
+<p>This process continues until all <em>initializer-clause</em>s have
+been exhausted.</p>
+<p>If any <em>initializer-clause</em>s remain after all members of the
+top-level aggregate have been exhausted, the program is ill-formed.</p>
+<div class="example">
+<span>[ <em>Example:</em> </span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> cv<span class="op">[</span><span class="dv">4</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="ch">&#39;a&#39;</span>, <span class="ch">&#39;s&#39;</span>, <span class="ch">&#39;d&#39;</span>, <span class="ch">&#39;f&#39;</span>, <span class="dv">0</span> <span class="op">}</span>;     <span class="co">// error</span></span></code></pre></div>
+<p>is ill-formed.<span> — <em>end example</em> ]</span></p>
+</div>
+</blockquote>
+</div>
+<p>Modify paragraph 17 (now 15):</p>
+<div class="std">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">15</a></span> All
+implicit type conversions (<span>7.3
+<a href="https://wg21.link/conv">[conv]</a></span>) are considered when
+initializing <span class="rm" style="color: #bf0303"><del>the</del></span> <span class="add" style="color: #006e28"><ins>an</ins></span> element with an
+<em>assignment-expression</em>. <span class="rm" style="color: #bf0303"><del>If the <em>assignment-expression</em> can
+initialize an element, the element is initialized. Otherwise, if the
+element is itself a subaggregate, brace elision is assumed and the
+<em>assignment-expression</em> is considered for the initialization of
+the first element of the subaggregate.</del></span></p>
+<div class="note del">
+<p><span>[ <em>Note:</em> </span>As specified above, brace elision
+cannot apply to subaggregates with no elements; an
+<em>initializer-clause</em> for the entire subobject is required.<span>
+— <em>end note</em> ]</span></p>
+</div>
+<div class="example del">
+<span>[ <em>Example:</em> </span>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> A <span class="op">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> i;</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">operator</span> <span class="dt">int</span><span class="op">()</span>;</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> B <span class="op">{</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  A a1, a2;</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> z;</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>A a;</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>B b <span class="op">=</span> <span class="op">{</span> <span class="dv">4</span>, a, a <span class="op">}</span>;</span></code></pre></div>
+<p>Braces are elided around the <em>initializer-clause</em> for
+<code class="sourceCode default">b.a1.i</code>.
+<code class="sourceCode default">b.a1.i</code> is initialized with 4,
+<code class="sourceCode default">b.a2</code> is initialized with
+<code class="sourceCode default">a</code>,
+<code class="sourceCode default">b.z</code> is initialized with whatever
+<code class="sourceCode default">a.operator int()</code> returns.<span>
+— <em>end example</em> ]</span></p>
+</div>
+</blockquote>
+</div>
+<p>Insert the remaining new paragraphs (containing the examples
+relocated from prior paragraphs) after the above paragraph:</p>
+<div class="std ins">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">16</a></span></p>
+<div class="example">
+<span>[ <em>Example:</em> </span>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span> y<span class="op">[</span><span class="dv">4</span><span class="op">][</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span> <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span> <span class="op">}</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span> <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span> <span class="op">}</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span> <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span> <span class="op">}</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<p>is a completely-braced initialization: 1, 3, and 5 initialize the
+first row of the array <code class="sourceCode default">y[0]</code>,
+namely <code class="sourceCode default">y[0][0]</code>,
+<code class="sourceCode default">y[0][1]</code>, and
+<code class="sourceCode default">y[0][2]</code>. Likewise the next two
+lines initialize <code class="sourceCode default">y[1]</code> and
+<code class="sourceCode default">y[2]</code>. The initializer ends early
+and therefore <code class="sourceCode default">y[3]</code>’s elements
+are initialized as if explicitly initialized with an expression of the
+form <code class="sourceCode default">float()</code>, that is, are
+initialized with <code class="sourceCode default">0.0</code>. In the
+following example, braces in the <em>initializer-list</em> are elided;
+however the <em>initializer-list</em> has the same effect as the
+completely-braced <em>initializer-list</em> of the above example,</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span> y<span class="op">[</span><span class="dv">4</span><span class="op">][</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<p>The initializer for <code class="sourceCode default">y</code> begins
+with a left brace, but the one for
+<code class="sourceCode default">y[0]</code> does not, therefore three
+elements from the list are used. Likewise the next three are taken
+successively for <code class="sourceCode default">y[1]</code> and
+<code class="sourceCode default">y[2]</code>.<span> — <em>end
+example</em> ]</span></p>
+</div>
+</blockquote>
+</div>
+<div class="std ins">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">17</a></span></p>
+<div class="note">
+<p><span>[ <em>Note:</em> </span>The initializer for an empty
+subaggregate is required if any initializers are provided for subsequent
+elements.</p>
+<div class="example">
+<span>[ <em>Example:</em> </span>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> S <span class="op">{</span> <span class="op">}</span> s;</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> A <span class="op">{</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  S s1;</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> i1;</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  S s2;</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> i2;</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  S s3;</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> i3;</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> a <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span> <span class="op">}</span>,              <span class="co">// Required initialization</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>,</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  s,                <span class="co">// Required initialization</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;                  <span class="co">// Initialization not required for <code class="sourceCode default">A::s3</code> because <code class="sourceCode default">A::i3</code> is also not initialized</span></span></code></pre></div>
+<span> — <em>end example</em> ]</span>
+</div>
+<span> — <em>end note</em> ]</span>
+</div>
+</blockquote>
+</div>
+<div class="std ins">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">18</a></span></p>
+<div class="example">
+<span>[ <em>Example:</em> </span>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> A <span class="op">{</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> i;</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">operator</span> <span class="dt">int</span><span class="op">()</span>;</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> B <span class="op">{</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  A a1, a2;</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> z;</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>A a;</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>B b <span class="op">=</span> <span class="op">{</span> <span class="dv">4</span>, a, a <span class="op">}</span>;</span></code></pre></div>
+<p>Braces are elided around the <em>initializer-clause</em> for
+<code class="sourceCode default">b.a1.i</code>.
+<code class="sourceCode default">b.a1.i</code> is initialized with 4,
+<code class="sourceCode default">b.a2</code> is initialized with
+<code class="sourceCode default">a</code>,
+<code class="sourceCode default">b.z</code> is initialized with whatever
+<code class="sourceCode default">a.operator int()</code> returns.<span>
+— <em>end example</em> ]</span></p>
+</div>
+</blockquote>
+</div>
+<h2 data-number="3" id="bibliography"><span class="header-section-number">3</span> References<a href="#bibliography" class="self-link"></a></h2>
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-CWG2149" class="csl-entry" role="doc-biblioentry">
+[CWG2149] Vinny Romano. 2015-06-25. Brace elision and array length
+deduction. <a href="https://wg21.link/cwg2149"><div class="csl-block">https://wg21.link/cwg2149</div></a>
+</div>
+<div id="ref-N4971" class="csl-entry" role="doc-biblioentry">
+[N4971] Thomas Köppe. 2023-12-18. Working Draft, Programming Languages —
+C++. <a href="https://wg21.link/n4971"><div class="csl-block">https://wg21.link/n4971</div></a>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
