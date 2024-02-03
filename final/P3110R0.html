@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="mpark/wg21" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2024-02-04" />
+  <title>Array element initialization via pattern expansion</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+      div.csl-block{margin-left: 1.5em;}
+      ul.task-list{list-style: none;}
+      pre > code.sourceCode { white-space: pre; position: relative; }
+      pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+      pre > code.sourceCode > span:empty { height: 1.2em; }
+      .sourceCode { overflow: visible; }
+      code.sourceCode > span { color: inherit; text-decoration: inherit; }
+      div.sourceCode { margin: 1em 0; }
+      pre.sourceCode { margin: 0; }
+      @media screen {
+      div.sourceCode { overflow: auto; }
+      }
+      @media print {
+      pre > code.sourceCode { white-space: pre-wrap; }
+      pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+      }
+      pre.numberSource code
+        { counter-reset: source-line 0; }
+      pre.numberSource code > span
+        { position: relative; left: -4em; counter-increment: source-line; }
+      pre.numberSource code > span > a:first-child::before
+        { content: counter(source-line);
+          position: relative; left: -1em; text-align: right; vertical-align: baseline;
+          border: none; display: inline-block;
+          -webkit-touch-callout: none; -webkit-user-select: none;
+          -khtml-user-select: none; -moz-user-select: none;
+          -ms-user-select: none; user-select: none;
+          padding: 0 4px; width: 4em;
+          color: #aaaaaa;
+        }
+      pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+      div.sourceCode
+        {  background-color: #f6f8fa; }
+      @media screen {
+      pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+      }
+      code span { } /* Normal */
+      code span.al { color: #ff0000; } /* Alert */
+      code span.an { } /* Annotation */
+      code span.at { } /* Attribute */
+      code span.bn { color: #9f6807; } /* BaseN */
+      code span.bu { color: #9f6807; } /* BuiltIn */
+      code span.cf { color: #00607c; } /* ControlFlow */
+      code span.ch { color: #9f6807; } /* Char */
+      code span.cn { } /* Constant */
+      code span.co { color: #008000; font-style: italic; } /* Comment */
+      code span.cv { color: #008000; font-style: italic; } /* CommentVar */
+      code span.do { color: #008000; } /* Documentation */
+      code span.dt { color: #00607c; } /* DataType */
+      code span.dv { color: #9f6807; } /* DecVal */
+      code span.er { color: #ff0000; font-weight: bold; } /* Error */
+      code span.ex { } /* Extension */
+      code span.fl { color: #9f6807; } /* Float */
+      code span.fu { } /* Function */
+      code span.im { } /* Import */
+      code span.in { color: #008000; } /* Information */
+      code span.kw { color: #00607c; } /* Keyword */
+      code span.op { color: #af1915; } /* Operator */
+      code span.ot { } /* Other */
+      code span.pp { color: #6f4e37; } /* Preprocessor */
+      code span.re { } /* RegionMarker */
+      code span.sc { color: #9f6807; } /* SpecialChar */
+      code span.ss { color: #9f6807; } /* SpecialString */
+      code span.st { color: #9f6807; } /* String */
+      code span.va { } /* Variable */
+      code span.vs { color: #9f6807; } /* VerbatimString */
+      code span.wa { color: #008000; font-weight: bold; } /* Warning */
+      code.diff {color: #898887}
+      code.diff span.va {color: #006e28}
+      code.diff span.st {color: #bf0303}
+  </style>
+  <style type="text/css">
+body {
+margin: 5em;
+font-family: serif;
+
+hyphens: auto;
+line-height: 1.35;
+text-align: justify;
+}
+@media screen and (max-width: 30em) {
+body {
+margin: 1.5em;
+}
+}
+div.wrapper {
+max-width: 60em;
+margin: auto;
+}
+ul {
+list-style-type: none;
+padding-left: 2em;
+margin-top: -0.2em;
+margin-bottom: -0.2em;
+}
+a {
+text-decoration: none;
+color: #4183C4;
+}
+a.hidden_link {
+text-decoration: none;
+color: inherit;
+}
+li {
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+h1, h2, h3, h4 {
+position: relative;
+line-height: 1;
+}
+a.self-link {
+position: absolute;
+top: 0;
+left: calc(-1 * (3.5rem - 26px));
+width: calc(3.5rem - 26px);
+height: 2em;
+text-align: center;
+border: none;
+transition: opacity .2s;
+opacity: .5;
+font-family: sans-serif;
+font-weight: normal;
+font-size: 83%;
+}
+a.self-link:hover { opacity: 1; }
+a.self-link::before { content: "§"; }
+ul > li:before {
+content: "\2014";
+position: absolute;
+margin-left: -1.5em;
+}
+:target { background-color: #C9FBC9; }
+:target .codeblock { background-color: #C9FBC9; }
+:target ul { background-color: #C9FBC9; }
+.abbr_ref { float: right; }
+.folded_abbr_ref { float: right; }
+:target .folded_abbr_ref { display: none; }
+:target .unfolded_abbr_ref { float: right; display: inherit; }
+.unfolded_abbr_ref { display: none; }
+.secnum { display: inline-block; min-width: 35pt; }
+.header-section-number { display: inline-block; min-width: 35pt; }
+.annexnum { display: block; }
+div.sourceLinkParent {
+float: right;
+}
+a.sourceLink {
+position: absolute;
+opacity: 0;
+margin-left: 10pt;
+}
+a.sourceLink:hover {
+opacity: 1;
+}
+a.itemDeclLink {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+opacity: 0;
+}
+a.itemDeclLink:hover { opacity: 1; }
+span.marginalizedparent {
+position: relative;
+left: -5em;
+}
+li span.marginalizedparent { left: -7em; }
+li ul > li span.marginalizedparent { left: -9em; }
+li ul > li ul > li span.marginalizedparent { left: -11em; }
+li ul > li ul > li ul > li span.marginalizedparent { left: -13em; }
+div.footnoteNumberParent {
+position: relative;
+left: -4.7em;
+}
+a.marginalized {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+}
+a.enumerated_item_num {
+position: relative;
+left: -3.5em;
+display: inline-block;
+margin-right: -3em;
+text-align: right;
+width: 3em;
+}
+div.para { margin-bottom: 0.6em; margin-top: 0.6em; text-align: justify; }
+div.section { text-align: justify; }
+div.sentence { display: inline; }
+span.indexparent {
+display: inline;
+position: relative;
+float: right;
+right: -1em;
+}
+a.index {
+position: absolute;
+display: none;
+}
+a.index:before { content: "⟵"; }
+
+a.index:target {
+display: inline;
+}
+.indexitems {
+margin-left: 2em;
+text-indent: -2em;
+}
+div.itemdescr {
+margin-left: 3em;
+}
+.bnf {
+font-family: serif;
+margin-left: 40pt;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+}
+.ncbnf {
+font-family: serif;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+}
+.ncsimplebnf {
+font-family: serif;
+font-style: italic;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+background: inherit; 
+}
+span.textnormal {
+font-style: normal;
+font-family: serif;
+white-space: normal;
+display: inline-block;
+}
+span.rlap {
+display: inline-block;
+width: 0px;
+}
+span.descr { font-style: normal; font-family: serif; }
+span.grammarterm { font-style: italic; }
+span.term { font-style: italic; }
+span.terminal { font-family: monospace; font-style: normal; }
+span.nonterminal { font-style: italic; }
+span.tcode { font-family: monospace; font-style: normal; }
+span.textbf { font-weight: bold; }
+span.textsc { font-variant: small-caps; }
+a.nontermdef { font-style: italic; font-family: serif; }
+span.emph { font-style: italic; }
+span.techterm { font-style: italic; }
+span.mathit { font-style: italic; }
+span.mathsf { font-family: sans-serif; }
+span.mathrm { font-family: serif; font-style: normal; }
+span.textrm { font-family: serif; }
+span.textsl { font-style: italic; }
+span.mathtt { font-family: monospace; font-style: normal; }
+span.mbox { font-family: serif; font-style: normal; }
+span.ungap { display: inline-block; width: 2pt; }
+span.textit { font-style: italic; }
+span.texttt { font-family: monospace; }
+span.tcode_in_codeblock { font-family: monospace; font-style: normal; }
+span.phantom { color: white; }
+
+span.math { font-style: normal; }
+span.mathblock {
+display: block;
+margin-left: auto;
+margin-right: auto;
+margin-top: 1.2em;
+margin-bottom: 1.2em;
+text-align: center;
+}
+span.mathalpha {
+font-style: italic;
+}
+span.synopsis {
+font-weight: bold;
+margin-top: 0.5em;
+display: block;
+}
+span.definition {
+font-weight: bold;
+display: block;
+}
+.codeblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+.outputblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+div.itemdecl {
+margin-top: 2ex;
+}
+code.itemdeclcode {
+white-space: pre;
+display: block;
+}
+span.textsuperscript {
+vertical-align: super;
+font-size: smaller;
+line-height: 0;
+}
+.footnotenum { vertical-align: super; font-size: smaller; line-height: 0; }
+.footnote {
+font-size: small;
+margin-left: 2em;
+margin-right: 2em;
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+div.minipage {
+display: inline-block;
+margin-right: 3em;
+}
+div.numberedTable {
+text-align: center;
+margin: 2em;
+}
+div.figure {
+text-align: center;
+margin: 2em;
+}
+table {
+border: 1px solid black;
+border-collapse: collapse;
+margin-left: auto;
+margin-right: auto;
+margin-top: 0.8em;
+text-align: left;
+hyphens: none; 
+}
+td, th {
+padding-left: 1em;
+padding-right: 1em;
+vertical-align: top;
+}
+td.empty {
+padding: 0px;
+padding-left: 1px;
+}
+td.left {
+text-align: left;
+}
+td.right {
+text-align: right;
+}
+td.center {
+text-align: center;
+}
+td.justify {
+text-align: justify;
+}
+td.border {
+border-left: 1px solid black;
+}
+tr.rowsep, td.cline {
+border-top: 1px solid black;
+}
+tr.even, tr.odd {
+border-bottom: 1px solid black;
+}
+tr.capsep {
+border-top: 3px solid black;
+border-top-style: double;
+}
+tr.header {
+border-bottom: 3px solid black;
+border-bottom-style: double;
+}
+th {
+border-bottom: 1px solid black;
+}
+span.centry {
+font-weight: bold;
+}
+div.table {
+display: block;
+margin-left: auto;
+margin-right: auto;
+text-align: center;
+width: 90%;
+}
+span.indented {
+display: block;
+margin-left: 2em;
+margin-bottom: 1em;
+margin-top: 1em;
+}
+ol.enumeratea { list-style-type: none; background: inherit; }
+ol.enumerate { list-style-type: none; background: inherit; }
+
+code.sourceCode > span { display: inline; }
+</style>
+  <style type="text/css">div.std blockquote { color: #000000; background-color: #F1F1F1;
+border: 1px solid #D1D1D1;
+padding-left: 0.5em; padding-right: 0.5em; }
+div.std.ins blockquote { text-decoration: underline;
+color: #000000; background-color: #C8FFC8;
+border: 1px solid #B3EBB3; }
+div.std.del blockquote { text-decoration: line-through;
+color: #000000; background-color: #FFC8EB;
+border: 1px solid #ECB3C7; }
+div.std blockquote ins { text-decoration: underline;
+color: #000000; background-color: #C8FFC8; }
+div.std blockquote del { text-decoration: line-through;
+color: #000000; background-color: #FFC8EB; }
+div.std div.ins { text-decoration: underline;
+color: #000000; background-color: #C8FFC8; }
+div.std div.del { text-decoration: line-through;
+color: #000000; background-color: #FFC8EB; }
+div.std blockquote code * { color: #000000; }
+div.std div.sourceCode { background-color: inherit; margin-left: 1em; }
+div.std div.ins div.sourceCode * { text-decoration: underline; }
+div.std div.del div.sourceCode * { text-decoration: line-through; }
+div.std.ins div.sourceCode * { text-decoration: underline; }
+div.std.del div.sourceCode * { text-decoration: line-through; }
+
+.footnote { font-size: inherit;
+margin-left: 0;
+margin-right: 0;
+margin-top: 0;
+margin-bottom: 0;
+}
+</style>
+  <link href="data:image/x-icon;base64,AAABAAIAEBAAAAEAIABoBAAAJgAAACAgAAABACAAqBAAAI4EAAAoAAAAEAAAACAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAVoJEAN6CRADegkQAWIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wCCRAAAgkQAAIJEAACCRAAsgkQAvoJEAP+CRAD/gkQA/4JEAP+CRADAgkQALoJEAACCRAAAgkQAAP///wD///8AgkQAAIJEABSCRACSgkQA/IJEAP99PQD/dzMA/3czAP99PQD/gkQA/4JEAPyCRACUgkQAFIJEAAD///8A////AHw+AFiBQwDqgkQA/4BBAP9/PxP/uZd6/9rJtf/bybX/upd7/39AFP+AQQD/gkQA/4FDAOqAQgBc////AP///wDKklv4jlEa/3o7AP+PWC//8+3o///////////////////////z7un/kFox/35AAP+GRwD/mVYA+v///wD///8A0Zpk+NmibP+0d0T/8evj///////+/fv/1sKz/9bCs//9/fr//////+/m2/+NRwL/nloA/5xYAPj///8A////ANKaZPjRmGH/5cKh////////////k149/3UwAP91MQD/lmQ//86rhv+USg3/m1YA/5hSAP+bVgD4////AP///wDSmmT4zpJY/+/bx///////8+TV/8mLT/+TVx//gkIA/5lVAP+VTAD/x6B//7aEVv/JpH7/s39J+P///wD///8A0ppk+M6SWP/u2sf///////Pj1f/Nj1T/2KFs/8mOUv+eWhD/lEsA/8aee/+0glT/x6F7/7J8Rvj///8A////ANKaZPjRmGH/48Cf///////+/v7/2qt//82PVP/OkFX/37KJ/86siv+USg7/mVQA/5hRAP+bVgD4////AP///wDSmmT40ppk/9CVXP/69O////////7+/v/x4M//8d/P//7+/f//////9u7n/6tnJf+XUgD/nFgA+P///wD///8A0ppk+NKaZP/RmWL/1qNy//r07///////////////////////+vXw/9akdP/Wnmn/y5FY/6JfFvj///8A////ANKaZFTSmmTo0ppk/9GYYv/Ql1//5cWm//Hg0P/x4ND/5cWm/9GXYP/RmGH/0ppk/9KaZOjVnmpY////AP///wDSmmQA0ppkEtKaZI7SmmT60ppk/9CWX//OkVb/zpFW/9CWX//SmmT/0ppk/NKaZJDSmmQS0ppkAP///wD///8A0ppkANKaZADSmmQA0ppkKtKaZLrSmmT/0ppk/9KaZP/SmmT/0ppkvNKaZCrSmmQA0ppkANKaZAD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkUtKaZNzSmmTc0ppkVNKaZADSmmQA0ppkANKaZADSmmQA////AP5/AAD4HwAA4AcAAMADAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAMADAADgBwAA+B8AAP5/AAAoAAAAIAAAAEAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAyCRACMgkQA6oJEAOqCRACQgkQAEIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRABigkQA5oJEAP+CRAD/gkQA/4JEAP+CRADqgkQAZoJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAA4gkQAwoJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQAxIJEADyCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAP///wD///8A////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAWgkQAmIJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAJyCRAAYgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAdIJEAPCCRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAPSCRAB4gkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQASoJEANKCRAD/gkQA/4JEAP+CRAD/g0YA/39AAP9zLgD/bSQA/2shAP9rIQD/bSQA/3MuAP9/PwD/g0YA/4JEAP+CRAD/gkQA/4JEAP+CRADUgkQAToJEAACCRAAAgkQAAP///wD///8A////AP///wB+PwAAgkUAIoJEAKiCRAD/gkQA/4JEAP+CRAD/hEcA/4BBAP9sIwD/dTAA/5RfKv+viF7/vp56/76ee/+wiF7/lWAr/3YxAP9sIwD/f0AA/4RHAP+CRAD/gkQA/4JEAP+CRAD/gkQArIJEACaBQwAA////AP///wD///8A////AIBCAEBzNAD6f0EA/4NFAP+CRAD/gkQA/4VIAP92MwD/bSUA/6N1Tv/ezsL/////////////////////////////////38/D/6V3Uv9uJgD/dTEA/4VJAP+CRAD/gkQA/4JEAP+BQwD/fUAA/4FDAEj///8A////AP///wD///8AzJRd5qBlKf91NgD/dDUA/4JEAP+FSQD/cy4A/3YyAP/PuKP//////////////////////////////////////////////////////9K7qP94NQD/ciwA/4VJAP+CRAD/fkEA/35BAP+LSwD/mlYA6v///wD///8A////AP///wDdpnL/4qx3/8KJUv+PUhf/cTMA/3AsAP90LgD/4dK+/////////////////////////////////////////////////////////////////+TYxf91MAD/dTIA/31CAP+GRwD/llQA/6FcAP+gWwD8////AP///wD///8A////ANGZY/LSm2X/4ap3/92mcP+wdT3/byQA/8mwj////////////////////////////////////////////////////////////////////////////+LYxv9zLgP/jUoA/59bAP+hXAD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/RmWL/1p9q/9ubXv/XqXj////////////////////////////7+fD/vZyG/6BxS/+gcUr/vJuE//r37f//////////////////////3MOr/5dQBf+dVQD/nVkA/5xYAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmWP/yohJ//jo2P//////////////////////4NTG/4JDFf9lGAD/bSQA/20kAP9kGAD/fz8S/+Xb0f//////5NG9/6txN/+LOgD/m1QA/51aAP+cWAD/m1cA/5xYAP+cWADy////AP///wD///8A////ANKaZPLSmmT/0ppk/8+TWf/Unmv//v37//////////////////////+TWRr/VwsA/35AAP+ERgD/g0UA/4JGAP9lHgD/kFga/8KXX/+TRwD/jT4A/49CAP+VTQD/n10A/5xYAP+OQQD/lk4A/55cAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/y4tO/92yiP//////////////////////8NnE/8eCQP+rcTT/ez0A/3IyAP98PgD/gEMA/5FSAP+USwD/jj8A/5lUAP+JNwD/yqV2/694Mf+HNQD/jkAA/82rf/+laBj/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/LiUr/4byY///////////////////////gupX/0I5P/+Wuev/Lklz/l1sj/308AP+QSwD/ol0A/59aAP+aVQD/k0oA/8yoh///////+fXv/6pwO//Lp3v///////Pr4f+oay7y////AP///wD///8A////ANKaZPLSmmT/0ppk/8uJSv/hvJj//////////////////////+G7l//Jhkb/0ppk/96nc//fqXX/x4xO/6dkFP+QSQD/llEA/5xXAP+USgD/yaOA///////38uv/qG05/8ijdv//////8efb/6ZpLPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/zIxO/9yxh///////////////////////7dbA/8iEQf/Sm2X/0Zlj/9ScZv/eqHf/2KJv/7yAQf+XTgD/iToA/5lSAP+JNgD/yKFv/611LP+HNQD/jT8A/8qmeP+kZRT/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/Pk1n/1J5q//78+//////////////////+/fv/1aFv/8iEQv/Tm2b/0ppl/9GZY//Wn2z/1pZc/9eldf/Bl2b/kUcA/4w9AP+OQAD/lUwA/59eAP+cWQD/jT8A/5ZOAP+eXADy////AP///wD///8A////ANKaZPLSmmT/0ppk/9KZY//KiEn/8d/P///////////////////////47+f/05tm/8iCP//KiEj/yohJ/8eCP//RmGH//vfy///////n1sP/rXQ7/4k4AP+TTAD/nVoA/5xYAP+cVwD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/0ptl/8uLTf/aq37////////////////////////////+/fz/6c2y/961jv/etY7/6Myx//78+v//////////////////////3MWv/5xXD/+ORAD/mFQA/51ZAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmmT/0ppk/8mFRP/s1b//////////////////////////////////////////////////////////////////////////////+PD/0JFU/7NzMv+WUQD/kUsA/5tXAP+dWQDy////AP///wD///8A////ANKaZP/SmmT/0ppk/9KaZP/Sm2X/z5NZ/8yMT//z5NX/////////////////////////////////////////////////////////////////9Ofa/8yNUP/UmGH/36p5/8yTWv+qaSD/kksA/5ROAPz///8A////AP///wD///8A0ppk5NKaZP/SmmT/0ppk/9KaZP/TnGf/zY9T/82OUv/t1sD//////////////////////////////////////////////////////+7Yw//OkFX/zI5R/9OcZ//SmmP/26V0/9ymdf/BhUf/ol8R6P///wD///8A////AP///wDSmmQ80ppk9tKaZP/SmmT/0ppk/9KaZP/TnGj/zpFW/8qJSv/dson/8uHS//////////////////////////////////Lj0//etIv/y4lL/86QVf/TnGj/0ppk/9KaZP/RmWP/05xn/9ymdfjUnWdC////AP///wD///8A////ANKaZADSmmQc0ppkotKaZP/SmmT/0ppk/9KaZP/Tm2b/0Zli/8qJSf/NjlH/16Z3/+G8mP/myKr/5siq/+G8mP/Xp3f/zY5S/8qISf/RmGH/05tm/9KaZP/SmmT/0ppk/9KaZP/SmmSm0pljINWdaQD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkQtKaZMrSmmT/0ppk/9KaZP/SmmT/0ptl/9GYYf/Nj1P/y4lL/8qISP/KiEj/y4lK/82PU//RmGH/0ptl/9KaZP/SmmT/0ppk/9KaZP/SmmTO0ppkRtKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZGzSmmTu0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmTw0ppkcNKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZBLSmmSQ0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppklNKaZBTSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQy0ppkutKaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppkvtKaZDbSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkXNKaZODSmmT/0ppk/9KaZP/SmmT/0ppk5NKaZGDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkBtKaZIbSmmTo0ppk6tKaZIrSmmQK0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP/8P///+B///+AH//+AAf//AAD//AAAP/AAAA/gAAAHwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA+AAAAfwAAAP/AAAP/8AAP//gAH//+AH///4H////D//" rel="icon" />
+  
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<div class="wrapper">
+<header id="title-block-header">
+<h1 class="title" style="text-align:center">Array element initialization
+via pattern expansion</h1>
+<table style="border:none;float:right">
+  <tr>
+    <td>Document #:</td>
+    <td>P3110R0</td>
+  </tr>
+  <tr>
+    <td>Date:</td>
+    <td>2024-02-04</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Project:</td>
+    <td>Programming Language C++</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Audience:</td>
+    <td>
+      Evolution<br>
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Reply-to:</td>
+    <td>
+      James Touton<br>&lt;<a href="mailto:bekenn@gmail.com" class="email">bekenn@gmail.com</a>&gt;<br>
+    </td>
+  </tr>
+</table>
+</header>
+<div style="clear:both">
+<div id="TOC" role="doc-toc">
+<h2 id="toctitle">Contents</h2>
+<ul>
+<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction<span></span></a></li>
+<li><a href="#motivation-and-scope" id="toc-motivation-and-scope"><span class="toc-section-number">2</span> Motivation and
+Scope<span></span></a></li>
+<li><a href="#design-decisions" id="toc-design-decisions"><span class="toc-section-number">3</span> Design Decisions<span></span></a>
+<ul>
+<li><a href="#general-approach" id="toc-general-approach"><span class="toc-section-number">3.1</span> General
+Approach<span></span></a></li>
+<li><a href="#syntax" id="toc-syntax"><span class="toc-section-number">3.2</span> Syntax<span></span></a></li>
+<li><a href="#pattern-expansion" id="toc-pattern-expansion"><span class="toc-section-number">3.3</span> Pattern
+Expansion<span></span></a></li>
+<li><a href="#brace-elision" id="toc-brace-elision"><span class="toc-section-number">3.4</span> Brace
+Elision<span></span></a></li>
+<li><a href="#parenthesized-initialization" id="toc-parenthesized-initialization"><span class="toc-section-number">3.5</span> Parenthesized
+Initialization<span></span></a></li>
+</ul></li>
+<li><a href="#wording" id="toc-wording"><span class="toc-section-number">4</span> Wording<span></span></a></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">5</span> References<span></span></a></li>
+</ul>
+</div>
+<h2 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h2>
+<p>This paper introduces array element initializer patterns, which allow
+for the initialization of array elements using pattern expansion similar
+to pack expansion. This is useful when initializing an array of
+non-default-constructible type
+<code class="sourceCode default">T</code>, or when non-default
+initialization is desired and explicit array initialization syntax is
+too cumbersome or impossible (such as in a generic context, where the
+length of the array may depend on a template argument).</p>
+<p>Example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> a<span class="op">[</span><span class="dv">57</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">5</span> <span class="op">...</span> <span class="op">}</span>; <span class="co">// initializes every element of <span class="tcode">a</span> as <span class="tcode">5</span></span></span></code></pre></div>
+<h2 data-number="2" id="motivation-and-scope"><span class="header-section-number">2</span> Motivation and Scope<a href="#motivation-and-scope" class="self-link"></a></h2>
+<p>Initialization of array elements presently requires explicit syntax
+for each element when the desired initialization is more complicated
+than default or value initialization. If the array is large, this
+requirement becomes burdensome to the point that the developer may need
+to turn to alternative data structures that allow for initialization of
+new elements in a separate step after the data structure itself has
+already been initialized:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> E</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    E<span class="op">(</span><span class="dt">int</span><span class="op">)</span>;</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>E a<span class="op">[</span><span class="dv">100</span><span class="op">]</span>;       <span class="co">// error: <span class="tcode">E</span> is not default constructible</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>E b<span class="op">[</span><span class="dv">100</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="op">}</span>; <span class="co">// error: <span class="tcode">E</span> is not default constructible</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>E c<span class="op">[</span><span class="dv">100</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="co">/* 97 more zeros... */</span> <span class="op">}</span>; <span class="co">// OK, but burdensome</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">size_t</span> N<span class="op">&gt;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">()</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// error unless <span class="tcode">N</span> matches the number of element initializers</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    E x<span class="op">[</span>N<span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="co">/* how many zeros here? */</span> <span class="op">}</span>;</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>As an aggregate, <code class="sourceCode default">std::array</code>
+suffers from the same limitations as built-in arrays, making it unwieldy
+to use with non-default-constructible types.</p>
+<h2 data-number="3" id="design-decisions"><span class="header-section-number">3</span> Design Decisions<a href="#design-decisions" class="self-link"></a></h2>
+<h3 data-number="3.1" id="general-approach"><span class="header-section-number">3.1</span> General Approach<a href="#general-approach" class="self-link"></a></h3>
+<p>This feature is intended to follow the same general rules and syntax
+as pack expansion. Each is an example of pattern expansion, but whereas
+pack expansion is governed by the size of a parameter pack, expansion of
+array initializer patterns is governed by the size of the target
+array.</p>
+<h3 data-number="3.2" id="syntax"><span class="header-section-number">3.2</span> Syntax<a href="#syntax" class="self-link"></a></h3>
+<div class="std">
+<blockquote>
+<div class="line-block"><em>initializer-list</em>:<br />
+        <em>initializer-clause</em>
+<code class="sourceCode default">...</code><sub><em>opt</em></sub><br />
+        <em>initializer-list</em>
+<code class="sourceCode default">,</code> <em>initializer-clause</em>
+<code class="sourceCode default">...</code><sub><em>opt</em></sub></div>
+</blockquote>
+</div>
+<p>The syntax for initializer lists does not change. Whereas an ellipsis
+was previously only permitted when an <em>initializer-clause</em>
+contained the name of an unexpanded parameter pack, an ellipsis may now
+also appear after the final <em>intializer-clause</em> to designate that
+<em>initializer-clause</em> as an array element initializer pattern. (If
+the <em>initializer-clause</em> contains the name of an unexpanded
+parameter pack, the meaning does not change; this is still a pack
+expansion rather than an array element initializer pattern.)</p>
+<p>If the initializer pattern is (or ends with) a numeric literal, the
+ellipsis must be preceded by whitespace. This is because the characters
+making up the ellipsis would otherwise be interpreted as part of the
+numeric literal, even though the resulting literal would be invalid.</p>
+<p>Example:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> a<span class="op">[</span><span class="dv">27</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="fl">5.</span><span class="er">.</span><span class="op">.</span> <span class="op">}</span>;   <span class="co">// error, <span class="tcode">5<code class="sourceCode default">...</code></span> interpreted as an invalid numeric literal</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> b<span class="op">[</span><span class="dv">27</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">5</span> <span class="op">...</span> <span class="op">}</span>;  <span class="co">// OK</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> c<span class="op">[</span><span class="dv">27</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="op">(</span><span class="dv">5</span><span class="op">)...</span> <span class="op">}</span>; <span class="co">// OK, pattern does not end with a numeric literal</span></span></code></pre></div>
+<h3 data-number="3.3" id="pattern-expansion"><span class="header-section-number">3.3</span> Pattern Expansion<a href="#pattern-expansion" class="self-link"></a></h3>
+<p>An array element initializer pattern may appear only as the final
+<em>initializer-clause</em> in an <em>initializer-list</em> that
+initializes an array of known bound. This works for both braced
+<em>initializer-list</em>s and parenthesized <em>expression-list</em>s.
+The pattern is replicated as many times as is necessary to explicitly
+initialize each element of the array.</p>
+<p>It is permitted for an initializer list to contain both ordinary
+initializers and a terminating initializer pattern:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// This creates an array starting with the elements <span class="tcode">1, 2, 3, 4</span> and ending with</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 96 repititions of the value <span class="tcode">5</span>:</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> a<span class="op">[</span><span class="dv">100</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span> <span class="op">...</span> <span class="op">}</span>;</span></code></pre></div>
+<p>Each initializer produced from a pattern is evaluated separately,
+exactly as if all initializers had been written out explicitly. There
+are no new restrictions on the content of an initializer clause.</p>
+<p>For example, the pattern may contain a function call, which will be
+evaluated separately for every element:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cassert&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cstddef&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> array_elem<span class="op">(</span>std<span class="op">::</span><span class="dt">size_t</span> index<span class="op">)</span>;</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">()</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span><span class="dt">size_t</span> n <span class="op">=</span> <span class="dv">0</span>;</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> a<span class="op">[</span><span class="dv">32</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> array_elem<span class="op">(</span>n<span class="op">++)...</span> <span class="op">}</span>;</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="ot">assert</span><span class="op">(</span>n <span class="op">==</span> <span class="dv">32</span><span class="op">)</span>;</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Since the expanded initializers are evaluated left-to-right for both
+braced and parenthesized initialization, side effects are evaluated in
+order of increasing element index:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;generator&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>std<span class="op">::</span>generator<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> digits_of_pi<span class="op">()</span>;</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">()</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> g <span class="op">=</span> digits_of_pi<span class="op">()</span>;</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> i <span class="op">=</span> g<span class="op">.</span>begin<span class="op">()</span>;</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> pi_100<span class="op">[</span><span class="dv">100</span><span class="op">](*</span>i<span class="op">++...)</span>;</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<!--
+Note that any lambda expressions
+appearing in an initializer pattern
+will be replicated along with the pattern,
+resulting in a separate closure type and closure object
+for each expanded initializer:
+
+```c++
+#include <algorithm>
+#include <array>
+#include <string_view>
+
+std::array<unsigned, 10> count_digits(string_view str)
+{
+    char digit = '0';
+    return { unsigned(std::ranges::count_if(str, [digit = digit++](char e)
+    {
+        return e == digit;
+    }))... };
+}
+```
+-->
+<h3 data-number="3.4" id="brace-elision"><span class="header-section-number">3.4</span> Brace Elision<a href="#brace-elision" class="self-link"></a></h3>
+<p>The rules for aggregate initialization (<span>9.4.2
+<a href="https://wg21.link/dcl.init.aggr">[dcl.init.aggr]</a></span>)
+permit inner braces to be elided when initializing members of a
+subaggregate. All known implementations of
+<code class="sourceCode default">std::array</code> take advantage of
+this feature to meet the standard’s requirement that a
+<code class="sourceCode default">std::array</code> “can be
+list-initialized with up to <code class="sourceCode default">N</code>
+elements whose types are convertible to
+<code class="sourceCode default">T</code>” (<span>24.3.7.1
+<a href="https://wg21.link/array.overview">[array.overview]</a></span>).
+The implementation strategy (which is not mandated or even suggested by
+the standard, but which appears to be the only approach feasible without
+invoking specialized compiler-specific behavior) is to use a built-in
+array as the sole data member of
+<code class="sourceCode default">std::array</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> std <span class="op">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">template</span><span class="op">&lt;</span><span class="kw">class</span> T, <span class="dt">size_t</span> N<span class="op">&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> array <span class="op">{</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* non-data members */</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    T _Elems<span class="op">[</span>N<span class="op">]</span>;</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span>;</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>With brace elision, users may initialize a
+<code class="sourceCode default">std::array</code> with the same form of
+braced initializer as can be used to initialize a built-in array:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>std<span class="op">::</span>array<span class="op">&lt;</span><span class="dt">int</span>, <span class="dv">5</span><span class="op">&gt;</span> x <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span> <span class="op">}</span>;</span></code></pre></div>
+<p>…which, given the implementation strategy for
+<code class="sourceCode default">std::array</code>, is equivalent to the
+fully-braced form:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>std<span class="op">::</span>array<span class="op">&lt;</span><span class="dt">int</span>, <span class="dv">5</span><span class="op">&gt;</span> x <span class="op">=</span> <span class="op">{</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span> <span class="op">}</span> <span class="op">}</span>;</span></code></pre></div>
+<p>The fully-braced form is not sanctioned by the standard.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>In principle, <code class="sourceCode default">std::array</code>
+could instead be implemented using a compiler-specific extension to make
+initialization more consistent with a built-in array, but it is clear
+that this feature must work for existing implementations of
+<code class="sourceCode default">std::array</code>.</p>
+<p>To meet that need, an array element initializer pattern is permitted
+to appear in a braced initializer list wherein all initializers in the
+list appertain to elements of the same array:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> A</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> a, b, c<span class="op">[</span><span class="dv">20</span><span class="op">]</span>;</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>A a1 <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="op">{</span> <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span> <span class="op">...</span> <span class="op">}</span> <span class="op">}</span>;   <span class="co">// OK</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>A a2 <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span> <span class="op">...</span> <span class="op">}</span>;       <span class="co">// error: some initializers appertain to</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="co">// non-array elements</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> B</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> x<span class="op">[</span><span class="dv">20</span><span class="op">]</span>;</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>B b1 <span class="op">=</span> <span class="op">{</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span> <span class="op">...</span> <span class="op">}</span> <span class="op">}</span>;   <span class="co">// OK</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>B b2 <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span> <span class="op">...</span> <span class="op">}</span>;       <span class="co">// OK, all initializers appertain to</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>                                    <span class="co">// elements of the same array</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> C</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> a<span class="op">[</span><span class="dv">20</span><span class="op">]</span>, b, c;</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>C c1 <span class="op">=</span> <span class="op">{</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> <span class="op">...</span> <span class="op">}</span>, <span class="dv">4</span>, <span class="dv">5</span> <span class="op">}</span>;   <span class="co">// OK</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>C c2 <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> <span class="op">...</span>, <span class="dv">4</span>, <span class="dv">5</span> <span class="op">}</span>;       <span class="co">// error: initializer pattern cannot appear</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>                                    <span class="co">// in the middle of an initializer list</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>C c3 <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> <span class="op">...</span> <span class="op">}</span>;             <span class="co">// OK, <span class="tcode">b</span> and <span class="tcode">c</span> initialized to <span class="tcode">0</span></span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> D</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> a, b;</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>D d1<span class="op">[</span><span class="dv">5</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span> <span class="op">}</span>, <span class="op">{</span> <span class="dv">3</span>, <span class="dv">4</span> <span class="op">}...</span> <span class="op">}</span>;    <span class="co">// OK</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>D d2<span class="op">[</span><span class="dv">5</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span> <span class="op">...</span> <span class="op">}</span>;       <span class="co">// error: initializers do not appertain to</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>                                    <span class="co">// elements of an array</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>D d3<span class="op">[</span><span class="dv">5</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span>, <span class="dv">2</span>, <span class="op">{</span> <span class="dv">3</span>, <span class="dv">4</span> <span class="op">}...</span> <span class="op">}</span>;    <span class="co">// error: some initializers do not</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>                                    <span class="co">// appertain to elements of an array</span></span></code></pre></div>
+<h3 data-number="3.5" id="parenthesized-initialization"><span class="header-section-number">3.5</span> Parenthesized Initialization<a href="#parenthesized-initialization" class="self-link"></a></h3>
+<p>C++20 introduced the ability to initialize an aggregate using a
+parenthesized <em>expression-list</em>. Arrays are aggregates, so that
+means arrays can be initialized with parentheses instead of braces.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> This form of initialization has no
+equivalent to brace elision, so the addition of initializer patterns
+requires no special considerations.</p>
+<h2 data-number="4" id="wording"><span class="header-section-number">4</span> Wording<a href="#wording" class="self-link"></a></h2>
+<p><span class="citation" data-cites="CWG2149">[<a href="#ref-CWG2149" role="doc-biblioref">CWG2149</a>]</span> (currently unresolved) points
+out an inconsistency in the wording with respect to array lengths
+inferred from braced initializer lists in the presence of brace elision.
+<span class="citation" data-cites="P3106R0">[<a href="#ref-P3106R0" role="doc-biblioref">P3106R0</a>]</span> attempts to resolve this issue
+by reformulating the rules for brace elision. Since this feature
+intersects with brace elision, the wording changes shown here are
+presented relative to <span class="citation" data-cites="N4971">[<a href="#ref-N4971" role="doc-biblioref">N4971</a>]</span> as modified by
+<span class="citation" data-cites="P3106R0">[<a href="#ref-P3106R0" role="doc-biblioref">P3106R0</a>]</span>, under the assumption that
+<span class="citation" data-cites="P3106R0">[<a href="#ref-P3106R0" role="doc-biblioref">P3106R0</a>]</span> will be accepted.</p>
+<p>Modify §<span>7.6.1.4
+<a href="https://wg21.link/expr.type.conv">[expr.type.conv]</a></span>
+paragraph 2:</p>
+<div class="std">
+<blockquote>
+<p>If the initializer is a parenthesized single expression, the type
+conversion expression is equivalent to the corresponding cast expression
+(<span>7.6.3
+<a href="https://wg21.link/expr.cast">[expr.cast]</a></span>).
+Otherwise, if the type is <em>cv</em>
+<code class="sourceCode default">void</code> and the initializer is
+<code class="sourceCode default">()</code> or
+<code class="sourceCode default">{}</code> (after <span class="rm" style="color: #bf0303"><del>pack</del></span> <span class="add" style="color: #006e28"><ins>pattern</ins></span> expansion, if any), the
+expression is a prvalue of type
+<code class="sourceCode default">void</code> that performs no
+initialization. <em>[…]</em></p>
+</blockquote>
+</div>
+<p>Modify §<span>9.4.1
+<a href="https://wg21.link/dcl.init.general">[dcl.init.general]</a></span>
+paragraph 18:</p>
+<div class="std">
+<blockquote>
+<p>An <em>initializer-clause</em> followed by an ellipsis is a <span class="rm" style="color: #bf0303"><del>pack</del></span> <span class="add" style="color: #006e28"><ins>pattern</ins></span> expansion
+(<span>13.7.4
+<a href="https://wg21.link/temp.variadic">[temp.variadic]</a></span>).</p>
+</blockquote>
+</div>
+<p>Insert a new paragraph after §<span>9.4.1
+<a href="https://wg21.link/dcl.init.general">[dcl.init.general]</a></span>
+paragraph 18:</p>
+<div class="std ins">
+<blockquote>
+<p>A pattern expansion that is not a pack expansion is permitted to
+appear as the final element in a parenthesized <em>expression-list</em>
+that is used to initialize an array of known bound. Instantiation of the
+pattern expansion results in zero or more instantiations of the pattern
+such that the total number of elements in the <em>expression-list</em>
+matches the array bound.</p>
+</blockquote>
+</div>
+<p>Insert a new paragraph after §<span>9.4.2
+<a href="https://wg21.link/dcl.init.aggr">[dcl.init.aggr]</a></span>
+paragraph 14 (as modified by <span class="citation" data-cites="P3106R0">[<a href="#ref-P3106R0" role="doc-biblioref">P3106R0</a>]</span>):</p>
+<div class="std ins">
+<blockquote>
+<p>A pattern expansion that is not a pack expansion is permitted to
+appear as the final element in a brace-enclosed
+<em>initializer-list</em> if all other elements of the
+<em>initializer-list</em> appertain to elements of the same array
+<code class="sourceCode default">u</code>, which shall be an array of
+known bound, and if the pattern would also appertain to an element of
+<code class="sourceCode default">u</code> (disregarding the array
+bound). Instantiation of the pattern expansion results in zero or more
+instantiations of the pattern such that the total number of elements in
+the <em>initializer-list</em> matches the array bound of
+<code class="sourceCode default">u</code>.</p>
+</blockquote>
+</div>
+<p>Modify §<span>9.12.1
+<a href="https://wg21.link/dcl.attr.grammar">[dcl.attr.grammar]</a></span>
+paragraph 4:</p>
+<div class="std">
+<blockquote>
+<p>In an <em>attribute-list</em>, an ellipsis may appear only if that
+<em>attribute</em>’s specification permits it. An <em>attribute</em>
+followed by an ellipsis is a <span class="rm" style="color: #bf0303"><del>pack</del></span> <span class="add" style="color: #006e28"><ins>pattern</ins></span> expansion (<span>13.7.4
+<a href="https://wg21.link/temp.variadic">[temp.variadic]</a></span>).
+<em>[…]</em></p>
+</blockquote>
+</div>
+<p>Modify §<span>13.7.4
+<a href="https://wg21.link/temp.variadic">[temp.variadic]</a></span>
+paragraph 5:</p>
+<div class="std">
+<blockquote>
+<p><span class="marginalizedparent"><a class="marginalized">5</a></span>
+A <em><span class="rm" style="color: #bf0303"><del>pack</del></span>
+<span class="add" style="color: #006e28"><ins>pattern</ins></span>
+expansion</em> consists of a <em>pattern</em> and an ellipsis, the
+instantiation of which produces zero or more instantiations of the
+pattern in a list (described below). The form of the pattern depends on
+the context in which the expansion occurs. <span class="rm" style="color: #bf0303"><del>Pack</del></span> <span class="add" style="color: #006e28"><ins>Pattern</ins></span> expansions can occur in
+the following contexts:</p>
+<p><em>[…]</em></p>
+</blockquote>
+</div>
+<p>Modify §<span>13.7.4
+<a href="https://wg21.link/temp.variadic">[temp.variadic]</a></span>
+paragraph 7:</p>
+<div class="std">
+<blockquote>
+<p><span class="add" style="color: #006e28"><ins>A pattern expansion is
+a <em>pack expansion</em> if the pattern names one or more packs that
+are not expanded by a nested pattern expansion; such packs are called
+<em>unexpanded packs</em> in the pattern.</ins></span> A pack whose name
+appears within the pattern of a pack expansion is expanded by that pack
+expansion. An appearance of the name of a pack is only expanded by the
+innermost enclosing pack expansion. <span class="rm" style="color: #bf0303"><del>The pattern of a pack expansion shall name
+one or more packs that are not expanded by a nested pack expansion; such
+packs are called <em>unexpanded packs</em> in the pattern.</del></span>
+All of the packs expanded by a pack expansion shall have the same number
+of <span class="rm" style="color: #bf0303"><del>arguments
+specified</del></span> <span class="add" style="color: #006e28"><ins>elements</ins></span>. An appearance of a
+name of a pack that is not expanded is ill-formed.</p>
+<div class="example">
+<p><span>[ <em>Example:</em> </span><em>[…]</em><span> — <em>end
+example</em> ]</span></p>
+</div>
+</blockquote>
+</div>
+<p>Modify §<span>13.7.4
+<a href="https://wg21.link/temp.variadic">[temp.variadic]</a></span>
+paragraph 8:</p>
+<div class="std">
+<blockquote>
+<p>The instantiation of a <span class="rm" style="color: #bf0303"><del>pack</del></span> <span class="add" style="color: #006e28"><ins>pattern</ins></span> expansion considers
+items <code class="sourceCode default">E</code><sub>1</sub>,
+<code class="sourceCode default">E</code><sub>2</sub>, . . . ,
+<code class="sourceCode default">E</code><sub><em>N</em></sub><span class="rm" style="color: #bf0303"><del>,</del></span><span class="add" style="color: #006e28"><ins>;</ins></span> <span class="rm" style="color: #bf0303"><del>where</del></span> <span class="add" style="color: #006e28"><ins>for pack expansions,</ins></span> <em>N</em>
+is the number of elements in <span class="rm" style="color: #bf0303"><del>the pack expansion parameters</del></span>
+<span class="add" style="color: #006e28"><ins>each unexpanded pack in
+the pattern</ins></span>. Each
+<code class="sourceCode default">E</code><sub><em>i</em></sub> is
+generated by instantiating the pattern and replacing each <span class="add" style="color: #006e28"><ins>unexpanded</ins></span> pack
+<span class="rm" style="color: #bf0303"><del>expansion
+parameter</del></span> <span class="add" style="color: #006e28"><ins>in
+the pattern</ins></span> with <span class="rm" style="color: #bf0303"><del>its</del></span> <span class="add" style="color: #006e28"><ins>the</ins></span> <em>i</em><sup>th</sup>
+element <span class="add" style="color: #006e28"><ins>of the
+pack</ins></span>. Such an element, in the context of the instantiation,
+is interpreted as follows:</p>
+<p><em>[…]</em></p>
+<p>When <em>N</em> is zero, the instantiation of a <span class="rm" style="color: #bf0303"><del>pack</del></span> <span class="add" style="color: #006e28"><ins>pattern</ins></span> expansion does not
+alter the syntactic interpretation of the enclosing construct, even in
+cases where omitting the <span class="rm" style="color: #bf0303"><del>pack</del></span> <span class="add" style="color: #006e28"><ins>pattern</ins></span> expansion entirely
+would otherwise be ill-formed or would result in an ambiguity in the
+grammar.</p>
+</blockquote>
+</div>
+<p>Modify §<span>13.7.4
+<a href="https://wg21.link/temp.variadic">[temp.variadic]</a></span>
+paragraph 14:</p>
+<div class="std">
+<blockquote>
+<p>The instantiation of any other <span class="rm" style="color: #bf0303"><del>pack</del></span> <span class="add" style="color: #006e28"><ins>pattern</ins></span> expansion produces a
+list of elements <code class="sourceCode default">E</code><sub>1</sub>,
+<code class="sourceCode default">E</code><sub>2</sub>, . . . ,
+<code class="sourceCode default">E</code><sub><em>N</em></sub>.</p>
+<div class="note">
+<p><span>[ <em>Note:</em> </span>The variety of list varies with the
+context: <em>expression-list</em>, <em>base-specifier-list</em>,
+<em>template-argument-list</em>, etc.<span> — <em>end note</em>
+]</span></p>
+</div>
+<p>When <em>N</em> is zero, the instantiation of the expansion produces
+an empty list.</p>
+<div class="example">
+<p><span>[ <em>Example:</em> </span><em>[…]</em><span> — <em>end
+example</em> ]</span></p>
+</div>
+</blockquote>
+</div>
+<p>Add a new paragraph at the end of §<span>13.7.4
+<a href="https://wg21.link/temp.variadic">[temp.variadic]</a></span>:</p>
+<div class="std ins">
+<blockquote>
+<p>If a pattern expansion that is not a pack expansion appears in a
+context that is not explicitly permitted, the program is ill-formed.</p>
+</blockquote>
+</div>
+<p>Modify §<span>13.8.3.3
+<a href="https://wg21.link/temp.dep.expr">[temp.dep.expr]</a></span>
+paragraph 6:</p>
+<div class="std">
+<blockquote>
+<p>A <em>braced-init-list</em> is type-dependent if any element is
+type-dependent or is a pack expansion<span class="add" style="color: #006e28"><ins>, or if the final element is a pattern
+expansion and all elements of the <em>braced-init-list</em> appertain to
+the same array of known bound where the bound is dependent on a template
+parameter</ins></span>.</p>
+</blockquote>
+</div>
+<p>Add an entry to §<span>15.11
+<a href="https://wg21.link/cpp.predefined">[cpp.predefined]</a></span>
+table 22 <a href="https://eel.is/c++draft/tab:cpp.predefined.ft">[cpp.predefined.ft]</a>:</p>
+<div class="std">
+<blockquote>
+<table>
+<colgroup>
+<col style="width: 71%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><div style="text-align:center">
+<strong>Macro name</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>Value</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="add" style="color: #006e28"><ins><span><code class="sourceCode default">__cpp_array_elem_pattern_init</code></span></ins></span></td>
+<td><span class="add" style="color: #006e28"><ins><span><code class="sourceCode default">⟨YYYYMMDD⟩L</code></span></ins></span></td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+</div>
+<p><span class="ednote" style="color: #0000ff">[ Editor&#39;s note: The
+value of the macro is to be determined at the editor’s discretion.
+]</span></p>
+<h2 data-number="5" id="bibliography"><span class="header-section-number">5</span> References<a href="#bibliography" class="self-link"></a></h2>
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-CWG2149" class="csl-entry" role="doc-biblioentry">
+[CWG2149] Vinny Romano. 2015-06-25. Brace elision and array length
+deduction. <a href="https://wg21.link/cwg2149"><div class="csl-block">https://wg21.link/cwg2149</div></a>
+</div>
+<div id="ref-N4971" class="csl-entry" role="doc-biblioentry">
+[N4971] Thomas Köppe. 2023-12-18. Working Draft, Programming Languages —
+C++. <a href="https://wg21.link/n4971"><div class="csl-block">https://wg21.link/n4971</div></a>
+</div>
+<div id="ref-P3106R0" class="csl-entry" role="doc-biblioentry">
+[P3106R0] James Touton. 2024-02-03. Clarifying rules for brace elision
+in aggregate initialization. <a href="https://wg21.link/p3106r0"><div class="csl-block">https://wg21.link/p3106r0</div></a>
+</div>
+</div>
+<section class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>This didn’t stop older compilers from
+recommending the use of the fully-braced form, which has led to an
+awkward situation where fully-braced initializers are common in user
+code despite being non-conformant with the standard. Current compilers
+do not warn against use of the fully-braced form.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p><code class="sourceCode default">std::array</code>
+is also an aggregate, but because the standard doesn’t mandate an
+implementation strategy, there is no conforming way to initialize
+<code class="sourceCode default">std::array</code> with parentheses.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</div>
+</div>
+</body>
+</html>
