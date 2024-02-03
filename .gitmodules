@@ -1,0 +1,3 @@
+[submodule "wg21"]
+	path = wg21
+	url = ../wg21.git
