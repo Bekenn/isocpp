@@ -1,12 +1,389 @@
 ---
 title: "Headless Template Template Parameters"
-document: D????R0
+document: P3158R0
 date: today
 audience: Evolution
 author:
     - name: James Touton
       email: <bekenn@gmail.com>
 ---
+
+## Introduction
+
+This paper introduces a new flavor of template template parameter
+that matches any template template argument,
+herein referred to as *headless* template template parameters
+because they are declared without a *template-head*.
+This feature is intended to be used
+with universal template parameters (@P1985R3, @P2989R0),
+but may be adopted separately.
+This feature obsoletes a form of template argument matching
+that allows a template template parameter
+with a template parameter pack
+to match a template template argument
+without a template parameter pack
+(violating the contract
+implied by the form of the template template parameter).
+This paper also introduces constrained template template parameter declarations,
+as constraints are expected to be used frequently
+in combination with headless template template parameters.
+
+### Universal Template Parameter Syntax
+
+The syntax for the declaration
+of a universal template parameter
+is as yet undecided.
+@P1985R3 and @P2989R0 offer several possibilities,
+each of which has drawbacks
+associated with
+introducing a new keyword,
+repurposing an old keyword,
+designating an identifier as a contextual keyword,
+or some combination of the above.
+The examples in those papers
+are not consistent in their choice of syntax;
+for internal consistency,
+and to avoid the issues mentioned above,
+this paper will use `?`
+to declare a universal template parameter:
+
+```c++
+// Example from P2989R0
+template <universal template>
+constexpr bool is_variable = false;
+template <auto a>
+constexpr bool is_variable<a> = true;
+
+// Same example, rewritten with @[?]{.tcode}@
+template <?>
+constexpr bool is_variable = false;
+template <auto a>
+constexpr bool is_variable<a> = true;
+```
+
+### Universal Template Parameter Semantics
+
+Taken together,
+@P1985R3 and @P2989R0 present several different models
+of universal template parameter semantics.
+For the purposes of this paper,
+we'll assume the semantics presented in @P2989R0;
+that is:
+
+- A universal template parameter binds to any template argument of any kind.
+- A template that uses universal parameters
+  may have partial specializations
+  that refine the kind of a universal parameter.
+- A universal template parameter may be used
+  as a template argument for a template parameter of any kind;
+  if, during instantiation, the substituted value
+  is of a kind incompatible with the template parameter,
+  the program is ill-formed.
+- A universal template parameter may not be used
+  in any other context.
+
+### Universal Template Parameter Topics Not Covered
+
+@P1985R3 discusses a number of additional hypothetical language features
+that would have interactions with universal template parameters
+where they to be adopted.
+As these are not currently part of C++,
+this paper will not discuss them.
+The features are:
+
+- Concept template parameters
+- Variable template parameters
+- Universal aliases
+
+## Motivation
+
+The primary motivation for this feature
+is to make universal template parameters useful
+without backsliding on one of the key principles of @P0522R0,
+which is that the form of a template template parameter
+should be indicative of its proper use within its scope.
+A secondary motivation is to provide an alternative
+to an existing rule that violates this principle.
+These two issues are closely related.
+
+### Template Template Argument Matching
+
+@N2555 introduced a change to template template argument matching
+that allows a template template parameter
+with a template parameter pack
+to match a template template argument
+without a template parameter pack.
+This was done to grant the ability
+to write a metafunction
+that could accept a template
+and an arbitrary number of template arguments,
+and then apply the arguments to the template:
+
+```c++
+template <template <class...> class F, class... Args>
+using apply = F<Args...>;
+
+template <class T1>           struct A;
+template <class T1, class T2> struct B;
+template <class... Ts>        struct C;
+
+template <class T> struct X { };
+
+X<apply<A, int>> xa;                              // OK
+X<apply<B, int, float>> xb;                       // OK
+X<apply<C, int, float, int, short, unsigned>> xc; // OK
+```
+
+This addressed the immediate need,
+but it did so in a way that
+undermines the contract
+implied by the *template-head*
+of the template template parameter.
+In the above example,
+it would be reasonable for the author of `apply`
+to expect that `F` is a template
+that can accept any number of type arguments,
+as is the case for `C`.
+However, `A` can only accept one argument,
+and `B` can only accept two arguments.
+The contract implied by the declaration of `F` is violated,
+but the parameter is allowed to bind anyway.
+If a metafunction actually does require
+that the template accept any number of arguments,
+then there is no longer any space
+in the existing syntax
+to express that constraint.
+We've taken syntax that ought to mean one thing
+and assigned an entirely different meaning to it.
+
+@N2555 was a reasonable compromise for its time.
+It addressed a very real need
+at the cost of a small syntactic carve-out
+in a feature that nobody had seen before (variadic templates).
+Today, variadic templates are everywhere,
+template constraints permit us
+to make fine-grained decisions
+based on the content of a template declaration,
+and with reflection on the horizon,
+the ability to accurately express intent
+is more important than ever.
+If universal template parameters take an approach similar to @N2555,
+the damage will be much worse.
+
+### Universal Template Parameters
+
+In the example above,
+`apply` can only operate on templates
+taking some number of type arguments.
+If you wish to `apply` non-type or template arguments
+to a template that can accept them,
+you're out of luck.
+There are two reasons for this.
+The first is that
+`F` is specified in such a way
+that it cannot bind to a template
+that can accept template or non-type arguments.
+The second is that `apply` itself
+is unable to accept template or non-type arguments in `Args`.
+Universal template parameters are an essential feature
+well-suited to solving *one* of those problems,
+but @P1985R3 attempts to solve both of those issues
+with the same feature
+by abusing template template parameter matching
+in much the same way that @N2555 did:
+
+```c++
+template <template <?...> typename F, ?... Args>
+using apply = F<Args...>; // easy peasy!
+
+// ok, r1 is std::array<int, 3>
+using r1 = apply<std::array, int, 3>;
+// ok, r2 is std::vector<int, std::pmr::allocator>
+using r2 = apply<std::vector, int, std::pmr::allocator>;
+```
+
+As with @N2555,
+the parameter pack in the *template-head* of `F` is misleading.
+This much follows from the rules established by @N2555;
+it is not a new problem,
+and we can't change the meaning of the parameter pack
+without a lengthy deprecation period
+(assuming there's any appetite to try; more on this later).
+Unlike @N2555, the parameter kind
+(the pattern of the parameter pack)
+is *also* misleading.
+
+A naïve reading of the declaration of `F`
+would interpret it as a template
+capable of taking any number of arguments,
+*each of any kind*.
+However, `F` will bind to *any* template template argument whatsoever,
+irrespective of the number or kinds of template parameters
+or even any associated constraints on the argument template.
+
+## Design
+
+In the case of `apply`,
+what's actually desired
+is a form of template template parameter
+that does not suggest a capability
+that expresses our lack of knowledge
+about the bound template template argument.
+In each of the prior formulations of `apply`,
+the *template-head* of `F` has conveyed misleading information
+about the properties of `F`,
+when what we really want is a way to say
+that we don't know anything about `F`.
+So let's get rid of the *template-head* entirely:
+
+```c++
+template <template @[`<?...>`]{.rm}@ typename F, ?... Args>
+using apply = F<Args...>; // easy peasy!
+```
+
+Now, we can actually distinguish between
+a template that accepts any arguments whatsoever
+and a template that we know nothing about.
+We now have the tools we need to fully express intent.
+
+### Constrained template template parameters
+
+Headless template template parameters are essentially
+free of *any* constraints,
+as they are not constrained by parameter count or kind.
+It seems likely that one of the first things
+a programmer will want to do
+is to add some form of constraint on these parameters.
+The most obvious constraint is a check
+for the validity of a set of template arguments:
+
+```c++
+template <template typename T, ?... Args>
+  concept specializable = requires { typename T<Args...>; };
+```
+
+To ease the application of constraints,
+a concept name denoting a template concept
+may be used to declare a headless template template parameter.
+This works exactly as it does for type constraints,
+except that the concept's prototype parameter
+must be a template template parameter
+rather than a type parameter.
+
+```c++
+template <specializable<int, 5> TT> void f();
+
+// Same as:
+//   template <template typename TT> requires specializable<TT, int, 5>
+//   void f();
+```
+
+## Examples
+
+Following are some examples copied from @P1985R3.
+The examples have been updated with diff marks
+showing the difference in syntax
+with the application of headless template template parameters.
+In all cases, the semantics of the example are unchanged.
+As the difference is entirely in the absence of a *template-head*,
+headless template template parameters result in
+simpler syntax that is also more representative of intent.
+
+```c++
+// is_specialization_of
+template <typename T, template @[`<?...>`]{.rm}@ typename Type>
+constexpr bool is_specialization_of_v = false;
+
+template <?... Params, template @[`<?...>`]{.rm}@ typename Type>
+constexpr bool is_specialization_of_v<Type<Params...>, Type> = true;
+
+template <typename T, template @[`<?...>`]{.rm}@ typename Type>
+concept specialization_of = is_specialization_of_v<T, Type>;
+```
+
+```c++
+template<typename Type, template @[`<?...>`]{.rm}@ typename Templ>
+constexpr bool is_specialization_of_v = (template_of(^Type) == ^Templ);
+```
+
+```c++
+template <?> constexpr bool is_typename_v             = false;
+template <typename T> constexpr bool is_typename_v<T> = true;
+template <?> constexpr bool is_value_v                = false;
+template <auto V> constexpr bool is_value_v<V>        = true;
+template <?> constexpr bool is_template_v             = false;
+template <template @[`<?...>`]{.rm}@ typename A>
+constexpr bool is_template_v<A>                       = true;
+
+// The associated type for each trait:
+template <? X> struct is_typename : std::bool_constant<is_typename_v<X>> {};
+template <? X> struct is_value    : std::bool_constant<is_value_v<X>> {};
+template <? X> struct is_template : std::bool_constant<is_template_v<X>> {};
+```
+
+```c++
+template <?> struct box; // impossible to define body
+
+template <auto X>
+struct box<X> { static constexpr decltype(X) result = X; };
+
+template <typename X>
+struct box<X> { using result = X; };
+
+template <template @[`<?...>`]{.rm}@ typename X>
+struct box<X> {
+  template <?... Args>
+  using result = X<Args...>;
+};
+```
+
+```c++
+template <template @[`<?>`]{.rm}@ typename Map,
+          template @[`<?...>`]{.rm}@ typename Reduce,
+          ?... Args>
+using map_reduce = Reduce<Map<Args>::result...>;
+```
+
+```c++
+template <int... xs> using sum = box<(0 + ... + xs)>;
+template <? X> using boxed_is_typename = box<is_typename_v<X>>;
+static_assert(2 == map_reduce<boxed_is_typename, sum, int, 1, long, std::vector>::result);
+```
+
+```c++
+template<typename T>
+struct unwrap
+{
+  using result = T;
+};
+
+template<typename T, T t>
+struct unwrap<std::integral_constant<T, t>>
+{
+  static constexpr T result = t;
+};
+
+template <template @[<?...>]{.rm}@ typename T, typename... Params>
+using apply_unwrap = T<unwrap<Params>::result...>;
+
+apply_unwrap<std::array, int, std::integral_constant<std::size_t, 5>> arr;
+```
+
+```c++
+template <template @[<?...>]{.rm}@ typename F,
+          ? ... Args1>
+struct curry {
+  template <?... Args2>
+  using func = F<Args1..., Args2...>;
+};
+```
+
+```c++
+template<template@[<?...>]{.rm}@ class C, typename... Ps>
+auto make_unique(Ps&&... ps) {
+  return unique_ptr<decltype(C(std::forward<Ps>(ps)...))>(new C(std::forward<Ps>(ps)...));
+}
+```
 
 ## Wording
 
@@ -452,7 +829,7 @@ author:
 > a template parameter pack [([temp.variadic]{.sref})]{.add}, then `A` also matches `P`
 > if each of `A`'s template parameters
 > matches the corresponding template parameter in the
-> *template-head* of `P`.
+> *template-head* of `P` [(this behavior is deprecated; see D.# [\[depr.temp.match\]](#depr.temp.match))]{.add}.
 > Two template parameters match if they are of the same kind (type, non-type, template),
 > for non-type *template-parameter*s, their types are
 > equivalent ([temp.over.link]{.sref}), and for template *template-parameter*s,
@@ -775,4 +1152,36 @@ author:
 > as specified in [temp.constr.decl]{.sref} and [temp.constr.atomic]{.sref}
 > when determining whether the constraints are satisfied
 > or as specified in [temp.constr.decl]{.sref} when comparing declarations.
+:::
+
+&sect;[depr]{.sref}
+
+::: {.std .ins}
+>
+> ### D.# Matching template *template-parameter*s with parameter packs &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;\[depr.temp.match\] {#depr.temp.match}
+>
+> [1]{.pnum}
+> A template parameter pack in the *template-head*
+> of a template *template-parameter*
+> is permitted to match
+> zero or more template parameters
+> in the *template-head*
+> of a template *template-argument* ([temp.arg.template]{.sref}).
+> This behavior is deprecated.
+>
+> ::: example
+>
+> ```c++
+> template <template <class... Ts> class TT> class X { };
+> template <class A, class B> class Y;
+>
+> X<Y> x;       // deprecated, TT matches A and B
+>
+> template <template <class A, class B> class TT> class P { };
+> template <class... Ts> class Q;
+>
+> P<Q> p;       // OK
+> ```
+>
+> :::
 :::
