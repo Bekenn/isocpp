@@ -1,0 +1,104 @@
+<HTML>
+<HEAD>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<TITLE>
+    PR 6804</TITLE>
+<STYLE TYPE="text/css">
+  INS { text-decoration:none; font-weight:bold; background-color:#A0FFA0 }
+  .INS { text-decoration:none; background-color:#D0FFD0 }
+  DEL { text-decoration:line-through; background-color:#FFA0A0 }
+  .DEL { text-decoration:line-through; background-color: #FFD0D0 }
+  SPAN.cmnt { font-family:Times; font-style:italic }
+</STYLE>
+</HEAD>
+<H4>PR 6804.
+
+  Clean up wording for template template argument matching
+</H4>
+<B>Section: </B>13.4.4&nbsp; [<A href="https://wg21.link/temp.arg.template">temp.arg.template</A>]
+ &nbsp;&nbsp;&nbsp;
+
+ <B>Status: </B>pull request
+ &nbsp;&nbsp;&nbsp;
+
+ <B>Submitter: </B>James Touton
+ &nbsp;&nbsp;&nbsp;
+
+ <B>Date: </B>2024-02-12<BR>
+
+<BLOCKQUOTE>
+<B>James Touton: </B>I've rearranged the paragraphs describing matching in terms of partial ordering vs component-wise matching to more clearly separate the concepts. I've also cleaned up some resulting redundant wording and moved the examples into separate paragraphs as they're fairly general within the context of this section (with the exception of the last example, which could reasonably be pulled into the paragraph on matching in terms of partial ordering).
+</BLOCKQUOTE>
+
+<BLOCKQUOTE>
+<B>Thomas K&ouml;ppe: </B>@jensmaurer A Core perspective would be welcome here. I think we've asked James to send us this?
+</BLOCKQUOTE>
+
+<BLOCKQUOTE>
+<B>Jens Maurer: </B>I don't remember. It needs careful before-after comparison.
+</BLOCKQUOTE>
+
+<BLOCKQUOTE>
+<B>James touton: </B>I sent this unprompted; Core has not seen this.
+</BLOCKQUOTE>
+
+<P><B>Proposed resolution:</B></P>
+
+<P>
+The text from paragraph 3 containing the phrase "at least as specialized" will be relocated to paragraph 4, where the meaning of that phrase is actually described.
+Paragraphs 3 and 4 will be swapped so that the "at least as specialized" wording precedes the older "matches" wording.
+The examples from paragraph 3 will be relocated, each into its own paragraph at the end of the section.
+</P>
+
+<P>Change in 13.4.4 [<A href="https://wg21.link/temp.arg.template#4">temp.arg.template</A>] paragraph 4 as follows:</P>
+
+<BLOCKQUOTE>
+<P>
+  A template <INS><I>template-argument</I> <CODE>A</CODE> matches a template</INS>
+  <I>template-parameter</I> <CODE>P</CODE> <INS>when <CODE>P</CODE></INS>
+  is at least as specialized as <DEL>a template <I>template-argument</I></DEL> <CODE>A</CODE><INS>,
+  ignoring constraints on <CODE>A</CODE> if <CODE>P</CODE> is unconstrained.
+  <CODE>P</CODE> is at least as specialized as <CODE>A</CODE></INS>
+  if, given the following rewrite to two function templates,
+  ...
+</P>
+</BLOCKQUOTE>
+
+<P>Change in 13.4.4 [<A href="https://wg21.link/temp.arg.template#3">temp.arg.template</A>] paragraph 3 as follows:</P>
+
+<BLOCKQUOTE>
+<P>
+  <DEL>A <I>template-argument</I> matches a template
+  <I>template-parameter</I> <CODE>P</CODE> when
+  <CODE>P</CODE> is at least as specialized as the <I>template-argument</I> <CODE>A</CODE>.
+  In this comparison, if <CODE>P</CODE> is unconstrained,
+  the constraints on <CODE>A</CODE> are not considered.</DEL>
+  If <CODE>P</CODE> contains a template parameter pack<INS>&nbsp;(13.7.4 [<A href="https://wg21.link/temp.variadic">temp.variadic</A>])</INS>, then
+  <CODE>A</CODE> also matches <CODE>P</CODE>
+  if each of <CODE>A</CODE>'s template parameters
+  matches the corresponding template parameter in the
+  <I>template-head</I> of <CODE>P</CODE>.
+  Two template parameters match if they are of the same kind (type, non-type, template),
+  for non-type <I>template-parameter</I>s, their types are
+  equivalent&nbsp;(13.7.7.2 [<A href="https://wg21.link/temp.over.link">temp.over.link</A>]), and for template <I>template-parameter</I>s,
+  each of their corresponding <I>template-parameter</I>s matches, recursively.
+  <DEL>When <CODE>P</CODE>'s <I>template-head</I> contains a template parameter
+  pack&nbsp;(13.7.4 [<A href="https://wg21.link/temp.variadic">temp.variadic</A>]), the template parameter pack</DEL>
+  <INS>A template parameter pack in the <I>template-head</I> of <CODE>P</CODE></INS>
+  will match zero or more template parameters or template parameter packs in the <I>template-head</I> of
+  <CODE>A</CODE> with the same type and form as the template parameter pack in <CODE>P</CODE>
+  (ignoring whether those template parameters are template parameter packs).
+</P>
+
+<P><DEL>[&nbsp;<I>Example</I>: ... <I>end example</I>&nbsp;]</DEL></P>
+<P><DEL>[&nbsp;<I>Example</I>: ... <I>end example</I>&nbsp;]</DEL></P>
+<P><DEL>[&nbsp;<I>Example</I>: ... <I>end example</I>&nbsp;]</DEL></P>
+</BLOCKQUOTE>
+
+<P>Swap the order of paragraphs 3 and 4.</P>
+
+<P>Add each deleted example from paragraph 3 as a new paragraph at the end of the section.</P>
+
+<BR><BR>
+</BODY>
+</HTML>
